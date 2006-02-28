@@ -1,3 +1,5 @@
+__all__ = ['Grid']
+
 import supreme.config as SC
 import numpy as N
 

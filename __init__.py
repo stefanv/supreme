@@ -3,6 +3,6 @@
 from numpy.testing import NumpyTest
 
 from config import *
-import geometry
+#import geometry
 
 test = NumpyTest('supreme').test
