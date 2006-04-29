@@ -3,8 +3,10 @@ __all__ = ['Grid']
 import supreme.config as SC
 import numpy as N
 
-class Grid(N.ndarray):
-    def __new__(cls, rows, columns):
+class Grid(object):
+    """Regular grid."""
+
+    def __init__(self,rows,columns):
         """
         Create a regular grid given rows and columns.
         
@@ -19,13 +21,11 @@ class Grid(N.ndarray):
         A regular grid allows for transformations, as long as the
         neighbours of each coordinate stay the same.
         """
-        return super(Grid, cls).__new__(cls, shape=(rows,columns),
-                                        dtype=[('x',SC.ftype),
-                                               ('y',SC.ftype),
-                                               ('z',SC.ftype)])
 
-    def __init__(self, rows, columns):
-        """Initialise the grid values. See __new__."""
+        self._grid = N.empty(shape=(rows,columns),
+                             dtype=[('x',SC.ftype),
+                                    ('y',SC.ftype),
+                                    ('z',SC.ftype)])
         cgrid = N.empty((3, rows, columns), dtype=SC.ftype)
         cgrid[:2, :, :] = N.float32(N.mgrid[:columns, :rows].swapaxes(1,2))
         cgrid[2,:,:].fill(1)
@@ -53,9 +53,12 @@ class Grid(N.ndarray):
         # c = c.swapaxes(0,1)
         #
         # So the final axes are (1,2,0)
-        
-        self.view((SC.ftype, 3))[:] = cgrid.swapaxes(0,2).swapaxes(0,1)[:]
+   
+        self._grid.view((SC.ftype, 3))[:] = cgrid.swapaxes(0,2).swapaxes(0,1)[:]
+
+    def __getitem__(self, *args, **kwargs):
+        return self._grid.__getitem__(*args, **kwargs)
 
     @property
     def coords(self):
-        return self.view((SC.ftype, 3)).reshape(-1,3)
+        return self._grid.view((SC.ftype, 3)).reshape(-1,3)
