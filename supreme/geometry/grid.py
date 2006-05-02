@@ -50,4 +50,4 @@ class Grid(object):
 
     @property
     def coords(self):
-        return self._grid.view((SC.ftype, 3)).reshape(-1,3)
+        return self._grid.view((SC.ftype, 3))
