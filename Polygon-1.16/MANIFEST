@@ -1,0 +1,14 @@
+MANIFEST
+HISTORY
+Polygon-Doc.sxw
+Polygon-Doc.pdf
+gpc.c
+gpc.h
+cPolygon.c
+PolyUtil.c
+PolyUtil.h
+setup.py
+Polygon.py
+PolygonTest.py
+PolygonExamples.py
+testpoly.gpf

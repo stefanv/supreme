@@ -1,0 +1,36 @@
+Metadata-Version: 1.0
+Name: Polygon
+Version: 1.16
+Summary: Python bindings to the 'General Polygon Clipping Library' (gpc) and additional functions
+Home-page: http://www.dezentral.de/soft/Polygon
+Author: dezentral gbr Berlin
+Author-email: software@dezentral.de
+License: LGPL for Polygon, other for gpc
+Download-URL: http://download.dezentral.de/soft/Python/Polygon/
+Description: The Polygon package consists of two modules. One is an extension written in C
+        wrapping the gpc library (http://www.cs.man.ac.uk/aig/staff/alan/software/)
+        and its polygon clipping operations in an object oriented fashion. There are
+        lots of additional methods. The other is written in pure python and provides
+        some additional functions.
+        
+        The wrapping and extension code is free software, but the core gpc library is
+        free for non-commercial usage only. The author says:
+        "This library is provided free of charge for non-commercial users. Reaching
+        its current state took up almost two years of personal development effort.
+        If you have found this software to be useful for your purposes please make
+        a donation and help support the continuation of this project. Thanks!"
+        Please respect this statement and contact the author (see gpc homepage) if you
+        wish to use this software in commercial projects!
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: Freely Distributable
+Classifier: License :: Other/Proprietary License
+Classifier: Programming Language :: C
+Classifier: Programming Language :: Python
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: Topic :: Scientific/Engineering :: Visualization
+Classifier: Topic :: Multimedia :: Graphics

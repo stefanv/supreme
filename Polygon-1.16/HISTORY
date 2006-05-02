@@ -1,0 +1,36 @@
+19.04.06
+- version 1.16
+- small change to work with Python 2.2 again (thanks to Tim Wegener),
+  unittest will not work with 2.2
+
+12.08.05
+- version 1.15
+- fixed one bug introduced in 1.14
+
+11.08.05
+- version 1.14
+- fixed a memory leak when not using Numeric (hopefully)
+
+25.01.05
+- version 1.13
+- added dump/loadXML()
+- added dump/loadBinary()
+
+21.12.04
+- version 1.12
+- switched to gpc 2.32
+
+26.10.04
+- catched errors while opening files for reading or writing
+
+18.10.04
+- added some tests
+
+12.10.04
+- version 1.10
+- started the HISTORY file
+- improved SVG export a lot
+- added support for unittest
+- moved some tests from examples to PolygonTest.py
+- collected and improved other examples -> PolygonExamples.py
+- all examples now produce SVG instead of gnuplot files
