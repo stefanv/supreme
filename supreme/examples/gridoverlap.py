@@ -2,7 +2,7 @@
 # Calculate and display the overlap
 # Each block in the grid is a polygon
 
-from numarray import array, transpose, matrixmultiply
+from numpy import array, transpose, matrixmultiply
 from pylab import *
 from math import pi, cos, sin
 from Polygon import Polygon, pointList
