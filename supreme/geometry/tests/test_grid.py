@@ -18,5 +18,14 @@ class test_grid(NumpyTestCase):
         g = Grid(2,2)
         assert_array_almost_equal(g.coords, N.array([[[0,0,1], [1,0,1]], [[0,1,1], [1,1,1]]]))
 
+    def check_coords_readonly(self, level=2):
+        g = Grid(1,1)
+        try:
+            g.coords = []
+        except AttributeError:
+            pass
+        else:
+            fail("should not be able to set coords")
+
 if __name__ == "__main__":
     NumpyTest().run()
