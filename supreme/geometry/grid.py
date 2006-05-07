@@ -45,6 +45,12 @@ class Grid(object):
         # We can't just use _grid[:], since those are not of type SC.ftype
         self._grid.view((SC.ftype, 3))[:] = cgrid[:]
 
+        # Expose fields as names.  This could also be done directly on
+        # _grid by doing _grid.view(N.recarray)
+        self.x = self._grid['x']
+        self.y = self._grid['y']
+        self.z = self._grid['z']
+
     def __getitem__(self, *args, **kwargs):
         return self._grid.__getitem__(*args, **kwargs)
 

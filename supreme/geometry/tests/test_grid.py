@@ -27,5 +27,13 @@ class test_grid(NumpyTestCase):
         else:
             fail("should not be able to set coords")
 
+    def check_getitem(self, level=1):
+        g = Grid(1,1)
+        assert_array_almost_equal(g['x'], N.array([[0]]))
+
+    def check_fields(self, level=1):
+        g = Grid(1,1)
+        assert_equal(g['x'], g.x)
+
 if __name__ == "__main__":
     NumpyTest().run()
