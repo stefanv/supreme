@@ -2,6 +2,8 @@ __all__ = []
 
 import numpy as N
 import supreme.config as SC
+import scipy as S
+scipy.pkgload('interpolate')
 
 def build(g):
     """Build a coordinate-path from a generator.
@@ -12,11 +14,11 @@ def build(g):
         Initialised with start and end as parameters.
 
     """
-    path = [None]
+    path = N.array([-1,-1], SC.itype)
     for i,coord in enumerate(g):
-        coord = N.round_(coord)
+        coord = N.around(N.array(coord)).astype(SC.itype)
         if N.any(coord != path[-1]):
-            path.append(list(coord))
+            path = N.vstack((path,coord))
 
     # TODO: find neighbouring overlaps as well
     return path[1:]
@@ -35,3 +37,19 @@ def line(start,end):
     for t in N.linspace(0,1,N.ceil(d)+1):
         yield (1-t)*start + t*end
 
+def circle(centre,radius):
+    """Generate coordinates for a circle."""
+    if radius <= 0:
+        raise ValueError("Radius must be positive.")    
+
+    start = N.array(centre,dtype=SC.ftype)
+    radius = SC.ftype(radius)
+    d = N.ceil(2*N.pi*radius)
+    thetas = N.linspace(0,2*N.pi,d)
+
+    for t in thetas:
+        yield radius*N.array([N.cos(t), N.sin(t)]) + centre
+
+def spline(from,mid,to):
+    """Generate coordinates for a cubic spline."""
+    pass

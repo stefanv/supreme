@@ -3,7 +3,7 @@ from numpy.testing import *
 
 set_local_path('../../..')
 from supreme.geometry import coord_path
-from supreme.config import ftype
+from supreme.config import ftype,itype
 restore_path()
 
 class test_coord_path(NumpyTestCase):
@@ -24,7 +24,7 @@ class test_coord_path(NumpyTestCase):
     def check_ftype(self,level=1):
         line = coord_path.line
         l = coord_path.build(line((0,0),(0,3)))
-        assert_equal(N.dtype(type(l[0][0])),N.dtype(ftype))
+        assert_equal(N.dtype(type(l[0][0])),N.dtype(itype))
 
     def check_nodupes(self,level=1):
         line = coord_path.line
@@ -33,10 +33,23 @@ class test_coord_path(NumpyTestCase):
         for i,coord in enumerate(l[:-1]):
             assert(N.any(coord != l[i+1]))
 
-    def check_return_list(self,level=1):
+    def check_return_indexable(self,level=1):
         line = coord_path.line
         l = coord_path.build(line((0,0),(5,5)))
-        assert_equal(type(l), type(list()))
-            
+        assert_equal(len(l[1]),2)
+
+    def check_circle(self,level=2):
+        circ = coord_path.circle((0,0),-1)
+        self.failUnlessRaises(ValueError,circ.next)
+
+        circ = coord_path.circle((0,0),1)
+        coords = [c for c in circ]
+        assert_array_almost_equal(coords[0],[1.,0.])
+        assert_array_almost_equal(coords[-1],[1.,0.])
+        assert len(coords) > 6
+
+        circ = coord_path.circle((1,1),1)
+        assert not N.allclose(circ.next(),[1.,0.])
+    
 if __name__ == "__main__":
     NumpyTest().run()
