@@ -115,17 +115,17 @@ class Crv:
             raise NURBSError, 'NURBS curve parameter out of range [0,1]'
         return bspeval(self.degree, self.cntrl, self.uknots, ut)
                 
-    def plot(self, n = 25):
+    def plot(self, n=50):
         """A simple plotting function for debugging purpose
 	n = number of subdivisions.
-	Depends on the dislin plotting library."""
+	Depends on the matplotlib library."""
         try:
-            import dislin
+            import pylab as P
         except ImportError, value:
-            print 'dislin plotting library not available'
+            print 'Pylab (matplotlib) plotting library not available'
             return
 
-        pnts = self.pnt3D(numpy.arange(n + 1, typecode = numpy.Float)/n)
+        pnts = self.pnt3D(numpy.linspace(0.,1,n))
         knots = self.pnt3D(self.uknots)
 
         maxminx = numpy.sort(self.cntrl[0,:]/self.cntrl[3,:])
@@ -146,28 +146,18 @@ class Crv:
         if minz == maxz:
             minz -= 1.
             maxz += 1.
-            
-        dislin.metafl('cons')
-        dislin.disini()
-        dislin.hwfont()
-        dislin.pagera()
-        dislin.name('X-axis', 'X')
-        dislin.name('Y-axis', 'Y')
-        dislin.name('Z-axis', 'Z')
-        dislin.graf3d(minx, maxx, 0 , abs((maxx-minx)/4.),
-                      miny, maxy, 0 , abs((maxy-miny)/4.),
-                      minz, maxz, 0 , abs((maxz-minz)/4.))
-        dislin.color('yellow')
-        dislin.curv3d(pnts[0,:], pnts[1,:], pnts[2,:], n+1)
-        dislin.color('red')
-        dislin.dashm()
-        dislin.curv3d(self.cntrl[0,:]/self.cntrl[3,:], self.cntrl[1,:]/self.cntrl[3,:],
-                      self.cntrl[2,:]/self.cntrl[3,:], self.cntrl.shape[1])
-        dislin.color('white')
-        dislin.incmrk(-1)
-        dislin.marker(8)
-        dislin.curv3d(knots[0,:], knots[1,:], knots[2,:], knots.shape[1])
-        dislin.disfin()
+                          
+        P.figure()
+        P.plot(pnts[0,:], pnts[1,:])
+        P.plot(self.cntrl[0,:]/self.cntrl[3,:],
+               self.cntrl[1,:]/self.cntrl[3,:], 'r:o')
+        P.plot(knots[0,:], knots[1,:], 'go')
+        P.xlabel("X-axis")
+        P.xlabel("Y-axis")        
+        P.axis("equal")        
+        P.axes([minx,maxx,miny,maxy])
+        P.show()
+        P.close()
 
     def __call__(self, *args):
         return self.pnt3D(args[0])

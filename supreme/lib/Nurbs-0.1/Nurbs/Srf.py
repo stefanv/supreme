@@ -101,7 +101,7 @@ class Srf:
 
     def extractV(self, u):
         "Extract curve in v-direction at parameter u."
-        if numpy.less(u, 0.) or numpy.greater(u, 1.):
+        if numpy.any(u < 0.) or numpy.any(u > 1.):
                 raise NURBSError, 'Out of parameter range [0,1]'
         if u == 0.:
             cntrl = self.cntrl[:,0,:]
@@ -128,7 +128,7 @@ class Srf:
 
     def extractU(self, v):
         "Extract curve in u-direction at parameter v."
-        if numpy.less(v, 0.) or numpy.greater(v, 1.):
+        if numpy.any(v < 0.) or numpy.any(v > 1.):
                 raise NURBSError, 'Out of parameter range [0,1]'
         if v == 0.:
             cntrl = self.cntrl[:,:,0]
@@ -159,7 +159,7 @@ class Srf:
         if len(vknots):
             # Force the v knot sequence to be a vector in ascending order
             vknots = numpy.sort(numpy.asarray(vknots, numpy.Float))
-            if numpy.less(vknots, 0.) or numpy.greater(vknots, 1.):
+            if numpy.any(vknots < 0.) or numpy.any(vknots > 1.):
                 raise NURBSError, 'Illegal vknots sequence'
             coefs = numpy.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
             coefs, self.vknots = bspkntins(self.degree[1], coefs, self.vknots, vknots)
@@ -167,7 +167,7 @@ class Srf:
         if len(uknots):
             # Force the u knot sequence to be a vector in ascending order
             uknots = numpy.sort(numpy.asarray(uknots, numpy.Float))
-            if numpy.less(uknots, 0.) or numpy.greater(uknots, 1.):
+            if numpy.any(uknots < 0.) or numpy.any(uknots > 1.):
                 raise NURBSError, 'Illegal uknots sequence'
             coefs = numpy.transpose(self.cntrl,(0, 2, 1))
             coefs = numpy.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
@@ -243,13 +243,13 @@ class Srf:
 	ut(1,:) represents the v direction.
 	If both parameters are given then we will evaluate over a [u,v] grid."""
         ut = numpy.asarray(ut, numpy.Float)
-        if numpy.less(ut, 0.) or numpy.greater(ut, 1.):
+        if numpy.any(ut < 0.) or numpy.any(ut > 1.):
             raise NURBSError, 'NURBS curve parameter out of range [0,1]'
         
         if vt: #FIX!
             # Evaluate over a [u,v] grid
             vt = numpy.asarray(vt, numpy.Float)
-            if numpy.less(vt, 0.) or numpy.greater(vt, 1.):
+            if numpy.any(vt < 0.) or numpy.any(vt > 1.):
                 raise NURBSError, 'NURBS curve parameter out of range [0,1]'
     
             val = numpy.resize(self.cntrl,(4*self.cntrl.shape[1],self.cntrl.shape[2]))
