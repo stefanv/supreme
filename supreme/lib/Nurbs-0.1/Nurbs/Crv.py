@@ -153,7 +153,7 @@ class Crv:
                self.cntrl[1,:]/self.cntrl[3,:], 'r:o')
         P.plot(knots[0,:], knots[1,:], 'go')
         P.xlabel("X-axis")
-        P.xlabel("Y-axis")        
+        P.ylabel("Y-axis")        
         P.axis("scaled")
         P.show()
         P.close()
