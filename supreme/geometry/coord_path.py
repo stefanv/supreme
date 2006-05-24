@@ -53,16 +53,33 @@ def circle(centre,radius):
 def spline(pts):
     """Generate coordinates for a cubic spline.
 
-    The spline is guided by a polyline through the provided list of
-    points.
+    A 4-dimensional (3rd order) spline is guided by a polyline through
+    the provided list of points.  At least 3 points must be specified.
     """
 
     from Nurbs.Crv import Crv
+
+    if len(pts) < 3:
+        raise ValueError("At least 3 data points needed.")
 
     x = [c[0] for c in pts]
     y = [c[1] for c in pts]
     dx = N.diff(x)
     dy = N.diff(y)
-    d = N.ceil(N.sum(N.sqrt(dx**2 + dy**2)))
+
+    # Even though we will end up with d or less points, we have to sample
+    # more closely, in case the spline has a high gradient.  d is therefore
+    # multiplied by 2
+    d = 2*N.ceil(N.sum(N.sqrt(dx**2 + dy**2)))
+
+    cpts = N.vstack((x,y))
+    knots = N.linspace(0.,1.,len(cpts[0])-1)
+    knots = N.r_[0,0,knots,1,1]
+
+    c = Crv(cpts,knots)
+    points = c.pnt3D(N.linspace(0.,1,d))
+    for p in N.transpose(points):
+        x,y = p[:-1]
+        yield x,y
 
     

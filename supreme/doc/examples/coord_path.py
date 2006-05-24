@@ -33,5 +33,13 @@ add_line(img,centre,(height,width),[.9,.6,.6])
 add_line(img,centre,(height,0),[.4,.7,.8])
 add_path(img,cp.build(cp.circle(centre,50)),[0.9,0.9,0])
 
+add_path(img,cp.build(cp.spline(((0,0),(height,80),(140,200),(150,80)))),
+         [0.9,0.9,0.9])
+
+add_path(img,cp.build(cp.spline(((0,0),(height/2.,0),(height/2.,width),(height,width)))),
+         [0.6,0.7,0.9])
+
+
+
 P.imshow(img,interpolation='nearest')
 P.show()
