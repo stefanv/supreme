@@ -154,8 +154,7 @@ class Crv:
         P.plot(knots[0,:], knots[1,:], 'go')
         P.xlabel("X-axis")
         P.xlabel("Y-axis")        
-        P.axis("equal")        
-        P.axes([minx,maxx,miny,maxy])
+        P.axis("scaled")
         P.show()
         P.close()
 
