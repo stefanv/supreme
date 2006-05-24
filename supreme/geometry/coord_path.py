@@ -57,7 +57,7 @@ def spline(pts):
     points.
     """
 
-    import Nurbs
+    from Nurbs.Crv import Crv
 
     x = [c[0] for c in pts]
     y = [c[1] for c in pts]
