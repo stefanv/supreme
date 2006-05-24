@@ -38,7 +38,7 @@ class test_coord_path(NumpyTestCase):
         l = coord_path.build(line((0,0),(5,5)))
         assert_equal(len(l[1]),2)
 
-    def check_circle(self,level=2):
+    def check_circle(self,level=1):
         circ = coord_path.circle((0,0),-1)
         self.failUnlessRaises(ValueError,circ.next)
 
@@ -50,6 +50,9 @@ class test_coord_path(NumpyTestCase):
 
         circ = coord_path.circle((1,1),1)
         assert not N.allclose(circ.next(),[1.,0.])
+
+    def check_spline(self,level=1):
+        spl = coord_path.spline(((0,0),(3,5),(1,1)))
     
 if __name__ == "__main__":
     NumpyTest().run()

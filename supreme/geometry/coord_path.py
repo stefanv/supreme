@@ -3,7 +3,7 @@ __all__ = []
 import numpy as N
 import supreme.config as SC
 import scipy as S
-scipy.pkgload('interpolate')
+S.pkgload('interpolate')
 
 def build(g):
     """Build a coordinate-path from a generator.
@@ -50,6 +50,19 @@ def circle(centre,radius):
     for t in thetas:
         yield radius*N.array([N.cos(t), N.sin(t)]) + centre
 
-def spline(from,mid,to):
-    """Generate coordinates for a cubic spline."""
-    pass
+def spline(pts):
+    """Generate coordinates for a cubic spline.
+
+    The spline is guided by a polyline through the provided list of
+    points.
+    """
+
+    import Nurbs
+
+    x = [c[0] for c in pts]
+    y = [c[1] for c in pts]
+    dx = N.diff(x)
+    dy = N.diff(y)
+    d = N.ceil(N.sum(N.sqrt(dx**2 + dy**2)))
+
+    
