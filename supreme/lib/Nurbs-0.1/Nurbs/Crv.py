@@ -111,7 +111,7 @@ class Crv:
     def pnt4D(self, ut):
         "Evaluate parametric point[s] and return 4D homogeneous coordinates"
         ut = numpy.asarray(ut, numpy.Float)
-        if numpy.less(ut, 0.) or numpy.greater(ut, 1.):
+        if numpy.any(ut < 0.) or numpy.any(ut > 1.):
             raise NURBSError, 'NURBS curve parameter out of range [0,1]'
         return bspeval(self.degree, self.cntrl, self.uknots, ut)
                 
