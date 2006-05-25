@@ -8,7 +8,7 @@ setup(
     author_email='runten@netcom.no',
     url='http://runten.tripod.com/',
     packages=['Nurbs', 'Nurbs.demos'],
-    ext_modules = [Extension("Nurbs._Bas", ["Nurbs/_Bas.c"], libraries='m')],
+    ext_modules = [Extension("Nurbs._Bas", ["Nurbs/_Bas.c"])],
     data_files=[('Nurbs/Doc', ['LICENSE', 'README'])]
     )
 
