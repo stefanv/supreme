@@ -28,7 +28,7 @@ def line(start,end):
     """Generate coordinates for a line."""
     start = N.array(start, dtype=SC.ftype)
     end = N.array(end, dtype=SC.ftype)
-    d = N.absolute(start-end).max()
+    d = N.sqrt(N.sum((start-end)**2))
 
     if (N.all(start == end)):
         yield end
