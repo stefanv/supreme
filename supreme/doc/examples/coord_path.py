@@ -39,7 +39,6 @@ add_path(img,cp.build(cp.spline(((0,0),(height,80),(140,200),(150,80)))),
 add_path(img,cp.build(cp.spline(((0,0),(height/2.,0),(height/2.,width),(height,width)))),
          [0.6,0.7,0.9])
 
-
-
 P.imshow(img,interpolation='nearest')
+P.title('Trajectories of several coordinate paths')
 P.show()
