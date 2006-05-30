@@ -21,9 +21,7 @@ def add_line(img,c0,c1,col=[1.,0,0]):
     p = cp.build(cp.line(c0,c1))
     add_path(img,p,col)
 
-imread = S.misc.pilutil.imread
-
-img = imread(os.path.join(data_path, 'toystory/toystory000.png'))
+img = supreme.imread(os.path.join(data_path, 'toystory/toystory000.png'))
 shape = N.array(img.shape[:2])-1
 height,width = shape
 centre = shape/2.

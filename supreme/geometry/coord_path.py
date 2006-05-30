@@ -1,3 +1,18 @@
+# -*- coding: utf-8 -*-
+
+"""
+Build coordinate paths from common geometric shapes.
+
+A coordinate path is an ordered collection of coordinates,
+as calculated from some parametric function.  Provided functions
+include common geometric shapes, like lines, circles and Bézier
+curves.
+
+The path coordinates are discretised to the grid (always integer
+values), and contain no adjacent duplicates (however, duplicates may
+occur in the total path if the parametric curve crosses itself).
+"""
+
 __all__ = []
 
 import numpy as N
