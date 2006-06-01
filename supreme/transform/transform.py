@@ -15,18 +15,20 @@ def logpolar(image,angles=N.linspace(0,2*N.pi,360)[:-1]):
 
     oshape = ishape
     w = max(ishape[:2])
-    centre = ishape[:2]/2.    
+    centre = ishape[:2]/2.
     
     oshape[0] = len(angles)
     oshape[1] = w
     log_base = N.log(w/2)/w
+
+    from math import sin, cos, e
     
     def lp_coord(coord,log_base=log_base,angles=angles,centre=centre):
         theta,L,col = coord
         theta = angles[theta]
-        r = N.e**(L*log_base)
-        return (r*N.sin(theta) + centre[0],
-                r*N.cos(theta) + centre[1],col)
+        r = e**(L*log_base)
+        return (r*sin(theta) + centre[0],
+                r*cos(theta) + centre[1],col)
 
     return ndii.geometric_transform(image,lp_coord,output_shape=oshape,
                                     prefilter=False)

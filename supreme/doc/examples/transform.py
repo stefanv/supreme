@@ -12,7 +12,11 @@ restore_path()
 
 img1 = supreme.imread(os.path.join(supreme.config.data_path,
                                   'misc/nova.png'))
+import timeit
+tic = timeit.time.time()
 img2 = supreme.transform.logpolar(img1)
+toc = timeit.time.time()
+print toc-tic
 
 P.figure()
 P.subplot(121)
