@@ -4,9 +4,14 @@ from scipy.ndimage import interpolation as ndii
 __all__ = ['logpolar']
 
 import supreme
+import supreme.config as SC
 import numpy as N
 
-def logpolar(image,angles=N.linspace(0,2*N.pi,360)[:-1]):
+def stackcopy(a,b):
+    """a[:,:,0] = a[:,:,1] = ... = b"""
+    a.transpose().swapaxes(1,2)[:] = b
+
+def logpolar(image,angles=359):
     """Perform log polar transform on image."""
 
     ishape = N.array(image.shape)
@@ -17,18 +22,37 @@ def logpolar(image,angles=N.linspace(0,2*N.pi,360)[:-1]):
     w = max(ishape[:2])
     centre = ishape[:2]/2.
     
-    oshape[0] = len(angles)
+    oshape[0] = angles
     oshape[1] = w
     log_base = N.log(w/2)/w
 
     from math import sin, cos, e
-    
-    def lp_coord(coord,log_base=log_base,angles=angles,centre=centre):
-        theta,L,col = coord
-        theta = angles[theta]
-        r = e**(L*log_base)
-        return (r*sin(theta) + centre[0],
-                r*cos(theta) + centre[1],col)
+    coords = N.empty(N.r_[3,angles,w,3],dtype=SC.ftype)
+    theta = N.empty((angles,w),dtype=SC.ftype)
+    theta.transpose()[:] = N.linspace(0,360,angles+1)[:-1] 
+    L = N.empty((angles,w),dtype=SC.ftype)
+    L[:] = N.arange(w).astype(SC.ftype)
 
-    return ndii.geometric_transform(image,lp_coord,output_shape=oshape,
-                                    prefilter=False)
+#    print g.coords[...,0].shape
+#    coords[0,...,0] = g.coords[...,0]
+#    coords[0,...,1] = g.coords[...,0]
+#    coords[0,...,2] = g.coords[...,0]
+
+    r = e**(L*log_base)
+
+    # x-coordinate mapping
+    stackcopy(coords[0,...], theta)
+
+    # y-coordinate mapping
+    stackcopy(coords[1,...], L)    
+
+    # colour-coordinate mapping
+    coords[2,...] = [0,1,2]
+    
+#        theta = angles[theta]
+#        r = e**(L*log_base)
+#        return (r*sin(theta) + centre[0],
+#                r*cos(theta) + centre[1],col)
+
+    # Prefilter not necessary for order 1 interpolation
+    return ndii.map_coordinates(image,coords,order=1,prefilter=False)
