@@ -11,7 +11,7 @@ def stackcopy(a,b):
     """a[:,:,0] = a[:,:,1] = ... = b"""
     a.transpose().swapaxes(1,2)[:] = b
 
-def logpolar(image,angles=359):
+def logpolar(image,angles=359,order=1):
     """Perform log polar transform on image."""
 
     ishape = N.array(image.shape)
@@ -29,7 +29,7 @@ def logpolar(image,angles=359):
     from math import sin, cos, e
     coords = N.empty(N.r_[3,angles,w,3],dtype=SC.ftype)
     theta = N.empty((angles,w),dtype=SC.ftype)
-    theta.transpose()[:] = N.linspace(0,360,angles+1)[:-1] 
+    theta.transpose()[:] = N.linspace(0,2*N.pi,angles+1)[:-1] 
     L = N.empty((angles,w),dtype=SC.ftype)
     L[:] = N.arange(w).astype(SC.ftype)
 
@@ -38,14 +38,15 @@ def logpolar(image,angles=359):
 #    coords[0,...,1] = g.coords[...,0]
 #    coords[0,...,2] = g.coords[...,0]
 
-    r = e**(L*log_base)
+    r = N.exp(L*log_base)
+    print r*N.sin(theta)
 
     # x-coordinate mapping
-    stackcopy(coords[0,...], theta)
+    stackcopy(coords[0,...], r*N.sin(theta) + centre[0])
 
     # y-coordinate mapping
-    stackcopy(coords[1,...], L)    
-
+    stackcopy(coords[1,...], r*N.cos(theta) + centre[1])
+    
     # colour-coordinate mapping
     coords[2,...] = [0,1,2]
     
@@ -55,4 +56,5 @@ def logpolar(image,angles=359):
 #                r*cos(theta) + centre[1],col)
 
     # Prefilter not necessary for order 1 interpolation
-    return ndii.map_coordinates(image,coords,order=1,prefilter=False)
+    prefilter = order > 1
+    return ndii.map_coordinates(image,coords,order=order,prefilter=prefilter)
