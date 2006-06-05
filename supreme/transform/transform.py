@@ -9,14 +9,28 @@ import numpy as N
 
 def stackcopy(a,b):
     """a[:,:,0] = a[:,:,1] = ... = b"""
-    a.transpose().swapaxes(1,2)[:] = b
+    if a.ndim == 3:
+        a.transpose().swapaxes(1,2)[:] = b
+    else:
+        a.transpose()[:] = b
 
 def logpolar(image,angles=359,order=1):
-    """Perform log polar transform on image."""
+    """Perform the log polar transform on an image.
+
+    angles - Number of angles at which to evaluate.
+    order - Order of splines used in interpolation.
+    """
+
+    image = N.atleast_3d(image)
+
+    if image.ndim < 2:
+        raise ValueError("Input must have more than 1 dimension.")
 
     ishape = N.array(image.shape)
-    if len(ishape) < 2:
-        raise ValueError("Input must have more than 1 dimension.")
+    if image.ndim > 2:
+        bands = ishape[2]
+    else:
+        bands = 1
 
     oshape = ishape
     w = max(ishape[:2])
@@ -27,19 +41,17 @@ def logpolar(image,angles=359,order=1):
     log_base = N.log(w/2)/w
 
     from math import sin, cos, e
-    coords = N.empty(N.r_[3,angles,w,3],dtype=SC.ftype)
+    coords = N.empty(N.r_[3,oshape],dtype=SC.ftype)
+
     theta = N.empty((angles,w),dtype=SC.ftype)
-    theta.transpose()[:] = N.linspace(0,2*N.pi,angles+1)[:-1] 
+    # Use broadcasting to replicate angles
+    theta.transpose()[:] = N.linspace(0,2*N.pi,angles+1)[:-1]
+    
     L = N.empty((angles,w),dtype=SC.ftype)
+    # Use broadcasting to replicate distances
     L[:] = N.arange(w).astype(SC.ftype)
 
-#    print g.coords[...,0].shape
-#    coords[0,...,0] = g.coords[...,0]
-#    coords[0,...,1] = g.coords[...,0]
-#    coords[0,...,2] = g.coords[...,0]
-
     r = N.exp(L*log_base)
-    print r*N.sin(theta)
 
     # x-coordinate mapping
     stackcopy(coords[0,...], r*N.sin(theta) + centre[0])
@@ -48,13 +60,17 @@ def logpolar(image,angles=359,order=1):
     stackcopy(coords[1,...], r*N.cos(theta) + centre[1])
     
     # colour-coordinate mapping
-    coords[2,...] = [0,1,2]
+    coords[2,...] = range(bands)
     
-#        theta = angles[theta]
-#        r = e**(L*log_base)
-#        return (r*sin(theta) + centre[0],
-#                r*cos(theta) + centre[1],col)
-
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
-    return ndii.map_coordinates(image,coords,order=order,prefilter=prefilter)
+    mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter)
+
+    # Handle grey-scale images
+    if mapped.shape[2] == 1:
+        oshape[2] = 3
+        colour_mapped = N.empty((oshape),dtype=SC.ftype)
+        stackcopy(colour_mapped, mapped)
+        mapped = colour_mapped
+
+    return mapped
