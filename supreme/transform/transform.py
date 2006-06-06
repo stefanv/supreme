@@ -66,11 +66,4 @@ def logpolar(image,angles=359,order=1):
     prefilter = order > 1
     mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter)
 
-    # Handle grey-scale images
-    if mapped.shape[2] == 1:
-        oshape[2] = 3
-        colour_mapped = N.empty((oshape),dtype=SC.ftype)
-        stackcopy(colour_mapped, mapped)
-        mapped = colour_mapped
-
-    return mapped
+    return mapped.squeeze()
