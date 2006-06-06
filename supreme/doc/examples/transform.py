@@ -11,11 +11,13 @@ import supreme
 restore_path()
 
 img1 = supreme.imread(os.path.join(supreme.config.data_path,
-                                   'misc/nova.png'))
+                                   'misc/nova_alpha.png'))
+print "Input image shape: ", img1.shape
                                    
 import timeit
 tic = timeit.time.time()
 img2 = supreme.transform.logpolar(img1)
+print "Output image shape: ", img2.shape
 toc = timeit.time.time()
 print "Transform completed in %.2f seconds." % (toc-tic)
 
