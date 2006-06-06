@@ -45,7 +45,7 @@ def logpolar(image,angles=359,order=1):
 
     theta = N.empty((angles,w),dtype=SC.ftype)
     # Use broadcasting to replicate angles
-    theta.transpose()[:] = N.linspace(0,2*N.pi,angles+1)[:-1]
+    theta.transpose()[:] = -N.linspace(0,2*N.pi,angles+1)[:-1]
     
     L = N.empty((angles,w),dtype=SC.ftype)
     # Use broadcasting to replicate distances
