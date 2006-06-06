@@ -21,11 +21,10 @@ def logpolar(image,angles=359,order=1):
     order - Order of splines used in interpolation.
     """
 
-    image = N.atleast_3d(image)
-
     if image.ndim < 2:
         raise ValueError("Input must have more than 1 dimension.")
 
+    image = N.atleast_3d(image)
     ishape = N.array(image.shape)
     if image.ndim > 2:
         bands = ishape[2]
