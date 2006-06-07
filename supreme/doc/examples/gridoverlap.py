@@ -2,7 +2,7 @@
 # Calculate and display the overlap
 # Each block in the grid is a polygon
 
-from numpy import array, transpose, matrixmultiply
+from numpy import array, transpose, dot
 from pylab import *
 from math import pi, cos, sin
 from Polygon import Polygon, pointList
@@ -35,7 +35,7 @@ for poly in grid1:
     new_coords = []
     for point in poly[0]:
         coord = array([ [point[0]], [point[1]], [1] ], 'd')
-        coord = matrixmultiply(tf, coord).transpose()
+        coord = dot(tf, coord).transpose()
         new_coords.append(coord[0, 0:2])
 
     grid2.append(Polygon(new_coords))
