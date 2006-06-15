@@ -34,10 +34,11 @@ for im in images:
 	
     P.figure()
     P.subplot(121)
-    P.title(im_descr[im])    
+    P.title(im_descr[im])
     P.imshow(img1,cmap=P.cm.gray)
     P.subplot(122)
-    P.imshow(img2,origin='upper',cmap=P.cm.gray)
+    angles,d = img2.shape[:2]
+    P.imshow(img2,origin='upper',extent=(1,d,angles,1),cmap=P.cm.gray)
     P.title('Log polar transform')
     P.xlabel('Log distance')
     P.ylabel(r'Angle')
