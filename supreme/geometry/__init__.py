@@ -1,4 +1,5 @@
 # Geometry initialisation
 
 from grid import *
-from coord_path import *
+import coord_path
+import cut

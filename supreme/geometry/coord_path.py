@@ -13,7 +13,7 @@ values), and contain no adjacent duplicates (however, duplicates may
 occur in the total path if the parametric curve crosses itself).
 """
 
-__all__ = []
+__all__ = ['build','line','circle','spline']
 
 import numpy as N
 import supreme.config as SC
