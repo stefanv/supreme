@@ -1,0 +1,64 @@
+.. -*- mode: rst -*-
+
+From: http://images.jsc.nasa.gov/luceneweb/guidelines.jsp
+
+Guidelines for Use of NASA Imagery
+==================================
+
+As a government entity, NASA does not "license" the use of NASA
+materials or sign license agreements. The Agency generally has no
+objection to the reproduction and use of these materials (audio
+transmissions and recordings; video transmissions and recording; or
+still and motion picture photography), subject to the following
+conditions:
+
+* NASA material may not be used to state or imply the endorsement by
+  NASA or by any NASA employee of a commercial product, service, or
+  activity, or used in any manner that might mislead.
+
+* NASA should be acknowledged as the source of the material.
+
+* It is unlawful to falsely claim copyright or other rights in NASA
+  material.
+
+* NASA shall in no way be liable for any costs, expenses, claims, or
+  demands arising out of the use of NASA material by a recipient or a
+  recipient's distributees.
+
+* NASA does not indemnify nor hold harmless users of NASA material,
+  nor release such users from copyright infringement, nor grant
+  exclusive use rights with respect to NASA material.
+
+* NASA material is not protected by copyright unless noted. If
+  copyrighted, permission should be obtained from the copyright owner
+  prior to use. If not copyrighted, NASA material may be reproduced
+  and distributed without further permission from NASA.
+
+* If a recognizable person, or talent (e.g., an astronaut or a noted
+  personality engaged to narrate a film) appears in NASA material, use
+  for commercial purposes may infringe a right of privacy or
+  publicity. Therefore, permission should be obtained from the
+  recognizable person or talent. If the proposed use of the NASA
+  material could be viewed as a commercial exploitation of that
+  person. However, if the intended use of NASA material is primarily
+  for communicative purposes, i.e., books, newspapers, and magazines
+  reporting facts of historical significance (constitutionally
+  protected media uses), then such uses will generally be considered
+  not to infringe such personal rights.
+
+* Some NASA audiovisual material may incorporate music or footage,
+  which is copyrighted and licensed for the particular NASA work. Any
+  editing or otherwise altering of the work may not be covered under
+  the original license, and therefore would require permission of the
+  copyright owner.
+
+* NASA audiovisual material may include visible NASA identifiers
+  (e.g., the name of the vehicle and the NASA Insignia or Logotype in
+  photographs or film footage of Space Shuttle vehicles). Use of such
+  materials is generally non-objectionable, provided the NASA
+  identifiers appear in their factual context.
+
+Additional important information regarding NASA's policies on Web
+resources is available at:
+
+http://www.jsc.nasa.gov/policies.html
