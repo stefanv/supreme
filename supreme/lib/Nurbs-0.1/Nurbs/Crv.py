@@ -7,7 +7,7 @@ dependencies = '''This module requires:
 '''
 
 try:
-    import numpy
+    import numpy.oldnumeric as numerix
 except ImportError, value:
 	print dependencies
 	raise
@@ -41,20 +41,20 @@ class Crv:
         self._bezier = None
         # Force the u knot sequence to be a vector in ascending order
         # and normalise between [0.0,1.0]
-        uknots = numpy.sort(numpy.asarray(uknots, numpy.Float))
+        uknots = numerix.sort(numerix.asarray(uknots, numerix.Float))
         nku = uknots.shape[0]
         uknots = (uknots - uknots[0])/(uknots[-1] - uknots[0])
         if uknots[0] == uknots[-1]:
             raise NURBSError, 'Illegal uknots sequence'
         self.uknots = uknots
-        cntrl = numpy.asarray(cntrl, numpy.Float)
+        cntrl = numerix.asarray(cntrl, numerix.Float)
         (dim, nu) = cntrl.shape
         if dim < 2 or dim > 4:
             raise NURBSError, 'Illegal control point format'
         elif dim < 4:
-            self.cntrl = numpy.zeros((4, nu), numpy.Float)
+            self.cntrl = numerix.zeros((4, nu), numerix.Float)
             self.cntrl[0:dim,:] = cntrl
-            self.cntrl[-1,:] = numpy.ones((nu,))
+            self.cntrl[-1,:] = numerix.ones((nu,))
         else:
             self.cntrl = cntrl
         # Spline degree
@@ -64,7 +64,7 @@ class Crv:
 
     def trans(self, mat):
         "Apply the 4D transform matrix to the NURB control points."
-        self.cntrl = numpy.dot(mat, self.cntrl)
+        self.cntrl = numerix.dot(mat, self.cntrl)
 
     def reverse(self):
         "Reverse evaluation direction"
@@ -75,8 +75,8 @@ class Crv:
         """Insert new knots into the curve
 	NOTE: No knot multiplicity will be increased beyond the order of the spline"""
         if len(uknots):
-            uknots = numpy.sort(numpy.asarray(uknots, numpy.Float))
-            if numpy.any(uknots < 0.) or numpy.any(uknots > 1.):
+            uknots = numerix.sort(numerix.asarray(uknots, numerix.Float))
+            if numerix.any(uknots < 0.) or numerix.any(uknots > 1.):
                 raise NURBSError, 'NURBS curve parameter out of range [0,1]'
             self.cntrl, self.uknots = bspkntins(self.degree, self.cntrl, self.uknots, uknots)
 
@@ -98,20 +98,20 @@ class Crv:
 
     def bounds(self):
         "Return the boundingbox for the curve"
-        ww = numpy.resize(self.cntrl[-1,:], (3, self.cntrl.shape[1]))
-        cntrl = numpy.sort(self.cntrl[0:3,:]/ww)
-        return numpy.asarray([cntrl[0,0], cntrl[1,0], cntrl[2,0],
-                                cntrl[0,-1], cntrl[1,-1], cntrl[2,-1]], numpy.Float)
+        ww = numerix.resize(self.cntrl[-1,:], (3, self.cntrl.shape[1]))
+        cntrl = numerix.sort(self.cntrl[0:3,:]/ww)
+        return numerix.asarray([cntrl[0,0], cntrl[1,0], cntrl[2,0],
+                                cntrl[0,-1], cntrl[1,-1], cntrl[2,-1]], numerix.Float)
                                 
     def pnt3D(self, ut):
         "Evaluate parametric point[s] and return 3D cartesian coordinate[s]"
         val = self.pnt4D(ut)
-        return val[0:3,:]/numpy.resize(val[-1,:], (3, val.shape[1]))
+        return val[0:3,:]/numerix.resize(val[-1,:], (3, val.shape[1]))
 
     def pnt4D(self, ut):
         "Evaluate parametric point[s] and return 4D homogeneous coordinates"
-        ut = numpy.asarray(ut, numpy.Float)
-        if numpy.any(ut < 0.) or numpy.any(ut > 1.):
+        ut = numerix.asarray(ut, numerix.Float)
+        if numerix.any(ut < 0.) or numerix.any(ut > 1.):
             raise NURBSError, 'NURBS curve parameter out of range [0,1]'
         return bspeval(self.degree, self.cntrl, self.uknots, ut)
                 
@@ -125,22 +125,22 @@ class Crv:
             print 'Pylab (matplotlib) plotting library not available'
             return
 
-        pnts = self.pnt3D(numpy.linspace(0.,1,n))
+        pnts = self.pnt3D(numerix.linspace(0.,1,n))
         knots = self.pnt3D(self.uknots)
 
-        maxminx = numpy.sort(self.cntrl[0,:]/self.cntrl[3,:])
+        maxminx = numerix.sort(self.cntrl[0,:]/self.cntrl[3,:])
         minx = maxminx[0]
         maxx = maxminx[-1]
         if minx == maxx:
             minx -= 1.
             maxx += 1.
-        maxminy = numpy.sort(self.cntrl[1,:]/self.cntrl[3,:])
+        maxminy = numerix.sort(self.cntrl[1,:]/self.cntrl[3,:])
         miny = maxminy[0]
         maxy = maxminy[-1]
         if miny == maxy:
             miny -= 1.
             maxy += 1.
-        maxminz = numpy.sort(self.cntrl[2,:]/self.cntrl[3,:])
+        maxminz = numerix.sort(self.cntrl[2,:]/self.cntrl[3,:])
         minz = maxminz[0]
         maxz = maxminz[-1]
         if minz == maxz:
@@ -168,30 +168,30 @@ class Line(Crv):
     """A straight line segment
 	Example: c = Line([0,0],[1,1])"""
     def __init__(self, p1 = (0,0,0), p2 = (1,0,0)):
-        Crv.__init__(self, numpy.transpose([p1,p2]), [0,0,1,1])
+        Crv.__init__(self, numerix.transpose([p1,p2]), [0,0,1,1])
                        
 class Polyline(Crv):
     """A polyline
 	Example: c = Polyline([[0,0],[5,2],[10,8]])"""
     def __init__(self, pnts):
-        pnts = numpy.transpose(numpy.asarray(pnts, numpy.Float))
+        pnts = numerix.transpose(numerix.asarray(pnts, numerix.Float))
         npnts = pnts.shape[1]
         if npnts < 3:
             raise NURBSError, 'Point sequence error'
-        cntrl = numpy.zeros((pnts.shape[0], 2 * npnts - 2), numpy.Float)
+        cntrl = numerix.zeros((pnts.shape[0], 2 * npnts - 2), numerix.Float)
         cntrl[:,0] = pnts[:,0]
         cntrl[:,-1] = pnts[:,-1]
         cntrl[:,1:-2:2] = pnts[:,1:-1]
         cntrl[:,2:-1:2] = pnts[:,1:-1]
-        uknots = numpy.zeros(npnts * 2, numpy.Float)
-        uknots[0::2] = numpy.arange(npnts)
-        uknots[1::2] = numpy.arange(npnts)
+        uknots = numerix.zeros(npnts * 2, numerix.Float)
+        uknots[0::2] = numerix.arange(npnts)
+        uknots[1::2] = numerix.arange(npnts)
         Crv.__init__(self, cntrl, uknots)
 
 class UnitCircle(Crv):
     "NURBS representation of a unit circle in the xy plan"
     def __init__(self):
-        r22 = numpy.sqrt(2.)/2.
+        r22 = numerix.sqrt(2.)/2.
         uknots = [0., 0., 0., 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 1., 1.,1.]
         cntrl = [[0., r22, 1., r22, 0., -r22, -1., -r22, 0.],
                  [-1., -r22, 0., r22, 1., r22, 0., -r22, -1.],
@@ -239,17 +239,17 @@ class Arc(Crv):
         xm = x+y*math.tan(dsweep)
 
         # arc segment control points
-        ctrlpt = numpy.array([[x, wm*xm, x], [-y, 0., y], [0., 0., 0.], [1., wm, 1.]], numpy.Float)
+        ctrlpt = numerix.array([[x, wm*xm, x], [-y, 0., y], [0., 0., 0.], [1., wm, 1.]], numerix.Float)
         # build up complete arc from rotated segments
-        coefs = numpy.zeros((4, 2*narcs+1), numpy.Float)   # nurb control points of arc
+        coefs = numerix.zeros((4, 2*narcs+1), numerix.Float)   # nurb control points of arc
         # rotate to start angle
-        coefs[:,0:3] = numpy.dot(rotz(sang + dsweep), ctrlpt)
+        coefs[:,0:3] = numerix.dot(rotz(sang + dsweep), ctrlpt)
         xx = rotz(2*dsweep)
         for ms in range(2, 2*narcs,2):
-            coefs[:,ms:ms+3] = numpy.dot(xx, coefs[:,ms-2:ms+1])
+            coefs[:,ms:ms+3] = numerix.dot(xx, coefs[:,ms-2:ms+1])
         if center:
             xx = translate(center)
-            coefs = numpy.dot(xx, coefs)
+            coefs = numerix.dot(xx, coefs)
         Crv.__init__(self, coefs, knots)
 
 if __name__ == '__main__':

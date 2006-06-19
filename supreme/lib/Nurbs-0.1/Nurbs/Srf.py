@@ -8,7 +8,7 @@ dependencies = '''This module requires:
 '''
 
 try:
-    import numpy
+    import numpy.oldnumeric as numerix
 except ImportError, value:
 	print dependencies
 	raise
@@ -43,20 +43,20 @@ class Srf:
 
     def __init__(self, cntrl, uknots, vknots):
         self._bezier = None
-        cntrl = numpy.asarray(cntrl, numpy.Float)
+        cntrl = numerix.asarray(cntrl, numerix.Float)
         (dim, nu, nv) = cntrl.shape
         if dim < 2 or dim > 4:
             raise NURBSError, 'Illegal control point format'
         elif dim < 4:
-            self.cntrl = numpy.zeros((4, nu, nv), numpy.Float)
+            self.cntrl = numerix.zeros((4, nu, nv), numerix.Float)
             self.cntrl[0:dim,:,:] = cntrl
-            self.cntrl[-1,:,:] = numpy.ones((nu,nv), numpy.Float)
+            self.cntrl[-1,:,:] = numerix.ones((nu,nv), numerix.Float)
         else:
             self.cntrl = cntrl
             
         # Force the u knot sequence to be a vector in ascending order
         # and normalise between [0.0,1.0]
-        uknots = numpy.sort(numpy.asarray(uknots, numpy.Float))
+        uknots = numerix.sort(numerix.asarray(uknots, numerix.Float))
         nku = uknots.shape[0]
         uknots = (uknots - uknots[0])/(uknots[-1] - uknots[0])
         if uknots[0] == uknots[-1]:
@@ -65,7 +65,7 @@ class Srf:
         
         # Force the v knot sequence to be a vector in ascending order
         # and normalise between [0.0,1.0]  
-        vknots = -numpy.sort(-numpy.asarray(vknots, numpy.Float))
+        vknots = -numerix.sort(-numerix.asarray(vknots, numerix.Float))
         nkv = vknots.shape[0]
         vknots = (vknots - vknots[0])/(vknots[-1] - vknots[0])
         if vknots[0] == vknots[-1]:
@@ -80,11 +80,11 @@ class Srf:
     def trans(self, mat):
         "Apply the 4D transform matrix to the NURB control points."
         for v in range(self.cntrl.shape[2]):
-            self.cntrl[:,:,v] = numpy.dot(mat, self.cntrl[:,:,v])
+            self.cntrl[:,:,v] = numerix.dot(mat, self.cntrl[:,:,v])
         
     def swapuv(self):
         "Swap u and v parameters."
-        self.cntrl = numpy.transpose(self.cntrl,(0,2,1))
+        self.cntrl = numerix.transpose(self.cntrl,(0,2,1))
         temp = self.uknots[:]
         self.uknots = self.vknots[:]
         self.vknots = temp
@@ -101,7 +101,7 @@ class Srf:
 
     def extractV(self, u):
         "Extract curve in v-direction at parameter u."
-        if numpy.any(u < 0.) or numpy.any(u > 1.):
+        if numerix.any(u < 0.) or numerix.any(u > 1.):
                 raise NURBSError, 'Out of parameter range [0,1]'
         if u == 0.:
             cntrl = self.cntrl[:,0,:]
@@ -110,12 +110,12 @@ class Srf:
             cntrl = self.cntrl[:,-1,:]
             knots = self.vknots[:]
         else:
-            uknots = numpy.repeat(numpy.asarray([u], numpy.Float),[self.degree[1]*(self.cntrl.shape[2] + 1)])
-            coefs = numpy.transpose(self.cntrl,(0, 2, 1))
-            coefs = numpy.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
+            uknots = numerix.repeat(numerix.asarray([u], numerix.Float),[self.degree[1]*(self.cntrl.shape[2] + 1)])
+            coefs = numerix.transpose(self.cntrl,(0, 2, 1))
+            coefs = numerix.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
             coefs, knots = bspkntins(self.degree[0], coefs, self.uknots, uknots)
-            coefs = numpy.resize(coefs, (4, self.cntrl.shape[2], coefs.shape[1]))
-            cntrl = numpy.transpose(coefs,(0,2,1))
+            coefs = numerix.resize(coefs, (4, self.cntrl.shape[2], coefs.shape[1]))
+            cntrl = numerix.transpose(coefs,(0,2,1))
             i = 0
             j = knots[0]
             for k in knots[1:]:
@@ -128,7 +128,7 @@ class Srf:
 
     def extractU(self, v):
         "Extract curve in u-direction at parameter v."
-        if numpy.any(v < 0.) or numpy.any(v > 1.):
+        if numerix.any(v < 0.) or numerix.any(v > 1.):
                 raise NURBSError, 'Out of parameter range [0,1]'
         if v == 0.:
             cntrl = self.cntrl[:,:,0]
@@ -137,10 +137,10 @@ class Srf:
             cntrl = self.cntrl[:,:,-1]
             knots = self.uknots[:]
         else:
-            vknots = numpy.repeat(numpy.asarray([v], numpy.Float),[self.degree[0]*(self.cntrl.shape[1] + 1)])
-            coefs = numpy.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
+            vknots = numerix.repeat(numerix.asarray([v], numerix.Float),[self.degree[0]*(self.cntrl.shape[1] + 1)])
+            coefs = numerix.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
             coefs, knots = bspkntins(self.degree[1], coefs, self.vknots, vknots)
-            cntrl = numpy.resize(coefs, (4, self.cntrl.shape[1], coefs.shape[1]))
+            cntrl = numerix.resize(coefs, (4, self.cntrl.shape[1], coefs.shape[1]))
             i = 0
             j = knots[0]
             for k in knots[1:]:
@@ -158,22 +158,22 @@ class Srf:
 	NOTE: No knot multiplicity will be increased beyond the order of the spline"""
         if len(vknots):
             # Force the v knot sequence to be a vector in ascending order
-            vknots = numpy.sort(numpy.asarray(vknots, numpy.Float))
-            if numpy.any(vknots < 0.) or numpy.any(vknots > 1.):
+            vknots = numerix.sort(numerix.asarray(vknots, numerix.Float))
+            if numerix.any(vknots < 0.) or numerix.any(vknots > 1.):
                 raise NURBSError, 'Illegal vknots sequence'
-            coefs = numpy.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
+            coefs = numerix.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
             coefs, self.vknots = bspkntins(self.degree[1], coefs, self.vknots, vknots)
-            self.cntrl = numpy.resize(coefs, (4, self.cntrl.shape[1], coefs.shape[1]))
+            self.cntrl = numerix.resize(coefs, (4, self.cntrl.shape[1], coefs.shape[1]))
         if len(uknots):
             # Force the u knot sequence to be a vector in ascending order
-            uknots = numpy.sort(numpy.asarray(uknots, numpy.Float))
-            if numpy.any(uknots < 0.) or numpy.any(uknots > 1.):
+            uknots = numerix.sort(numerix.asarray(uknots, numerix.Float))
+            if numerix.any(uknots < 0.) or numerix.any(uknots > 1.):
                 raise NURBSError, 'Illegal uknots sequence'
-            coefs = numpy.transpose(self.cntrl,(0, 2, 1))
-            coefs = numpy.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
+            coefs = numerix.transpose(self.cntrl,(0, 2, 1))
+            coefs = numerix.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
             coefs, self.uknots = bspkntins(self.degree[0], coefs, self.uknots, uknots)
-            coefs = numpy.resize(coefs, (4, self.cntrl.shape[2], coefs.shape[1]))
-            self.cntrl = numpy.transpose(coefs,(0,2,1))
+            coefs = numerix.resize(coefs, (4, self.cntrl.shape[2], coefs.shape[1]))
+            self.cntrl = numerix.transpose(coefs,(0,2,1))
             
     def degelev(self, utimes, vtimes = None):
         """Degree elevate the surface.
@@ -182,47 +182,47 @@ class Srf:
         if vtimes:
             if vtimes < 0:
                 raise NURBSError, 'Degree must be positive'
-            coefs = numpy.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
+            coefs = numerix.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
             coefs, vknots, nh = bspdegelev(self.degree[1], coefs, self.vknots, vtimes)
             coefs = coefs[:,:nh + 1]
             self.vknots = vknots[:nh + self.degree[1] + vtimes + 2]
             self.degree[1] += vtimes
-            self.cntrl = numpy.resize(coefs, (4, self.cntrl.shape[1], coefs.shape[1]))
+            self.cntrl = numerix.resize(coefs, (4, self.cntrl.shape[1], coefs.shape[1]))
         if utimes:
             if utimes < 0:
                 raise NURBSError, 'Degree must be positive'
-            coefs = numpy.transpose(self.cntrl,(0, 2, 1))
-            coefs = numpy.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
+            coefs = numerix.transpose(self.cntrl,(0, 2, 1))
+            coefs = numerix.resize(coefs,(4*self.cntrl.shape[2], self.cntrl.shape[1]))
             coefs, uknots, nh = bspdegelev(self.degree[0], coefs, self.uknots, utimes)
             coefs = coefs[:,:nh + 1]
             self.uknots = uknots[:nh + self.degree[0] + utimes + 2]
             self.degree[0] += utimes
-            coefs = numpy.resize(coefs, (4, self.cntrl.shape[2], coefs.shape[1]))
-            self.cntrl = numpy.transpose(coefs,(0,2,1))
+            coefs = numerix.resize(coefs, (4, self.cntrl.shape[2], coefs.shape[1]))
+            self.cntrl = numerix.transpose(coefs,(0,2,1))
 
     def bezier(self, update = None):
         "Decompose surface to bezier patches and return overlaping control points."
         if update or not self._bezier:
-            cntrl = numpy.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
+            cntrl = numerix.resize(self.cntrl,(4*self.cntrl.shape[1], self.cntrl.shape[2]))
             cntrl = bspbezdecom(self.degree[1], cntrl, self.vknots)
-            cntrl = numpy.resize(cntrl, (4, self.cntrl.shape[1], cntrl.shape[1]))
+            cntrl = numerix.resize(cntrl, (4, self.cntrl.shape[1], cntrl.shape[1]))
             temp1 = cntrl.shape[1]
             temp2 = cntrl.shape[2]
-            cntrl = numpy.transpose(cntrl,(0, 2, 1))
-            cntrl = numpy.resize(cntrl,(4*temp2, temp1))
+            cntrl = numerix.transpose(cntrl,(0, 2, 1))
+            cntrl = numerix.resize(cntrl,(4*temp2, temp1))
             cntrl = bspbezdecom(self.degree[0], cntrl, self.uknots)
-            cntrl = numpy.resize(cntrl, (4, temp2, cntrl.shape[1]))
-            self._bezier = numpy.transpose(cntrl,(0, 2, 1))
+            cntrl = numerix.resize(cntrl, (4, temp2, cntrl.shape[1]))
+            self._bezier = numerix.transpose(cntrl,(0, 2, 1))
         return self._bezier
         
     def bounds(self):
         "Return the bounding box for the surface."
         w = self.cntrl[3,:,:]
-        cx = numpy.sort(numpy.ravel(self.cntrl[0,:,:]/w))
-        cy = numpy.sort(numpy.ravel(self.cntrl[1,:,:]/w))
-        cz = numpy.sort(numpy.ravel(self.cntrl[2,:,:]/w))
-        return numpy.asarray([cx[0], cy[0], cz[0],
-                                cx[-1], cy[-1], cz[-1]], numpy.Float)
+        cx = numerix.sort(numerix.ravel(self.cntrl[0,:,:]/w))
+        cy = numerix.sort(numerix.ravel(self.cntrl[1,:,:]/w))
+        cz = numerix.sort(numerix.ravel(self.cntrl[2,:,:]/w))
+        return numerix.asarray([cx[0], cy[0], cz[0],
+                                cx[-1], cy[-1], cz[-1]], numerix.Float)
         
     def pnt3D(self, ut, vt = None):
         """Evaluate parametric point[s] and return 3D cartesian coordinate[s]
@@ -232,9 +232,9 @@ class Srf:
 	If both parameters are given then we will evaluate over a [u,v] grid."""
         val = self.pnt4D(ut, vt)
         if len(val.shape) < 3:
-            return val[0:3,:]/numpy.resize(val[-1,:], (3, val.shape[1]))
+            return val[0:3,:]/numerix.resize(val[-1,:], (3, val.shape[1]))
         else: #FIX!
-            return val[0:3,:,:]/numpy.resize(val[-1,:,:], (3, val.shape[1], val.shape[2]))
+            return val[0:3,:,:]/numerix.resize(val[-1,:,:], (3, val.shape[1], val.shape[2]))
         
     def pnt4D(self, ut, vt = None):
         """Evaluate parametric point[s] and return 4D homogeneous coordinates.
@@ -242,37 +242,37 @@ class Srf:
 	ut(0,:) represents the u direction.
 	ut(1,:) represents the v direction.
 	If both parameters are given then we will evaluate over a [u,v] grid."""
-        ut = numpy.asarray(ut, numpy.Float)
-        if numpy.any(ut < 0.) or numpy.any(ut > 1.):
+        ut = numerix.asarray(ut, numerix.Float)
+        if numerix.any(ut < 0.) or numerix.any(ut > 1.):
             raise NURBSError, 'NURBS curve parameter out of range [0,1]'
         
         if vt: #FIX!
             # Evaluate over a [u,v] grid
-            vt = numpy.asarray(vt, numpy.Float)
-            if numpy.any(vt < 0.) or numpy.any(vt > 1.):
+            vt = numerix.asarray(vt, numerix.Float)
+            if numerix.any(vt < 0.) or numerix.any(vt > 1.):
                 raise NURBSError, 'NURBS curve parameter out of range [0,1]'
     
-            val = numpy.resize(self.cntrl,(4*self.cntrl.shape[1],self.cntrl.shape[2]))
+            val = numerix.resize(self.cntrl,(4*self.cntrl.shape[1],self.cntrl.shape[2]))
             val = bspeval(self.degree[1], val, self.vknots, vt)
-            val = numpy.resize(val,(4, self.cntrl.shape[1], vt.shape[0]))
+            val = numerix.resize(val,(4, self.cntrl.shape[1], vt.shape[0]))
     
-            val = numpy.transpose(val,(0,2,1))
+            val = numerix.transpose(val,(0,2,1))
     
-            val = numpy.resize(self.cntrl,(4*vt.shape[0],self.cntrl.shape[1]))
+            val = numerix.resize(self.cntrl,(4*vt.shape[0],self.cntrl.shape[1]))
             val = bspeval(self.degree[0], val, self.uknots, ut)
-            val = numpy.resize(val,(4, vt.shape[0], ut.shape[0]))
+            val = numerix.resize(val,(4, vt.shape[0], ut.shape[0]))
        
-            return numpy.transpose(val,(0,2,1)) 
+            return numerix.transpose(val,(0,2,1)) 
 
         # Evaluate at scattered points
         nt = ut.shape[1]
-        uval = numpy.resize(self.cntrl,(4*self.cntrl.shape[1],self.cntrl.shape[2]))
+        uval = numerix.resize(self.cntrl,(4*self.cntrl.shape[1],self.cntrl.shape[2]))
         uval = bspeval(self.degree[1],uval,self.vknots,ut[1,:])
-        uval = numpy.resize(uval,(4, self.cntrl.shape[1], nt))
+        uval = numerix.resize(uval,(4, self.cntrl.shape[1], nt))
 
-        val = numpy.zeros((4,nt), numpy.Float)
+        val = numerix.zeros((4,nt), numerix.Float)
         for v in range(nt):
-            val[:,v] = bspeval(self.degree[0],numpy.resize(uval[:,:,v],(4,self.cntrl.shape[1])),
+            val[:,v] = bspeval(self.degree[0],numerix.resize(uval[:,:,v],(4,self.cntrl.shape[1])),
                                 self.uknots, (ut[0,v],))[:,0]
         return val
             
@@ -286,21 +286,21 @@ class Srf:
             print 'dislin plotting library not available'
             return
 
-        maxminx = numpy.sort(numpy.ravel(self.cntrl[0,:,:])/numpy.ravel(self.cntrl[3,:,:]))
+        maxminx = numerix.sort(numerix.ravel(self.cntrl[0,:,:])/numerix.ravel(self.cntrl[3,:,:]))
         minx = maxminx[0]
         maxx = maxminx[-1]
         if minx == maxx:
             minx -= 1.
             maxx += 1.
 
-        maxminy = numpy.sort(numpy.ravel(self.cntrl[1,:,:])/numpy.ravel(self.cntrl[3,:,:]))
+        maxminy = numerix.sort(numerix.ravel(self.cntrl[1,:,:])/numerix.ravel(self.cntrl[3,:,:]))
         miny = maxminy[0]
         maxy = maxminy[-1]
         if miny == maxy:
             miny -= 1.
             maxy += 1.
 
-        maxminz = numpy.sort(numpy.ravel(self.cntrl[2,:,:])/numpy.ravel(self.cntrl[3,:,:]))
+        maxminz = numerix.sort(numerix.ravel(self.cntrl[2,:,:])/numerix.ravel(self.cntrl[3,:,:]))
         minz = maxminz[0]
         maxz = maxminz[-1]
         if minz == maxz:
@@ -319,14 +319,14 @@ class Srf:
                       minz, maxz, 0 , abs((maxz-minz)/4.))
             
         dislin.color('yellow')
-        pnts0 = self.pnt3D([numpy.arange(n + 1, typecode = numpy.Float)/n,
-                            numpy.zeros(n + 1,numpy.Float)])
-        pnts1 = self.pnt3D([numpy.arange(n + 1, typecode = numpy.Float)/n,
-                            numpy.ones(n + 1,numpy.Float)])
-        pnts2 = self.pnt3D([numpy.zeros(n + 1,numpy.Float),
-                            numpy.arange(n + 1, typecode = numpy.Float)/n])
-        pnts3 = self.pnt3D([numpy.ones(n + 1,numpy.Float),
-                            numpy.arange(n + 1, typecode = numpy.Float)/n])
+        pnts0 = self.pnt3D([numerix.arange(n + 1, typecode = numerix.Float)/n,
+                            numerix.zeros(n + 1,numerix.Float)])
+        pnts1 = self.pnt3D([numerix.arange(n + 1, typecode = numerix.Float)/n,
+                            numerix.ones(n + 1,numerix.Float)])
+        pnts2 = self.pnt3D([numerix.zeros(n + 1,numerix.Float),
+                            numerix.arange(n + 1, typecode = numerix.Float)/n])
+        pnts3 = self.pnt3D([numerix.ones(n + 1,numerix.Float),
+                            numerix.arange(n + 1, typecode = numerix.Float)/n])
         dislin.curv3d(pnts0[0,:], pnts0[1,:], pnts0[2,:], n+1)
         dislin.curv3d(pnts1[0,:], pnts1[1,:], pnts1[2,:], n+1)
         dislin.curv3d(pnts2[0,:], pnts2[1,:], pnts2[2,:], n+1)
@@ -334,12 +334,12 @@ class Srf:
             
         dislin.color('red')
         step = 1./iso
-        for uv in numpy.arange(step, 1., step):
-            pnts = self.pnt3D([numpy.arange(n + 1, typecode = numpy.Float)/n,
-                               numpy.zeros(n + 1,numpy.Float) + uv])
+        for uv in numerix.arange(step, 1., step):
+            pnts = self.pnt3D([numerix.arange(n + 1, typecode = numerix.Float)/n,
+                               numerix.zeros(n + 1,numerix.Float) + uv])
             dislin.curv3d(pnts[0,:], pnts[1,:], pnts[2,:], n+1)
-            pnts = self.pnt3D([numpy.zeros(n + 1,numpy.Float) + uv,
-                               numpy.arange(n + 1, typecode = numpy.Float)/n])
+            pnts = self.pnt3D([numerix.zeros(n + 1,numerix.Float) + uv,
+                               numerix.arange(n + 1, typecode = numerix.Float)/n])
             dislin.curv3d(pnts[0,:], pnts[1,:], pnts[2,:], n+1)
             
         dislin.disfin()
@@ -370,8 +370,8 @@ class Bilinear(Srf):
         |p11        p12|
         -------------------> u direction'''       
     def __init__(self, p00 = [-.5,-.5], p01 = [.5, -.5], p10 = [-.5, .5], p11 = [.5, .5]):
-        coefs = numpy.zeros((4,2,2), numpy.Float)
-        coefs[3,:,:] = numpy.ones((2,2), numpy.Float)
+        coefs = numerix.zeros((4,2,2), numerix.Float)
+        coefs[3,:,:] = numerix.ones((2,2), numerix.Float)
         coefs[0:len(p00),0,0] = p00
         coefs[0:len(p01),0,1] = p01
         coefs[0:len(p10),1,0] = p10
@@ -386,9 +386,9 @@ class Extrude(Srf):
     def __init__(self, crv, vector):
         if not isinstance(crv, Crv.Crv):
             raise NURBSError, 'Parameter crv not derived from Crv class!'
-        coefs = numpy.zeros((4,crv.cntrl.shape[1],2), numpy.Float)
+        coefs = numerix.zeros((4,crv.cntrl.shape[1],2), numerix.Float)
         coefs[:,:,0] = crv.cntrl
-        coefs[:,:,1] = numpy.dot(translate(vector), crv.cntrl)
+        coefs[:,:,1] = numerix.dot(translate(vector), crv.cntrl)
         Srf.__init__(self, coefs, crv.uknots, [0., 0., 1., 1.])
 
 class Revolve(Srf):
@@ -407,10 +407,10 @@ class Revolve(Srf):
         if not isinstance(crv, Crv.Crv):
             raise NURBSError, 'Parameter crv not derived from Crv class!'
         # Translate and rotate the curve into alignment with the z-axis
-        T = translate(-numpy.asarray(pnt, numpy.Float))
+        T = translate(-numerix.asarray(pnt, numerix.Float))
         # Normalize vector
-        vector = numpy.asarray(vector, numpy.Float)
-        len = numpy.sqrt(numpy.add.reduce(vector*vector))
+        vector = numerix.asarray(vector, numerix.Float)
+        len = numerix.sqrt(numerix.add.reduce(vector*vector))
         if len == 0:
             raise ZeroDivisionError, "Can't normalize a zero-length vector"
         vector = vector/len
@@ -419,34 +419,34 @@ class Revolve(Srf):
         else:
             angx = math.atan2(vector[0], vector[2])
         RY = roty(-angx)
-        vectmp = numpy.ones((4,), numpy.Float)
+        vectmp = numerix.ones((4,), numerix.Float)
         vectmp[0:3] = vector
-        vectmp = numpy.dot(RY, vectmp)
+        vectmp = numerix.dot(RY, vectmp)
         if vectmp[1] == 0.:
             angy = 0.
         else:
             angy = math.atan2(vector[1], vector[2])
         RX = rotx(angy)
-        crv.trans(numpy.dot(RX, numpy.dot(RY, T)))
+        crv.trans(numerix.dot(RX, numerix.dot(RY, T)))
         arc = Crv.Arc(1., [0., 0., 0.], 0., theta)
 
         narc = arc.cntrl.shape[1]
         ncrv = crv.cntrl.shape[1]
-        coefs = numpy.zeros((4, narc, ncrv), numpy.Float)
-        angle = numpy.arctan2(crv.cntrl[1,:], crv.cntrl[0,:])
+        coefs = numerix.zeros((4, narc, ncrv), numerix.Float)
+        angle = numerix.arctan2(crv.cntrl[1,:], crv.cntrl[0,:])
         vectmp = crv.cntrl[0:2,:]
-        radius = numpy.sqrt(numpy.add.reduce(vectmp*vectmp))
+        radius = numerix.sqrt(numerix.add.reduce(vectmp*vectmp))
 
         for i in xrange(0, ncrv):
-            coefs[:,:,i] = numpy.dot(rotz(angle[i]),
-                                       numpy.dot(translate((0., 0., crv.cntrl[2,i])),
-                                                   numpy.dot(scale((radius[i], radius[i])), arc.cntrl)))
+            coefs[:,:,i] = numerix.dot(rotz(angle[i]),
+                                       numerix.dot(translate((0., 0., crv.cntrl[2,i])),
+                                                   numerix.dot(scale((radius[i], radius[i])), arc.cntrl)))
             coefs[3,:,i] = coefs[3,:,i] * crv.cntrl[3,i]
         Srf.__init__(self, coefs, arc.uknots, crv.uknots)
         T = translate(pnt)
         RX = rotx(-angy)
         RY = roty(angx)
-        self.trans(numpy.dot(T, numpy.dot(RY, RX)))
+        self.trans(numerix.dot(T, numerix.dot(RY, RX)))
 
 class Ruled(Srf):
     '''Constructs a ruled surface between two NURBS curves.
@@ -469,26 +469,26 @@ class Ruled(Srf):
         k2 = crv2.uknots
         ku = []
         for item in k1:
-            if not numpy.sometrue(numpy.equal(k2, item)):
+            if not numerix.sometrue(numerix.equal(k2, item)):
                 if item not in ku:
                     ku.append(item)
         for item in k2:
-            if not numpy.sometrue(numpy.equal(k1, item)):
+            if not numerix.sometrue(numerix.equal(k1, item)):
                 if item not in ku:
                     ku.append(item)
-        ku = numpy.sort(numpy.asarray(ku, numpy.Float))
+        ku = numerix.sort(numerix.asarray(ku, numerix.Float))
         n = ku.shape[0]
-        ka = numpy.array([], numpy.Float)
-        kb = numpy.array([], numpy.Float)
+        ka = numerix.array([], numerix.Float)
+        kb = numerix.array([], numerix.Float)
         for i in range(0, n):
-            i1 = numpy.compress(numpy.equal(k1, ku[i]), k1).shape[0]
-            i2 = numpy.compress(numpy.equal(k2, ku[i]), k2).shape[0]
+            i1 = numerix.compress(numerix.equal(k1, ku[i]), k1).shape[0]
+            i2 = numerix.compress(numerix.equal(k2, ku[i]), k2).shape[0]
             m = max(i1, i2)
-            ka = numpy.concatenate((ka , ku[i] * numpy.ones((m - i1,), numpy.Float)))
-            kb = numpy.concatenate((kb , ku[i] * numpy.ones((m - i2,), numpy.Float)))
+            ka = numerix.concatenate((ka , ku[i] * numerix.ones((m - i1,), numerix.Float)))
+            kb = numerix.concatenate((kb , ku[i] * numerix.ones((m - i2,), numerix.Float)))
         crv1.kntins(ka)
         crv2.kntins(kb)
-        coefs = numpy.zeros((4, crv1.cntrl.shape[1], 2), numpy.Float)
+        coefs = numerix.zeros((4, crv1.cntrl.shape[1], 2), numerix.Float)
         coefs[:,:,0] = crv1.cntrl
         coefs[:,:,1] = crv2.cntrl
         Srf.__init__(self, coefs, crv1.uknots, [0., 0., 1., 1.])
@@ -537,33 +537,33 @@ class Coons(Srf):
         k3 = t.uknots
         k = []
         for item in k1:
-            if not numpy.sometrue(numpy.equal(k2, item)):
-                if not numpy.sometrue(numpy.equal(k3, item)):
+            if not numerix.sometrue(numerix.equal(k2, item)):
+                if not numerix.sometrue(numerix.equal(k3, item)):
                     if item not in k:
                         k.append(item)
         for item in k2:
-            if not numpy.sometrue(numpy.equal(k1, item)):
-                if not numpy.sometrue(numpy.equal(k3, item)):
+            if not numerix.sometrue(numerix.equal(k1, item)):
+                if not numerix.sometrue(numerix.equal(k3, item)):
                     if item not in k:
                         k.append(item)
         for item in k3:
-            if not numpy.sometrue(numpy.equal(k1, item)):
-                if not numpy.sometrue(numpy.equal(k2, item)):
+            if not numerix.sometrue(numerix.equal(k1, item)):
+                if not numerix.sometrue(numerix.equal(k2, item)):
                     if item not in k:
                         k.append(item)        
-        k = numpy.sort(numpy.asarray(k, numpy.Float))
+        k = numerix.sort(numerix.asarray(k, numerix.Float))
         n = k.shape[0]
-        kua = numpy.array([], numpy.Float)
-        kub = numpy.array([], numpy.Float)
-        kuc = numpy.array([], numpy.Float)
+        kua = numerix.array([], numerix.Float)
+        kub = numerix.array([], numerix.Float)
+        kuc = numerix.array([], numerix.Float)
         for i in range(0, n):
-            i1 = numpy.compress(numpy.equal(k1, k[i]), k1).shape[0]
-            i2 = numpy.compress(numpy.equal(k2, k[i]), k2).shape[0]
-            i3 = numpy.compress(numpy.equal(k3, k[i]), k3).shape[0]
+            i1 = numerix.compress(numerix.equal(k1, k[i]), k1).shape[0]
+            i2 = numerix.compress(numerix.equal(k2, k[i]), k2).shape[0]
+            i3 = numerix.compress(numerix.equal(k3, k[i]), k3).shape[0]
             m = max(i1, i2, i3)
-            kua = numpy.concatenate((kua , k[i] * numpy.ones((m - i1,), numpy.Float)))
-            kub = numpy.concatenate((kub , k[i] * numpy.ones((m - i2,), numpy.Float)))
-            kuc = numpy.concatenate((kuc , k[i] * numpy.ones((m - i3,), numpy.Float)))
+            kua = numerix.concatenate((kua , k[i] * numerix.ones((m - i1,), numerix.Float)))
+            kub = numerix.concatenate((kub , k[i] * numerix.ones((m - i2,), numerix.Float)))
+            kuc = numerix.concatenate((kuc , k[i] * numerix.ones((m - i3,), numerix.Float)))
 
         # vknots:
         k1 = r1.vknots
@@ -571,38 +571,38 @@ class Coons(Srf):
         k3 = t.vknots
         k = []
         for item in k1:
-            if not numpy.sometrue(numpy.equal(k2, item)):
-                if not numpy.sometrue(numpy.equal(k3, item)):
+            if not numerix.sometrue(numerix.equal(k2, item)):
+                if not numerix.sometrue(numerix.equal(k3, item)):
                     if item not in k:
                         k.append(item)
         for item in k2:
-            if not numpy.sometrue(numpy.equal(k1, item)):
-                if not numpy.sometrue(numpy.equal(k3, item)):
+            if not numerix.sometrue(numerix.equal(k1, item)):
+                if not numerix.sometrue(numerix.equal(k3, item)):
                     if item not in k:
                         k.append(item)
         for item in k3:
-            if not numpy.sometrue(numpy.equal(k1, item)):
-                if not numpy.sometrue(numpy.equal(k2, item)):
+            if not numerix.sometrue(numerix.equal(k1, item)):
+                if not numerix.sometrue(numerix.equal(k2, item)):
                     if item not in k:
                         k.append(item)        
-        k = numpy.sort(numpy.asarray(k, numpy.Float))
+        k = numerix.sort(numerix.asarray(k, numerix.Float))
         n = k.shape[0]
-        kva = numpy.array([], numpy.Float)
-        kvb = numpy.array([], numpy.Float)
-        kvc = numpy.array([], numpy.Float)
+        kva = numerix.array([], numerix.Float)
+        kvb = numerix.array([], numerix.Float)
+        kvc = numerix.array([], numerix.Float)
         for i in range(0, n):
-            i1 = numpy.compress(numpy.equal(k1, k[i]), k1).shape[0]
-            i2 = numpy.compress(numpy.equal(k2, k[i]), k2).shape[0]
-            i3 = numpy.compress(numpy.equal(k3, k[i]), k3).shape[0]
+            i1 = numerix.compress(numerix.equal(k1, k[i]), k1).shape[0]
+            i2 = numerix.compress(numerix.equal(k2, k[i]), k2).shape[0]
+            i3 = numerix.compress(numerix.equal(k3, k[i]), k3).shape[0]
             m = max(i1, i2, i3)
-            kva = numpy.concatenate((kva , k[i] * numpy.ones((m - i1,), numpy.Float)))
-            kvb = numpy.concatenate((kvb , k[i] * numpy.ones((m - i2,), numpy.Float)))
-            kvc = numpy.concatenate((kvc , k[i] * numpy.ones((m - i3,), numpy.Float)))
+            kva = numerix.concatenate((kva , k[i] * numerix.ones((m - i1,), numerix.Float)))
+            kvb = numerix.concatenate((kvb , k[i] * numerix.ones((m - i2,), numerix.Float)))
+            kvc = numerix.concatenate((kvc , k[i] * numerix.ones((m - i3,), numerix.Float)))
 
         r1.kntins(kua, kva)
         r2.kntins(kub, kvb)
         t.kntins(kuc, kvc)
-        coefs = numpy.zeros((4 , t.cntrl.shape[1], t.cntrl.shape[2]), numpy.Float)
+        coefs = numerix.zeros((4 , t.cntrl.shape[1], t.cntrl.shape[2]), numerix.Float)
         coefs[0,:,:] = r1.cntrl[0,:,:] + r2.cntrl[0,:,:] - t.cntrl[0,:,:]
         coefs[1,:,:] = r1.cntrl[1,:,:] + r2.cntrl[1,:,:] - t.cntrl[1,:,:]
         coefs[2,:,:] = r1.cntrl[2,:,:] + r2.cntrl[2,:,:] - t.cntrl[2,:,:]
@@ -610,7 +610,7 @@ class Coons(Srf):
         Srf.__init__(self, coefs, r1.uknots, r1.vknots)
         
 if __name__ == '__main__':
-    '''cntrl = numpy.zeros((4,4,4), numpy.Float)
+    '''cntrl = numerix.zeros((4,4,4), numerix.Float)
     for u in range(4):
         for v in range(4):
             cntrl[0][u][v] = 2.*(u - 1.5)
