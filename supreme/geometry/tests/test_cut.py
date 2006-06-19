@@ -28,6 +28,18 @@ class test_cut(NumpyTestCase):
         cut_img = cp.next()
         assert_equal(cut_img.shape,(3,3))
         assert_array_almost_equal(cut_img,[[3,4,5],[6,7,8],[9,10,11]])
+
+    def check_2D(self):
+        self.failUnlessRaises(ValueError,
+                              cut.along_path(None,None,shape=(3,3,3)).next)
+
+    def check_colour_cut(self):
+        p = coord_path.build(coord_path.line((0,0),(0,0)))
+        image = N.arange(27).reshape((3,3,3))
+        cp = cut.along_path(p,image,shape=(3,3),centre=(0,0))
+        cut_img = cp.next()
+        assert_equal(cut_img.shape,(3,3,3))
+        assert_equal(cut_img[:],image[:])
         
 if __name__ == "__main__":
     NumpyTest().run()

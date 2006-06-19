@@ -8,6 +8,9 @@ restore_path()
 def along_path(path,image,shape=(3,3),centre=None):
     """Cut blocks of shape from image along the specified path."""
 
+    if len(shape) != 2:
+        raise ValueError("Argument shape should be 2-dimensional")
+
     shape = N.asarray(shape)
     if not centre:
         if not N.all(shape % 2 == 1):
@@ -21,8 +24,11 @@ def along_path(path,image,shape=(3,3),centre=None):
     
     img_limits = N.array([[0,x] for x in image.shape[:2]]).astype(itype).transpose()
 
-    out = N.zeros(shape)
+    oshape = N.array(image.shape)
+    oshape[:2] = shape
     for p in path:
+        out = N.zeros(oshape)        
+
         # Coordinates in the target matrix
         cut_coords = block_coords - centre + p
 
@@ -37,7 +43,6 @@ def along_path(path,image,shape=(3,3),centre=None):
         dest_idx = [slice(*coord) for coord in rc.transpose()]
         src_idx = [slice(*coord) for coord in cut_coords.transpose()]
 
-        out.fill(0)
         out[dest_idx] = image[src_idx]
 
         yield out
