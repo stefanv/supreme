@@ -40,6 +40,12 @@ class test_cut(NumpyTestCase):
         cut_img = cp.next()
         assert_equal(cut_img.shape,(3,3,3))
         assert_equal(cut_img[:],image[:])
+
+    def check_dtype(self):
+        p = coord_path.build(coord_path.line((0,0),(0,0)))
+        image = N.arange(12).reshape((4,3)).astype(N.uint8)
+        cut_img = cut.along_path(p,image).next()
+        assert_equal(image.dtype,cut_img.dtype)
         
 if __name__ == "__main__":
     NumpyTest().run()

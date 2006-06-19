@@ -27,7 +27,7 @@ def along_path(path,image,shape=(3,3),centre=None):
     oshape = N.array(image.shape)
     oshape[:2] = shape
     for p in path:
-        out = N.zeros(oshape)        
+        out = N.zeros(oshape,dtype=image.dtype)
 
         # Coordinates in the target matrix
         cut_coords = block_coords - centre + p
