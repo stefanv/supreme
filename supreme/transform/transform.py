@@ -39,7 +39,6 @@ def logpolar(image,angles=359,order=1):
     oshape[1] = w
     log_base = N.log(w/2)/w
 
-    from math import sin, cos, e
     coords = N.empty(N.r_[3,oshape],dtype=SC.ftype)
 
     theta = N.empty((angles,w),dtype=SC.ftype)

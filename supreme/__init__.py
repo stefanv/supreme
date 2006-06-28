@@ -1,11 +1,12 @@
 # Supreme module initialisation
 
 from numpy.testing import NumpyTest
+import scipy
 
-from config import *
+import config
 import geometry
 import transform
-import scipy
+import register
 
 imread = scipy.misc.pilutil.imread
 test = NumpyTest('supreme').test
