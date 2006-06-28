@@ -2,6 +2,9 @@ import numpy as N
 import os.path
 import sys
 
+__all__ = ['abs_path','add_path','remove_path','ftype','itype',
+           'data_path','lib_path']
+
 ftype = N.float64
 itype = N.int64
 
@@ -21,6 +24,3 @@ relative_data_path = '../data'
 relative_lib_path = './lib'
 data_path = abs_path(relative_data_path)
 lib_path = abs_path(relative_lib_path)
-
-class ShapeError(Exception):
-    pass
