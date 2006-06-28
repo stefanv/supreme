@@ -5,8 +5,9 @@ import sys
 __all__ = ['abs_path','add_path','remove_path','ftype','itype',
            'data_path','lib_path']
 
-ftype = N.float64
-itype = N.int64
+ftype = N.float_
+itype = N.int_
+eps = N.finfo(ftype).eps
 
 def abs_path(relpath):
     return os.path.join(os.path.dirname(__file__),
