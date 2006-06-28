@@ -8,6 +8,7 @@ from scipy import ndimage as ndi
 
 set_local_path('../..')
 import supreme.config as SC
+from supreme import transform
 restore_path()
 
 def corners(dims):
@@ -24,7 +25,7 @@ def corners(dims):
         corners[i] = N.where(mask,dims-1,zeros)
     return corners
 
-def affine(images,affine_matrices,weights=None):
+def affine(images,affine_matrices,weights=None,order=1):
     """Stack images after performing affine transformations.
 
     affine_matrices is a list of matrices, with each matrix of the form
@@ -61,10 +62,7 @@ def affine(images,affine_matrices,weights=None):
     out = N.zeros(oshape,dtype=SC.ftype)
     for img,tf_matrix,weight in zip(images,affine_matrices,weights):
         tf_matrix[:2,2] = tf_matrix[:2,2] - bbox_top_left
-        rot_zoom = tf_matrix[:2,:2]
-        offset = tf_matrix[:2,2]
-        out += weight * ndi.affine_transform(img,rot_zoom,offset=-offset[::-1],
-                                             output_shape=oshape,order=1)
+        out += weight * transform.matrix(img,tf_matrix,output_shape=oshape,order=order)
 
     return out
     
