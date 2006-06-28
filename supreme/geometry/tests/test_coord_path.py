@@ -51,7 +51,7 @@ class test_coord_path(NumpyTestCase):
         circ = coord_path.circle((1,1),1)
         assert not N.allclose(circ.next(),[1.,0.])
 
-    def check_spline(self,level=1):
+    def check_spline(self,level=2):
         spl = coord_path.spline(((0,0),(3,5)))
         self.failUnlessRaises(ValueError,spl.next)
         
