@@ -14,7 +14,7 @@ class test_stack(NumpyTestCase):
                                             [2,4]])
 
     def test_affine(self):
-        pass
+        raise NotImplementedError
     
 if __name__ == "__main__":
     NumpyTest().run()
