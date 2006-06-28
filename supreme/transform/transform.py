@@ -66,15 +66,16 @@ def logpolar(image,angles=359,order=1):
 
     return mapped.squeeze()
 
-def matrix(image,matrix,output_shape=None,order=1):
+def matrix(image,matrix,output_shape=None,order=1,mode='constant'):
     """Perform a matrix transform on an image.
 
-    Each coordinate (x,y,1) is multiplied by matrix to find its new
-    position.  E.g., to rotate by theta degrees the matrix should be
+    Each coordinate (x,y,1) is multiplied by matrix to find its
+    new position.  E.g., to rotate by theta degrees clockwise,
+    the matrix should be
 
     [[cos(theta) -sin(theta) 0]
      [sin(theta)  cos(theta) 0]
-     [0           0          1]]
+     [0            0         1]]
 
     or to translate x by 10 and y by 20,
 
@@ -96,13 +97,14 @@ def matrix(image,matrix,output_shape=None,order=1):
         bands = ishape[2]
     else:
         bands = 1
-
+        
     if output_shape is None:
         output_shape = ishape
 
     coords = N.empty(N.r_[3,output_shape],dtype=SC.ftype)
     tf_coords = supreme.geometry.Grid(*output_shape[:2]).coords
     tf_coords = N.dot(tf_coords,N.linalg.inv(matrix).transpose())
+    tf_coords[tf_coords < SC.eps] = 0.
 
     # y-coordinate mapping
     stackcopy(coords[0,...], tf_coords[...,1])
@@ -115,6 +117,7 @@ def matrix(image,matrix,output_shape=None,order=1):
     
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
-    mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter)
+    mapped = ndii.map_coordinates(image,coords,prefilter=prefilter,
+                                  mode=mode,order=order)
 
     return mapped.squeeze()
