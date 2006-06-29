@@ -25,7 +25,7 @@ tf_matrices = [N.array([[1,0,0],
                         [sin(theta),cos(theta),0],
                         [0,0,1]])]
 
-out = register.stack.affine(images,tf_matrices)
+out = register.stack.with_transform(images,tf_matrices)
 
 P.figure()
 P.imshow(out)
