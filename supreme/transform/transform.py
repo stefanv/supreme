@@ -66,7 +66,8 @@ def logpolar(image,angles=359,order=1):
 
     return mapped.squeeze()
 
-def matrix(image,matrix,output_shape=None,order=1,mode='constant'):
+def matrix(image,matrix,output_shape=None,order=1,mode='constant',
+           cval=0.):
     """Perform a matrix transform on an image.
 
     Each coordinate (x,y,1) is multiplied by matrix to find its
@@ -104,7 +105,7 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant'):
     coords = N.empty(N.r_[3,output_shape],dtype=SC.ftype)
     tf_coords = supreme.geometry.Grid(*output_shape[:2]).coords
     tf_coords = N.dot(tf_coords,N.linalg.inv(matrix).transpose())
-    tf_coords[tf_coords < SC.eps] = 0.
+    tf_coords[N.absolute(tf_coords) < SC.eps] = 0.    
 
     # y-coordinate mapping
     stackcopy(coords[0,...], tf_coords[...,1])
@@ -118,6 +119,6 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant'):
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
     mapped = ndii.map_coordinates(image,coords,prefilter=prefilter,
-                                  mode=mode,order=order)
+                                  mode=mode,order=order,cval=cval)
 
     return mapped.squeeze()
