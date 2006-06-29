@@ -25,26 +25,34 @@ def corners(dims):
         corners[i] = N.where(mask,dims-1,zeros)
     return corners
 
-def affine(images,affine_matrices,weights=None,order=1):
-    """Stack images after performing affine transformations.
+def with_transform(images,matrices,weights=None,order=1,mode='constant'):
+    """Stack images after performing coordinate transformations.
 
-    affine_matrices is a list of matrices, with each matrix of the form
+    images - list of arrays
+    matrices - list of coordinate transformation matrices
+    weights - weights of input images (default: weighted equally)
 
-    [[a b c]
-     [d e f]
-     [0 0 1]]"""
+    For each image, a 3x3 coordinate transformation matrix, A,
+    must be given. Each coordinate, c = [[x],[y],[1]], in the source image
+    is then translated to its position in the destination image,
+
+    d = A*c.
+
+    Each image is transformed, weighted by the given weight and
+    stacked.
+    """
     nr_images = len(images)
     if weights is None:
         weights = N.ones(nr_images,dtype=SC.ftype)/nr_images
 
-    if not (len(images) == len(affine_matrices) == len(weights)):
-        raise ValueError("Number of images, affine matrices and weights should match.")
+    if not (len(images) == len(matrices) == len(weights)):
+        raise ValueError("Number of images, transformation matrices and weights should match.")
 
     images = [N.atleast_2d(i) for i in images]
-    affine_matrices = [N.atleast_2d(m) for m in affine_matrices]
+    affine_matrices = [N.atleast_2d(m) for m in matrices]
 
     all_tf_cnrs = N.empty((0,3))
-    for img,tf_matrix in zip(images,affine_matrices):
+    for img,tf_matrix in zip(images,matrices):
         rows,cols = img.shape[:2]
         cnrs = corners((cols,rows))        
         # Turn into homogenous coordinates by adding a column of ones
@@ -57,20 +65,13 @@ def affine(images,affine_matrices,weights=None,order=1):
     bbox_bottom_right = N.ceil(all_tf_cnrs.max(axis=0))[:2]
 
     oshape = N.array(images[0].shape)
-    oshape[:2][::-1] = N.absolute((bbox_bottom_right - bbox_top_left)).astype(int)
+    oshape[:2][::-1] = N.absolute(bbox_bottom_right - bbox_top_left).astype(int)+1
 
     out = N.zeros(oshape,dtype=SC.ftype)
-    for img,tf_matrix,weight in zip(images,affine_matrices,weights):
+    for img,tf_matrix,weight in zip(images,matrices,weights):
         tf_matrix[:2,2] = tf_matrix[:2,2] - bbox_top_left
         out += weight * transform.matrix(img,tf_matrix,
-                                         output_shape=oshape,order=order)
+                                         output_shape=oshape,order=order,
+                                         mode=mode)
 
     return out
-    
-if __name__ == "__main__":
-    img = N.array([[1,0,1,2],[2,0,1,1],[3,0,0,1],[4,5,3,2]])
-    theta = 30/180.*N.pi
-    stack_affine((img,),([[N.cos(theta),-N.sin(theta),0],
-                          [N.sin(theta),N.cos(theta),0],
-                          [0,0,1]],))
-    
