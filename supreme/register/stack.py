@@ -11,6 +11,8 @@ import supreme.config as SC
 from supreme import transform
 restore_path()
 
+__all__ = ['with_transform']
+
 def corners(dims):
     """Return the corner coordinates for a matrix of the given
     dimensions."""

@@ -1,4 +1,4 @@
 # Registration module
 
-from stack import *
+import stack
 from image import *
