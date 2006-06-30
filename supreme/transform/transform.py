@@ -33,7 +33,7 @@ def logpolar(image,angles=359,order=1):
 
     oshape = ishape
     w = max(ishape[:2])
-    centre = ishape[:2]/2.
+    centre = (ishape[:2]-1)/2.
     
     oshape[0] = angles
     oshape[1] = w
@@ -105,7 +105,7 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
     coords = N.empty(N.r_[3,output_shape],dtype=SC.ftype)
     tf_coords = supreme.geometry.Grid(*output_shape[:2]).coords
     tf_coords = N.dot(tf_coords,N.linalg.inv(matrix).transpose())
-    tf_coords[N.absolute(tf_coords) < SC.eps] = 0.    
+    tf_coords[N.absolute(tf_coords) < SC.eps] = 0.
 
     # y-coordinate mapping
     stackcopy(coords[0,...], tf_coords[...,1])
