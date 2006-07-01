@@ -12,7 +12,6 @@ def configuration(parent_package='',top_path=None):
         config.add_data_dir(os.path.join(p,'tests'))
     for f in data_files:
         config.add_data_files(f)
-    config.make_config_py() # installs __config__.py
     return config
     
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import sys
 
@@ -12,7 +14,6 @@ def configuration(parent_package='',top_path=None):
                        quiet=True)
 
     config.add_subpackage('supreme')
-    #config.add_data_files(('supreme'),['*.txt'])
     return config
 
 def setup_package():
