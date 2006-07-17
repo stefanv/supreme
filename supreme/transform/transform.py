@@ -37,7 +37,8 @@ def logpolar(image,angles=359,order=1):
     
     oshape[0] = angles
     oshape[1] = w
-    log_base = N.log(w/2)/w
+    d = N.hypot(*(ishape[:2]-centre))
+    log_base = N.log(d/2)/w
 
     coords = N.empty(N.r_[3,oshape],dtype=SC.ftype)
 
@@ -62,7 +63,8 @@ def logpolar(image,angles=359,order=1):
     
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
-    mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter)
+    mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter,
+                                  mode='reflect')
 
     return mapped.squeeze()
 
