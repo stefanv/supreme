@@ -21,6 +21,13 @@ class test_coord_path(NumpyTestCase):
         l = coord_path.build(line((3,0),(0,0)))
         assert_almost_equal(l,N.array([[3,0],[2,0],[1,0],[0,0]]))
 
+    def check_build_multi(self,level=1):
+        line = coord_path.line
+        l1 = coord_path.build(line((0,0),(0,2)))
+        l2 = coord_path.build(line((0,2),(0,4)))
+        l = coord_path.build(l1,l2)
+        assert_almost_equal(l,N.array([[0,0],[0,1],[0,2],[0,3],[0,4]]))
+
     def check_ftype(self,level=1):
         line = coord_path.line
         l = coord_path.build(line((0,0),(0,3)))
@@ -37,6 +44,11 @@ class test_coord_path(NumpyTestCase):
         line = coord_path.line
         l = coord_path.build(line((0,0),(5,5)))
         assert_equal(len(l[1]),2)
+
+    def check_rectangle(self,level=1):
+        rect = coord_path.rectangle((0,0),(1,1))
+        r = coord_path.build(rect)
+        assert_array_almost_equal(r,[[0,0],[0,1],[1,1],[0,1],[0,0]])
 
     def check_circle(self,level=1):
         circ = coord_path.circle((0,0),-1)

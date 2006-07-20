@@ -20,17 +20,19 @@ import supreme.config as SC
 import scipy as S
 S.pkgload('interpolate')
 
-def build(g):
-    """Build a coordinate-path from a generator.
+import itertools
 
-    g - Generate coordinates between (and including) start and end.
-        The points generated should be roughly one pixel apart, and
-        must not be discretised (i.e. (1.41,2.06) is fine).
-        Initialised with start and end as parameters.
+def build(*iterables):
+    """Build a coordinate-path from one or more iterable.
+
+    Every iterator should yield coordinate tuples/arrays between (and
+    including) start and end.  The points generated should be roughly
+    one pixel apart, and does not need to be discretised
+    (i.e. (1.41,2.06) is fine).
 
     """
     path = N.array([-1,-1], SC.itype)
-    for i,coord in enumerate(g):
+    for i,coord in enumerate(itertools.chain(*iterables)):
         coord = N.around(N.array(coord)).astype(SC.itype)
         if N.any(coord != path[-1]):
             path = N.vstack((path,coord))
@@ -51,6 +53,19 @@ def line(start,end):
 
     for t in N.linspace(0,1,N.ceil(d)+1):
         yield (1-t)*start + t*end
+
+def rectangle(top_corner,bottom_corner):
+    """Generate coordinates for a rectangle."""
+    tl = top_corner
+    tr = (bottom_corner[0],top_corner[1])
+    br = bottom_corner
+    bl = (top_corner[0],bottom_corner[1])
+    return itertools.chain(
+        line(tl,tr),
+        line(tr,br),
+        line(br,bl),
+        line(bl,tl)
+        )
 
 def circle(centre,radius):
     """Generate coordinates for a circle."""
