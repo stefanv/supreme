@@ -48,7 +48,7 @@ class test_coord_path(NumpyTestCase):
     def check_rectangle(self,level=1):
         rect = coord_path.rectangle((0,0),(1,1))
         r = coord_path.build(rect)
-        assert_array_almost_equal(r,[[0,0],[0,1],[1,1],[0,1],[0,0]])
+        assert_array_almost_equal(r,[[0,0],[1,0],[1,1],[0,1],[0,0]])
 
     def check_circle(self,level=1):
         circ = coord_path.circle((0,0),-1)
