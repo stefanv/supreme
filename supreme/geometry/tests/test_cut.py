@@ -29,6 +29,12 @@ class test_cut(NumpyTestCase):
         assert_equal(cut_img.shape,(3,3))
         assert_array_almost_equal(cut_img,[[3,4,5],[6,7,8],[9,10,11]])
 
+    def check_outside(self):
+        p = coord_path.build(coord_path.line((4,4),(4,4)))
+        image = N.arange(12).reshape((4,3))
+        cp = cut.along_path(p,image,shape=(5,5),centre=(0,0))
+        list(cp)
+
     def check_2D(self):
         self.failUnlessRaises(ValueError,
                               cut.along_path(None,None,shape=(3,3,3)).next)
