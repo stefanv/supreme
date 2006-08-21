@@ -14,25 +14,13 @@ def stackcopy(a,b):
     else:
         a[:] = b
 
-def logpolar(image,angles=359,order=1):
-    """Perform the log polar transform on an image.
+def _lpcoords(ishape,angles,w):
+    """Calculate the reverse coordinates for the log-polar transform."""
 
-    angles - Number of angles at which to evaluate.
-    order - Order of splines used in interpolation.
-    """
-
-    if image.ndim < 2:
-        raise ValueError("Input must have more than 1 dimension.")
-
-    image = N.atleast_3d(image)
-    ishape = N.array(image.shape)
-    if image.ndim > 2:
-        bands = ishape[2]
-    else:
-        bands = 1
-
-    oshape = ishape
-    w = max(ishape[:2])
+    ishape = N.array(ishape)
+    bands = ishape[2]
+    
+    oshape = ishape.copy()
     centre = (ishape[:2]-1)/2.
     
     oshape[0] = angles
@@ -60,10 +48,31 @@ def logpolar(image,angles=359,order=1):
     
     # colour-coordinate mapping
     coords[2,...] = range(bands)
+
+    return coords
+
+def logpolar(image,angles=359,order=1,_coords=None):
+    """Perform the log polar transform on an image.
+
+    angles - Number of angles at which to evaluate.
+    order - Order of splines used in interpolation.
+    
+    _coords - Pre-calculated coords, as given by _lpcoords.
+    """
+
+    if image.ndim < 2:
+        raise ValueError("Input must have more than 1 dimension.")
+
+    image = N.atleast_3d(image)
+
+    w = max(image.shape[:2])
+
+    if _coords is None:
+        _coords = _lpcoords(image.shape,angles,w)
     
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
-    mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter,
+    mapped = ndii.map_coordinates(image,_coords,order=order,prefilter=prefilter,
                                   mode='reflect')
 
     return mapped.squeeze()

@@ -3,7 +3,7 @@ from numpy.testing import *
 
 set_local_path('../../..')
 from supreme import transform
-from supreme.transform.transform import stackcopy
+from supreme.transform.transform import stackcopy, _lpcoords
 import supreme.config as SC
 restore_path()
 
@@ -25,6 +25,15 @@ class test_transform(NumpyTestCase):
 
         x = N.zeros((3))
         self.failUnlessRaises(ValueError, transform.logpolar, x)
+
+    def check__lpcoords(self,level=1):
+        z = N.empty((6,6,3))
+        coords = _lpcoords(z.shape,10,5)
+        assert_equal([3,10,5,3],coords.shape)
+
+        z = N.empty((6,6,1))
+        coords = _lpcoords(z.shape,10,5)
+        assert_equal([3,10,5,1],coords.shape)
 
     def test_stackcopy(self,level=1):
         layers = 4

@@ -21,26 +21,29 @@ def rectangle_inside(shape,percent=10):
     cp = geometry.coord_path
     return cp.build(cp.rectangle(rtop,rbottom))
 
-def logpolar_along_path(image,path,shape):
-    """Cut sub-images at each coordinate on the path and yield the log
-    polar transform.
-
-    """
-    for cut in geometry.cut.along_path(path,image,shape):
-        yield transform.logpolar(cut)
-
-def logpolar(ref_img,img_list,window_shape=(50,50)):
+def logpolar(ref_img,img_list,window_shape=(51,51)):
     """Register the given images using log polar transforms.
 
     The output is a list of 3x3 arrays.
     
     """
+
+    for img in img_list:
+        assert ref_img.shape == img.shape
+
+    def lp_frame(img,shape=window_shape):
+        path = rectangle_inside(ref_img.shape[:2],30)
+        coords = None
+        for cut in geometry.cut.along_path(path,img,shape):
+            if coords is None:
+                # Pre-calculate coordinates
+                coords = transform.transform._lpcoords(cut.shape,359,max(cut.shape[:2]))
+                
+            yield transform.logpolar(cut,_coords=coords)
+
     print "Calculating log polar transforms for reference frame..."
+    ref_lpt = list(lp_frame(ref_img))
 
-    for i in logpolar_along_path(ref_img,
-                                 rectangle_inside(ref_img.shape[:2],20),
-                                 (51,51)):
-        sys.stdout.write('.')
-        sys.stdout.flush()
-        
-
+    for img in img_list:
+        for tf in lp_frame(img):
+            print "Correlating"
