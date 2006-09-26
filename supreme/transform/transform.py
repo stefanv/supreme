@@ -5,7 +5,6 @@ __all__ = ['logpolar','matrix']
 
 import supreme
 import supreme.config as SC
-import numpy as N
 
 def stackcopy(a,b):
     """a[:,:,0] = a[:,:,1] = ... = b"""
