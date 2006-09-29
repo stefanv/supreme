@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void variance_map(int rows, int columns, double* input, double* output)
 {
     unsigned int r, c, j;
@@ -8,3 +12,7 @@ void variance_map(int rows, int columns, double* input, double* output)
 	}
     }
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
