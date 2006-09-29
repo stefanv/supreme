@@ -1,5 +1,5 @@
 import numpy as N
-from ctypes import *
+from ctypes import c_int
 
 _lib = N.ctypeslib.load_library('libsupreme_',__file__)
 
@@ -21,15 +21,15 @@ libsupreme_api = {
 
 def register_api(lib,api):
     import inspect
+    parent_frame = inspect.currentframe().f_back
     for f, (restype, argtypes) in api.iteritems():
         func = getattr(lib, f)
         func.restype = restype
         func.argtypes = argtypes
-        inspect.currentframe().f_locals[f] = func
-    inspect.currentframe().f_locals['__all__'] = api.keys()
+        parent_frame.f_locals[f] = func
+    parent_frame.f_locals['__all__'] = api.keys()
 
 register_api(_lib,libsupreme_api)
-#__all__ = libsupreme_api.keys()
 
 # Python wrappers for libsupreme functions
 
