@@ -1,4 +1,4 @@
-void variance_map(double* input, int rows, int columns, double* output)
+void variance_map(int rows, int columns, double* input, double* output)
 {
     unsigned int r, c, j;
     for (r = 0; r < rows; r++) {

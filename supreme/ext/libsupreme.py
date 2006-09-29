@@ -16,8 +16,7 @@ libsupreme_api = {
                  c_int, array_1d_double, array_1d_double,
                  array_1d_int]),
    'variance_map' : (None,
-                     [array_2d_double, c_int, c_int,
-                      array_2d_double]),
+                     [c_int, c_int, array_2d_double, array_2d_double]),
     }
 
 def register_api(lib,api):
@@ -34,14 +33,22 @@ register_api(_lib,libsupreme_api)
 
 # Python wrappers for libsupreme functions
 
-def npnpoly(xvert,yvert,xpoint,ypoint):
-   xi = N.ascontiguousarray(xvert.astype(N.double))
-   yi = N.ascontiguousarray(yvert.astype(N.double))
-   x = N.ascontiguousarray(xpoint)
-   y = N.ascontiguousarray(ypoint)
-   out = N.empty(len(x),dtype=N.int_)
+def atype(arrays, types):
+    """Return contiguous arrays of given types.
+
+    arrays - list of input arrays
+    types - list of corresponding types
+    
+    """
+    return [N.ascontiguousarray(A).astype(T) for A,T in zip(arrays,types)]
+
+def npnpoly(x_vertices, y_vertices, x_points, y_points):
+    xi,yi,x,y = atype([x_vertices,y_vertices,
+                       x_points,y_points],[N.double]*4)
+    
+    out = N.empty(len(x),dtype=N.intc)
    
-   _lib.npnpoly(len(xi), xi, yi,
-                len(x), x, y,
-                out)
-   return out
+    _lib.npnpoly(len(xi), xi, yi,
+                 len(x), x, y,
+                 out)
+    return out
