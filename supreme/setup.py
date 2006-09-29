@@ -1,4 +1,4 @@
-packages = ['geometry','register','transform']
+packages = ['geometry','register','transform','ext','lib']
 ext_libs = ['lib/Nurbs-0.1','lib/Polygon-1.16']
 data_files = ['doc/*.txt']
 
