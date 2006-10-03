@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-#import <math.h>
+#include <math.h>
 
 void variance_map(int rows, int columns,
 		  double* input, double* output,
@@ -26,7 +26,7 @@ void variance_map(int rows, int columns,
 	    if ((r >= offset_rows) && (r < rows - offset_rows) &&
 		(c >= offset_columns) && (c < columns - offset_columns)) {
 
-		// Calculate mean
+		/* Calculate mean */
 		for (rr = 0; rr < window_size_rows; rr++)
 		    for (cc = 0; cc < window_size_columns; cc++) {
 			k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
@@ -34,7 +34,7 @@ void variance_map(int rows, int columns,
 		    }
 		mean = mean / N;
 	 
-		// Calculate variance
+		/* Calculate variance */
 		for (rr = 0; rr < window_size_rows; rr++)
 		    for (cc = 0; cc < window_size_columns; cc++) {
 			k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
