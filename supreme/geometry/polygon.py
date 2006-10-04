@@ -39,6 +39,8 @@ import math
 
 import supreme.ext
 
+__all__ = ['Polygon']
+
 class Polygon:
     """
     Polygon class
@@ -72,11 +74,11 @@ class Polygon:
         return 'Polygon: %d vertices' % len(self.x)
     
     def __repr__(self):
-        return "Polygon_" + str(len(self.x)) + '_' + \
-               self.x.__array_interface__['data'][0] + '_' + \
-               self.y.__array_interface__['data'][0]
+        return "Polygon_%d_%d_%d" % (len(self.x),
+                                     self.x.__array_interface__['data'][0],
+                                     self.y.__array_interface__['data'][0])
     
-    def inside(self,xp,yp):
+    def _inside(self,xp,yp):
         """Check whether given points are in the polygon.
 
         See http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html    
