@@ -3,6 +3,8 @@
 
    Copyright (c) 1970-2003, Wm. Randolph Franklin
 
+   Copyright (c) 2006, Stefan van der Walt
+
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation
    files (the "Software"), to deal in the Software without
@@ -64,6 +66,53 @@ void npnpoly(int nr_verts, double *xp, double *yp,
     for (n = 0; n < nr_points; n++) {
 	result[n] = pnpoly(nr_verts,xp,yp,x[n],y[n]);
     }
+}
+
+/* Point of intersection */
+struct POI {
+    double x, y;
+    int type; /* 0 -- ordinary
+		 1 -- intersects outside start and end-points 
+                 2 -- parallel
+                 3 -- co-incident 
+	         */
+};
+
+void line_intersect(double x0, double y0, double x1, double y1, /* line 1 */
+		    double x2, double y2, double x3, double y3, /* line 2 */
+		    struct POI *p)
+/*
+  Calculate the point of intersection between two lines.
+ */
+{
+    double d, ua, ub;
+
+    d = (y3 - y2)*(x1 - x0) - (x3 - x2)*(y1 - y0);
+    ua = (x3 - x2)*(y0 - y2) - (y3 - y2)*(x0 - x2);
+    ub = (x1 - x0)*(y0 - y2) - (y1 - y0)*(x0 - x2);
+
+    if (d == 0) {
+	p->x = 0;
+	p->y = 0;
+
+	if ((ua == 0) && (ub == 0))
+	    p->type = 3;
+	else
+	    p->type = 2;
+	return;
+    }
+
+    ua = ua/d;
+    ub = ub/d;
+
+    p->x = x0 + ua*(x1 - x0); 
+    p->y = y0 + ua*(y1 - y0); 
+    if ((ua >= 0) && (ua <= 1) && (ub >= 0) && (ub <= 1))
+	p->type = 0;
+    else
+	p->type = 1;
+
+    return;
 }
 
 #ifdef __cplusplus

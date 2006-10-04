@@ -1,5 +1,5 @@
 import numpy as N
-from ctypes import c_int
+from ctypes import c_int, c_double, Structure, POINTER
 
 from numpy.testing import set_local_path, restore_path
 set_local_path('../..')
@@ -14,6 +14,14 @@ array_1d_int = N.ctypeslib.ndpointer(dtype=N.intc,ndim=1,flags='CONTIGUOUS')
 
 # Define libsupreme API
 
+class POI(Structure):
+    """Point of intersection.
+
+    """
+    _fields_ =  [("x", c_double),
+                 ("y", c_double),
+                 ("type", c_int)]
+
 # Albert's ctypes pattern
 libsupreme_api = {
    'npnpoly' : (None,
@@ -23,6 +31,11 @@ libsupreme_api = {
    'variance_map' : (None,
                      [c_int, c_int, array_2d_double, array_2d_double,
                       c_int, c_int]),
+                     
+   'line_intersect' : (None,
+                       [c_double, c_double, c_double, c_double,
+                        c_double, c_double, c_double, c_double,
+                        POINTER(POI)]),
     }
 
 def register_api(lib,api):
@@ -49,11 +62,14 @@ def _atype(arrays, types):
     return [N.ascontiguousarray(A).astype(T) for A,T in zip(arrays,types)]
 
 def npnpoly(x_vertices, y_vertices, x_points, y_points):
-    xi,yi,x,y = _atype([x_vertices,y_vertices,
-                        x_points,y_points],[N.double]*4)
+    """Calculate whether points are in a given polygon.
+
+    """
+    xi,yi,x,y = atype([x_vertices,y_vertices,
+                       x_points,y_points],[N.double]*4)
     
     out = N.empty(len(x),dtype=N.intc)
-   
+    
     _lib.npnpoly(len(xi), xi, yi,
                  len(x), x, y,
                  out)
@@ -77,3 +93,21 @@ def variance_map(image, shape=(3,3)):
     _lib.variance_map(rows, columns, image, output,
                       window_size_rows, window_size_columns)
     return output
+
+def line_intersect(x0,y0,x1,y1,
+                   x2,y2,x3,y3):
+    """Calculate the intersection between two lines.
+
+    The first line runs from (x0,y0) to (x1,y1) and the second from
+    (x2,y2) to (x3,y3).
+
+    Return the point of intersection, (x,y), and its type:
+      0 -- Normal intersection
+      1 -- Intersects outside given segments
+      2 -- Parallel
+      3 -- Co-incident
+    """
+    x0,x1,x2,x3,y0,y1,y2,y3 = map(c_double, [x0,x1,x2,x3,y0,y1,y2,y3])
+    p = POI()
+    _lib.line_intersect(x0,y0,x1,y1,x2,y2,x3,y3,p)
+    return (p.x,p.y), p.type
