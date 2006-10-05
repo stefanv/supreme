@@ -48,13 +48,13 @@ class Polygon:
 
     def __init__(self, xp, yp):
         """
-        Given xp and yp (both 1D arrays or sequences), create a new polygon.
-        
-        p = Polygon(vertices) where vertices is an Nx2 array
+        Given xp and yp (both 1D arrays or sequences), create a new
+        polygon.  The polygon is closed at instantiation.
         
         p.inside(x, y) - Calculate whether points lie inside the polygon.
         p.area() - The area enclosed by the polygon.
         p.centroid() - The centroid of the polygon
+        
         """
         x = np.asarray(xp,dtype=np.float64)
         y = np.asarray(yp,dtype=np.float64)
@@ -99,6 +99,9 @@ class Polygon:
         return np.asarray(out,dtype=bool)
 
     def inside(self,xp,yp):
+        """Return true if (xp,yp) is inside the polygon.
+
+        """
         return supreme.ext.npnpoly(self.x,self.y,xp,yp).astype(bool)
     
     def area(self):
@@ -107,11 +110,14 @@ class Polygon:
 
         From Paul Bourke's webpage:
           http://astronomy.swin.edu.au/~pbourke/geometry
+          
         """
         return 0.5 * (self.x[:-1] * self.y[1:] - self.x[1:] * self.y[:-1]).sum()
 
     def centroid(self):
-        "Return the centroid of the polygon"
+        """Return the centroid of the polygon
+
+        """
         x,y = self.x,self.y
         c = x[:-1]*y[1:] - x[1:]*y[:-1]
         return np.array([(c * (p[:-1] + p[1:])).sum() for p in x,y]) / (6.0*self.area())
