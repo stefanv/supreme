@@ -45,8 +45,6 @@ def register_api(lib,api):
         func = getattr(lib, f)
         func.restype = restype
         func.argtypes = argtypes
-        parent_frame.f_locals[f] = func
-    parent_frame.f_locals['__all__'] = api.keys()
 
 register_api(_lib,libsupreme_api)
 
@@ -64,6 +62,10 @@ def _atype(arrays, types):
 def npnpoly(x_vertices, y_vertices, x_points, y_points):
     """Calculate whether points are in a given polygon.
 
+    The polygon must be closed, i.e. x_vertices[0] == x_vertices[-1].
+
+    Returns a boolean array of length len(x_points).
+    
     """
     xi,yi,x,y = atype([x_vertices,y_vertices,
                        x_points,y_points],[N.double]*4)
