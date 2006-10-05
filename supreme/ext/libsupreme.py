@@ -67,8 +67,8 @@ def npnpoly(x_vertices, y_vertices, x_points, y_points):
     Returns a boolean array of length len(x_points).
     
     """
-    xi,yi,x,y = atype([x_vertices,y_vertices,
-                       x_points,y_points],[N.double]*4)
+    xi,yi,x,y = _atype([x_vertices,y_vertices,
+                        x_points,y_points],[N.double]*4)
     
     out = N.empty(len(x),dtype=N.intc)
     
