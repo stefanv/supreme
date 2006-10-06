@@ -36,6 +36,10 @@ libsupreme_api = {
                        [c_double, c_double, c_double, c_double,
                         c_double, c_double, c_double, c_double,
                         POINTER(POI)]),
+   'poly_clip' : (int,
+                  [c_int, array_1d_double, array_1d_double,
+                   c_double, c_double, c_double, c_double,
+                   array_1d_double, array_1d_double]),
     }
 
 def register_api(lib,api):
@@ -113,3 +117,38 @@ def line_intersect(x0,y0,x1,y1,
     p = POI()
     _lib.line_intersect(x0,y0,x1,y1,x2,y2,x3,y3,p)
     return (p.x,p.y), p.type
+
+def poly_clip(x, y, xleft, xright, ytop, ybottom):
+    """Clip a polygon to the given bounding box.
+
+    x and y are 1D arrays describing the coordinates of the vertices.
+    xleft, xright, ytop and ybottom specify the borders of the
+    bounding box.  Note that a cartesian axis system is used such that
+    the following must hold:
+
+    x_left < x_right
+    y_bottom < y_top
+
+    The x and y coordinates of the vertices of the resulting polygon
+    are returned.
+    
+    """
+    x,y = _atype([x,y],[N.double,N.double])
+
+    assert len(x) == len(y), "Equal number of x and y coordinates required"
+    assert ytop > ybottom
+    assert xleft < xright
+
+    # close polygon if necessary
+    if x[0] != x[-1] or y[0] != y[-1]:
+        x = N.append(x,x[0])
+        y = N.append(y,y[0])
+        
+    xleft,xright,ytop,ybottom = map(N.double,[xleft,xright,ytop,ybottom])
+
+    workx = N.empty(2*len(x-1),dtype=N.double)
+    worky = N.empty(2*len(x-1),dtype=N.double)
+    M = _lib.poly_clip(len(x),x,y,xleft,xright,ytop,ybottom,workx,worky)
+    workx[M] = workx[0]
+    worky[M] = worky[0]
+    return workx[:M], worky[:M]
