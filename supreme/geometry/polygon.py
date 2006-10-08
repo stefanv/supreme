@@ -130,7 +130,7 @@ class Polygon:
           http://astronomy.swin.edu.au/~pbourke/geometry
           
         """
-        return 0.5 * (self.x[:-1] * self.y[1:] - self.x[1:] * self.y[:-1]).sum()
+        return abs(0.5 * (self.x[:-1] * self.y[1:] - self.x[1:] * self.y[:-1]).sum())
 
     def centroid(self):
         """Return the centroid of the polygon
