@@ -93,19 +93,19 @@ class Polygon:
         
         """
 
-        out = []
+        out = N.empty(len(xp),dtype=bool)
         xpi = self.x[1:]
         ypi = self.y[1:]
         # shift        
         xpj = xpi[N.arange(xpi.size)-1]
         ypj = ypi[N.arange(ypi.size)-1]
         maybe = N.empty(len(xpi),dtype=bool)
-        for x,y in zip(xp,yp):
+        for i,(x,y) in enumerate(zip(xp,yp)):
             maybe[:] = ((ypi <= y) & (y < ypj)) | ((ypj <= y) & (y < ypi))
-            out.append(sum(x < (xpj[maybe]-xpi[maybe])*(y - ypi[maybe]) \
-                           / (ypj[maybe] - ypi[maybe]) + xpi[maybe]) % 2)
+            out[i] = sum(x < (xpj[maybe]-xpi[maybe])*(y - ypi[maybe]) \
+                     / (ypj[maybe] - ypi[maybe]) + xpi[maybe]) % 2
 
-        return N.asarray(out,dtype=bool)
+        return out
 
     def inside(self,xp,yp):
         """Check whether the given points are inside the polygon.
