@@ -1,3 +1,5 @@
+# Example originally contributed by Robert Hetland
+
 import numpy as N
 import pylab as P
 from numpy.testing import set_local_path, restore_path
