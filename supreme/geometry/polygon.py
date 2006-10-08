@@ -2,8 +2,8 @@
 # encoding: utf-8
 """Polygon geometry.
 
-Copyright (C) 2006, Robert Hetland
 Copyright (C) 2006, Stefan van der Walt
+Copyright (C) 2006, Robert Hetland
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -32,7 +32,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
 
-import numpy as np
+import numpy as N
 import string
 import sys
 import math
@@ -56,16 +56,16 @@ class Polygon:
         p.centroid() - The centroid of the polygon
         
         """
-        x = np.asarray(xp,dtype=np.float64)
-        y = np.asarray(yp,dtype=np.float64)
+        x = N.asarray(xp,dtype=N.float64)
+        y = N.asarray(yp,dtype=N.float64)
 
         assert x.shape == y.shape, 'Need the same number of x and y coordinates'
         assert x.ndim == 1, 'Vertices should be a 1-dimensional array, but is %s' % str(x.shape)
         assert len(x) >= 3, 'Need 3 vertices to create polygon.'
         
         # close polygon
-        x = np.append(x,x[0])
-        y = np.append(y,y[0])
+        x = N.append(x,x[0])
+        y = N.append(y,y[0])
 
         self.x = x
         self.y = y
@@ -79,27 +79,44 @@ class Polygon:
                                      self.y.__array_interface__['data'][0])
     
     def _inside(self,xp,yp):
-        """Check whether given points are in the polygon.
+        """Check whether the given points are in the polygon.
+        
+        Input:
+          xp -- 1D array of x coordinates for points
+          yp -- 1D array of y coordinates for points
+          
+        Output:
+          inside -- boolean array
 
-        See http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html    
+        See http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+        
         """
 
         out = []
         xpi = self.x[1:]
         ypi = self.y[1:]
         # shift        
-        xpj = xpi[np.arange(xpi.size)-1]
-        ypj = ypi[np.arange(ypi.size)-1]
-        maybe = np.empty(len(xpi),dtype=bool)
+        xpj = xpi[N.arange(xpi.size)-1]
+        ypj = ypi[N.arange(ypi.size)-1]
+        maybe = N.empty(len(xpi),dtype=bool)
         for x,y in zip(xp,yp):
             maybe[:] = ((ypi <= y) & (y < ypj)) | ((ypj <= y) & (y < ypi))
             out.append(sum(x < (xpj[maybe]-xpi[maybe])*(y - ypi[maybe]) \
                            / (ypj[maybe] - ypi[maybe]) + xpi[maybe]) % 2)
 
-        return np.asarray(out,dtype=bool)
+        return N.asarray(out,dtype=bool)
 
     def inside(self,xp,yp):
-        """Return true if (xp,yp) is inside the polygon.
+        """Check whether the given points are inside the polygon.
+        
+        Input:
+          xp -- 1D array of x coordinates for points
+          yp -- 1D array of y coordinates for points
+          
+        Output:
+          inside -- boolean array
+        
+        See http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
         """
         return supreme.ext.npnpoly(self.x,self.y,xp,yp).astype(bool)
@@ -120,4 +137,4 @@ class Polygon:
         """
         x,y = self.x,self.y
         c = x[:-1]*y[1:] - x[1:]*y[:-1]
-        return np.array([(c * (p[:-1] + p[1:])).sum() for p in x,y]) / (6.0*self.area())
+        return N.array([(c * (p[:-1] + p[1:])).sum() for p in x,y]) / (6.0*self.area())
