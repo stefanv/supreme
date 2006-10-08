@@ -64,8 +64,9 @@ class Polygon:
         assert len(x) >= 3, 'Need 3 vertices to create polygon.'
         
         # close polygon
-        x = N.append(x,x[0])
-        y = N.append(y,y[0])
+        if (x[0] != x[-1] or y[0] != y[-1]):
+            x = N.append(x,x[0])
+            y = N.append(y,y[0])
 
         self.x = x
         self.y = y

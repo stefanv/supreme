@@ -66,14 +66,16 @@ def _atype(arrays, types):
 def npnpoly(x_vertices, y_vertices, x_points, y_points):
     """Calculate whether points are in a given polygon.
 
-    The polygon must be closed, i.e. x_vertices[0] == x_vertices[-1].
-
     Returns a boolean array of length len(x_points).
     
     """
     xi,yi,x,y = _atype([x_vertices,y_vertices,
                         x_points,y_points],[N.double]*4)
-    
+
+    if xi[0] != xi[-1] or yi[0] != yi[-1]:
+        xi = N.append(xi,x[0])
+        yi = N.append(yi,y[0])
+
     out = N.empty(len(x),dtype=N.intc)
     
     _lib.npnpoly(len(xi), xi, yi,
