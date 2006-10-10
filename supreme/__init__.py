@@ -7,6 +7,7 @@ import config
 import geometry
 import transform
 import register
+import ext
 
 imread = scipy.misc.pilutil.imread
 test = NumpyTest('supreme').test
