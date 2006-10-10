@@ -40,6 +40,11 @@ libsupreme_api = {
                   [c_int, array_1d_double, array_1d_double,
                    c_double, c_double, c_double, c_double,
                    array_1d_double, array_1d_double]),
+   'correlate' : (None,
+                  [c_int, c_int, array_2d_double,
+                   c_int, c_int, array_2d_double,
+                   c_int, c_int, c_int, c_int,
+                   array_2d_double]),
     }
 
 def register_api(lib,api):
@@ -154,3 +159,45 @@ def poly_clip(x, y, xleft, xright, ytop, ybottom):
     workx[M] = workx[0]
     worky[M] = worky[0]
     return workx[:M], worky[:M]
+
+def correlate(A,B,
+              rows=None,columns=None, mode_row='zero', mode_column='zero'):
+    """Correlate A and B.
+
+    A,B         -- data arrays
+    columns     -- do correlation at columns 0..columns,
+                   defaults to the number of columns in A
+    rows        -- do correlation at columns 0..rows,
+                   defaults to the number of rows in A
+    mode_row,
+    mode_column -- values outside boundaries, 'zero' or 'mirror'
+
+    Returns a rows-by-columns array of correlation values.
+    
+    """
+
+    A,B = _atype([A,B],[N.double,N.double])
+    assert A.ndim == 2 and B.ndim == 2, "Input arrays must be two dimensional"
+
+    A_r,A_c = A.shape
+    B_r,B_c = B.shape
+
+    columns = columns or A_c
+    rows = rows or A_r
+
+    assert rows <= A_r and columns <= A_c, \
+           "columns and rows cannot be larger than dimensions of A"
+
+    modes = {'zero': 0,
+             'mirror': 1}
+        
+    output = N.empty((rows,columns),dtype=N.double)
+    _lib.correlate(A_r, A_c, A,
+                   B_r, B_c, B,
+                   rows, columns,
+                   modes[mode_row], modes[mode_column],
+                   output)
+
+    return output
+                   
+                   

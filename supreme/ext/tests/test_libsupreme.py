@@ -38,7 +38,33 @@ class test_libsupreme(NumpyTestCase):
 
         self.failUnlessRaises(AssertionError, ext.poly_clip, [1],[1,2],0,0,0,0)
         self.failUnlessRaises(AssertionError, ext.poly_clip, [1,2],[1,2],0,10,-1,10)
-        self.failUnlessRaises(AssertionError, ext.poly_clip, [1,2],[1,2],10,0,10,0)        
+        self.failUnlessRaises(AssertionError, ext.poly_clip, [1,2],[1,2],10,0,10,0)
+
+    def test_correlate(self,level=1):
+        assert_equal(ext.correlate([[0,1,2]],[[0,1,2]]),
+                     [[5,2,0]])
+
+        x = [[1,1,2],
+             [3,2,1]]
+        y = [[1,5,3],
+             [3,7,9]]
+
+        assert_equal(ext.correlate(x,y),
+                                   [[44, 24, 5],
+                                    [16, 7,  1]])
+
+        assert_equal(ext.correlate(x,y,mode_column='mirror'),
+                                   [[44, 54, 52],
+                                    [16, 16, 22]])
+
+        assert_equal(ext.correlate(x,y,mode_row='mirror'),
+                     [[44, 24, 5],
+                      [44, 24, 7]])
+
+        assert_equal(ext.correlate(x,y,mode_row='mirror',mode_column='mirror'),
+                     [[44, 54, 52],
+                      [44, 42, 44]])
+       
         
 if __name__ == "__main__":
     NumpyTest().run()
