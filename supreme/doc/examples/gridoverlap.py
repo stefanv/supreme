@@ -13,11 +13,6 @@ from supreme.geometry import Polygon
 from supreme import ext
 restore_path()
 
-
-def plotgrid(grid, mode='k-'):
-    for b in grid:
-        P.plot(b.x, b.y, mode)
-
 grid1 = []
 for col in range(10):
     for row in range(10):
@@ -28,48 +23,70 @@ theta = 3/180.0*N.pi
 t_x = 0.04
 t_y = 0.04
 
-tf = N.array([[N.cos(theta), -N.sin(theta), t_x],
-             [N.sin(theta),  N.cos(theta), t_y],
-             [0,             0,            1]], 'd')
+def tf(angle,offset_x,offset_y):
+    return N.array([[N.cos(angle), -N.sin(angle), offset_x],
+                    [N.sin(angle),  N.cos(angle), offset_y],
+                    [0,             0,            1]], float)
+
+def poly_coords(p):
+    coords = N.empty((3,len(p.x)))
+    coords[0] = p.x
+    coords[1] = p.y
+    coords[2] = 1.
+
+    return coords
 
 # Create grid2 as a rotated version of grid1
 grid2 = []
 for poly in grid1:
-    coords = N.empty((3,len(poly.x)))
-    coords[0] = poly.x
-    coords[1] = poly.y
-    coords[2] = 1.
-    coords = N.dot(tf, coords).transpose()
+    coords = poly_coords(poly)
+    coords = N.dot(tf(theta,t_x,t_y), coords).transpose()
 
     grid2.append(Polygon(coords[:,0], coords[:,1]))
+    
 
-def plot_deformed_grid():
-    plotgrid(grid2)
-    P.axis('equal')
-    P.xticks([])
-    P.yticks([])
-    P.axis([-2,12,-2,12])
-    P.show()
+def plotgrid(ax, grid, mode='k-'):
+    for b in grid:
+        ax.plot(b.x, b.y, mode)
 
-def plot_overlap(N):
+def plot_overlap(n):
     # Select an overlapping pixel and highlight it
-    p1 = grid1[N]
-    p2 = grid2[N]
+    p1 = grid1[n]
+    p2 = grid2[n]
     overlap = zip(*ext.poly_clip(p2.x, p2.y,
                                  p1.x.min(), p1.x.max(),
                                  p1.y.max(), p1.y.min()))
     
-    ax = P.subplot(111)
+    ax = P.subplot(121)
     ax.add_patch(patches.Polygon(zip(p1.x,p1.y), facecolor=[0.7, 0.7, 0.9]))
     ax.add_patch(patches.Polygon(zip(p2.x,p2.y), facecolor=[0.9, 0.8, 0.9]))
-    ax.add_patch(patches.Polygon(overlap, facecolor=[0.3,0.9,0.3]))#facecolor=[0.9, 0.7, 0.7]))    
+    ax.add_patch(patches.Polygon(overlap, facecolor=[0.3,0.9,0.3]))
 
-    plotgrid(grid1, 'r-')
-    plotgrid(grid2, 'b-')
-    P.axis('equal')
-    P.xticks([])
-    P.yticks([])
-    P.axis([-2,12,-2,12])
-    P.show()
+    plotgrid(ax, grid1, 'r-')
+    plotgrid(ax, grid2, 'b-')
+    ax.axis('equal')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.axis([-2,12,-2,12])
+
+    f = P.subplot(122).get_frame()
+#    print [f.get_x(),f.get_y(),f.get_width()/2,f.get_height()/2]    
+#    P.axes()
+
+    coords = poly_coords(Polygon([0,1,1,0],[0,0,1,1]))
+    angles = N.linspace(-N.pi,N.pi,50)
+    offsets = N.linspace(-1,1.5,50)
+    weights = N.zeros((len(angles),len(offsets)))
+    print "Calculating overlaps..."
+    for i,theta in enumerate(angles):
+        for j,offset in enumerate(offsets):
+            x,y = N.dot(tf(theta,offset,offset), coords)[:2]
+            x,y = ext.poly_clip(x,y,0,1,1,0)
+            if len(x) >= 3:
+                weights[i,j] = Polygon(x,y).area()
+    P.imshow(weights)
+    P.xlabel("Offset")
+    P.ylabel("Angle")
 
 plot_overlap(54)
+P.show()
