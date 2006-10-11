@@ -58,7 +58,13 @@ def chirpz2(x,A_row,W_row,M_row,
               A_column,W_column,M_column):
     """Perform the Chirp z-Transform on a 2D signal.
 
-    See chirpz.
+    x -- 2 dimensional input signal
+    A_row,W_row,M_row -- A, W and M applied to rows
+    A_column,W_column,M_column -- A, W and M applied to columns
+
+    Returns the Chirp z-Transform of dimension (M_row,M_column).
+
+    See also: chirpz
 
     """
     y = np.array([chirpz(r,A_row,W_row,M_row) for r in x])
