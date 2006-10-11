@@ -29,7 +29,12 @@ def chirpz(x,A,W,M):
     """
     A = np.complex(A)
     W = np.complex(W)
-    x = np.asarray(x,dtype=SC.ftype)
+    if np.issubdtype(np.complex,x.dtype) or np.issubdtype(np.float,x.dtype):
+        dtype = x.dtype
+    else:
+        dtype = SC.ftype
+
+    x = np.asarray(x,dtype=np.complex)
     
     N = x.size
     L = int(2**np.ceil(np.log2(M+N-1)))
@@ -48,3 +53,18 @@ def chirpz(x,A,W,M):
     g *= np.power(W,k**2 / 2.)
 
     return g
+
+def chirpz2(x,A_row,W_row,M_row,
+              A_column,W_column,M_column):
+    """Perform the Chirp z-Transform on a 2D signal.
+
+    See chirpz.
+
+    """
+    y = np.array([chirpz(r,A_row,W_row,M_row) for r in x])
+    y = np.ascontiguousarray(y.transpose())
+    for r in y:
+        r[:] = chirpz(r,A_column,W_column,M_column)
+        
+    return y.transpose()
+
