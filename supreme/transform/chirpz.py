@@ -38,11 +38,12 @@ def chirpz(x,A,W,M):
     y = np.power(A,-n) * np.power(W,n**2 / 2.) * x 
     Y = np.fft.fft(y,L)
 
-    n = np.arange(L)    
-    v = np.power(W,-n**2/2.)
-    V = np.fft.fft(v,L)
+    v = np.zeros(L,dtype=np.complex)
+    v[:M] = np.power(W,-n[:M]**2/2.)
+    v[L-N+1:] = np.power(W,-n[N-1:0:-1]**2/2.)
+    V = np.fft.fft(v)
     
-    g = np.fft.ifft(V*Y)[N:N+M]
+    g = np.fft.ifft(V*Y)[:M]
     k = np.arange(M)
     g *= np.power(W,k**2 / 2.)
 
