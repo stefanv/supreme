@@ -5,7 +5,7 @@ extern "C" {
 #include <math.h>
 
 void variance_map(int rows, int columns,
-		  double* input, double* output,
+		  unsigned char* input, double* output,
 		  int window_size_rows, int window_size_columns)
 {
     unsigned int offset_rows, offset_columns;

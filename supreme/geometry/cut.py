@@ -7,7 +7,13 @@ from supreme.config import ftype,itype
 restore_path()
 
 def along_path(path,image,shape=(3,3),centre=None):
-    """Cut blocks of shape from image along the specified path."""
+    """Cut blocks of shape from image along the specified path.
+
+    path -- at each point in the path, cut out an image
+    shape -- size of image to cut out
+    centre -- define the centre of the cutout (default: (shape-1)/2)
+
+    """
 
     if len(shape) != 2:
         raise ValueError("Argument shape should be 2-dimensional")

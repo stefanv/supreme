@@ -64,7 +64,12 @@ class test_libsupreme(NumpyTestCase):
         assert_equal(ext.correlate(x,y,mode_row='mirror',mode_column='mirror'),
                      [[44, 54, 52],
                       [44, 42, 44]])
-       
+
+    def test_interp_bilinear(self,level=1):
+        x = N.mgrid[:10,:10].sum(axis=0)
+        out = ext.interp_bilinear(x,[[1,2],[1.5,1.5]],
+                                    [[2,1],[1.5,1.5]])
+        assert_equal(out,[[3,3],[3,3]])
         
 if __name__ == "__main__":
     NumpyTest().run()
