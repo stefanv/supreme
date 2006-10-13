@@ -13,59 +13,70 @@ def stackcopy(a,b):
     else:
         a[:] = b
 
-def logpolar(image,angles=359,order=1):
-    """Perform the log polar transform on an image.
+def _lpcoords(ishape,w,angles=None):
+    """Calculate the reverse coordinates for the log-polar transform.
 
-    angles - Number of angles at which to evaluate.
-    order - Order of splines used in interpolation.
+    Return array is of shape (len(angles),w)
+
     """
 
-    if image.ndim < 2:
-        raise ValueError("Input must have more than 1 dimension.")
-
-    image = N.atleast_3d(image)
-    ishape = N.array(image.shape)
-    if image.ndim > 2:
-        bands = ishape[2]
-    else:
-        bands = 1
-
-    oshape = ishape
-    w = max(ishape[:2])
+    ishape = N.array(ishape)
+    bands = ishape[2]
+    
+    oshape = ishape.copy()
     centre = (ishape[:2]-1)/2.
-    
-    oshape[0] = angles
-    oshape[1] = w
+
     d = N.hypot(*(ishape[:2]-centre))
-    log_base = N.log(d/2)/w
+    log_base = N.log(d)/w
 
-    coords = N.empty(N.r_[3,oshape],dtype=SC.ftype)
-
-    theta = N.empty((angles,w),dtype=SC.ftype)
+    if angles is None:
+        angles =  -N.linspace(0,2*N.pi,359+1)[:-1]
+    theta = N.empty((len(angles),w),dtype=SC.ftype)
     # Use broadcasting to replicate angles
-    theta.transpose()[:] = -N.linspace(0,2*N.pi,angles+1)[:-1]
+    theta.transpose()[:] = angles
     
-    L = N.empty((angles,w),dtype=SC.ftype)
+    L = N.empty_like(theta)
     # Use broadcasting to replicate distances
     L[:] = N.arange(w).astype(SC.ftype)
 
     r = N.exp(L*log_base)
 
-    # y-coordinate mapping
-    stackcopy(coords[0,...], r*N.sin(theta) + centre[0])
+    return r*N.sin(theta) + centre[0], r*N.cos(theta) + centre[1]
 
-    # x-coordinate mapping
-    stackcopy(coords[1,...], r*N.cos(theta) + centre[1])
-    
-    # colour-coordinate mapping
-    coords[2,...] = range(bands)
-    
-    # Prefilter not necessary for order 1 interpolation
-    prefilter = order > 1
-    mapped = ndii.map_coordinates(image,coords,order=order,prefilter=prefilter,
-                                  mode='reflect')
+def logpolar(image,angles=None,output=None,
+             _coords_r=None,_coords_c=None):
+    """Perform the log polar transform on an image.
 
-    return mapped.squeeze()
+    Input:
+    ------
+    image  -- MxNxC image
+    angles -- Angles at which to evaluate. Defaults to 0..2*Pi in 359 steps.
+    
+    Optimisation parameters:
+    ------------------------
+    _coords_r, _coords_c -- Pre-calculated coords, as given by _lpcoords.
+    
+    """
+
+    if image.ndim < 2 or image.ndim > 3:
+        raise ValueError("Input image must be 2 or 3 dimensional.")
+
+    image = N.atleast_3d(image)
+
+    w = max(image.shape[:2])
+
+    if _coords_r is None or _coords_c is None:
+        _coords_r, _coords_c = _lpcoords(image.shape,w,angles)
+
+    bands = image.shape[2]
+    if output is None:
+        output = N.empty(_coords_r.shape + (bands,),dtype=N.uint8)
+    for band in range(bands):
+        output[...,band] = supreme.ext.interp_bilinear(image[...,band],
+                                                       _coords_r,_coords_c,mode='W',
+                                                       output=output[...,band])
+        
+    return output.squeeze()
 
 def matrix(image,matrix,output_shape=None,order=1,mode='constant',
            cval=0.):
@@ -85,9 +96,12 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
      [0 1 20]
      [0 0 1 ]].
 
-    reshape - whether or not to reshape the output to contain
-              the whole transformed image
-    order - order of splines used in interpolation.
+    Input:
+    ------
+    reshape -- whether or not to reshape the output to contain
+               the whole transformed image
+    order   -- order of splines used in interpolation.
+    
     """
 
     if image.ndim < 2:
@@ -95,10 +109,7 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
 
     image = N.atleast_3d(image)
     ishape = N.array(image.shape)
-    if image.ndim > 2:
-        bands = ishape[2]
-    else:
-        bands = 1
+    bands = ishape[2]
         
     if output_shape is None:
         output_shape = ishape

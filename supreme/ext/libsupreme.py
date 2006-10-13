@@ -1,5 +1,5 @@
 import numpy as N
-from ctypes import c_int, c_double, Structure, POINTER
+from ctypes import c_int, c_uint8, c_double, c_char, Structure, POINTER
 
 from numpy.testing import set_local_path, restore_path
 set_local_path('../..')
@@ -11,6 +11,9 @@ _lib = N.ctypeslib.load_library('libsupreme_',__file__)
 array_1d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=1,flags='CONTIGUOUS')
 array_2d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=2,flags='CONTIGUOUS')
 array_1d_int = N.ctypeslib.ndpointer(dtype=N.intc,ndim=1,flags='CONTIGUOUS')
+array_2d_int = N.ctypeslib.ndpointer(dtype=N.intc,ndim=2,flags='CONTIGUOUS')
+array_1d_uchar = N.ctypeslib.ndpointer(dtype=N.uint8,ndim=1,flags='CONTIGUOUS')
+array_2d_uchar = N.ctypeslib.ndpointer(dtype=N.uint8,ndim=2,flags='CONTIGUOUS')
 
 # Define libsupreme API
 
@@ -27,9 +30,9 @@ libsupreme_api = {
    'npnpoly' : (None,
                 [c_int, array_1d_double, array_1d_double,
                  c_int, array_1d_double, array_1d_double,
-                 array_1d_int]),
+                 array_1d_uchar]),
    'variance_map' : (None,
-                     [c_int, c_int, array_2d_double, array_2d_double,
+                     [c_int, c_int, array_2d_uchar, array_2d_double,
                       c_int, c_int]),
                      
    'line_intersect' : (None,
@@ -45,6 +48,10 @@ libsupreme_api = {
                    c_int, c_int, array_2d_double,
                    c_int, c_int, c_int, c_int,
                    array_2d_double]),
+   'interp_bilinear': (None,
+                       [c_int, c_int, array_2d_uchar,
+                        c_int, c_int, array_2d_double, array_2d_double,
+                        c_char, c_uint8, array_2d_uchar]),
     }
 
 def register_api(lib,api):
@@ -65,9 +72,22 @@ def _atype(arrays, types):
     arrays - list of input arrays
     types - list of corresponding types
     
-    """
-    return [N.ascontiguousarray(A).astype(T) for A,T in zip(arrays,types)]
+    """        
+    out = ()
+    try:
+        za = zip(arrays,types)
+    except:
+        za = [(arrays,types)]
 
+    out = ()
+    for A,T in za:
+        try:
+            out += N.ascontiguousarray(A,T),
+        except:
+            out += N.ascontiguousarray(A).astype(T),
+
+    return out
+        
 def npnpoly(x_vertices, y_vertices, x_points, y_points):
     """Calculate whether points are in a given polygon.
 
@@ -81,7 +101,7 @@ def npnpoly(x_vertices, y_vertices, x_points, y_points):
         xi = N.append(xi,x[0])
         yi = N.append(yi,y[0])
 
-    out = N.empty(len(x),dtype=N.intc)
+    out = N.empty(len(x),dtype=N.uint8)
     
     _lib.npnpoly(len(xi), xi, yi,
                  len(x), x, y,
@@ -98,7 +118,7 @@ def variance_map(image, shape=(3,3)):
     the variance of all the pixels in the window is stored.
 
     """
-    image = N.asarray(image).astype(N.double)
+    image, = _atype(image,N.uint8)
     assert image.ndim == 2, "Image must be 2-dimensional"
     window_size_rows, window_size_columns = shape
     rows, columns = image.shape
@@ -199,5 +219,53 @@ def correlate(A,B,
                    output)
 
     return output
-                   
-                   
+
+def interp_bilinear(grey_image,transform_coords_r,transform_coords_c,
+                    mode='N',cval=0,output=None):
+    """Calculate values at given coordinates using bi-linear interpolation.
+
+    The output is of shape transform_coords_*.  For each pair of
+    values (transform_coords_r,transform_coords_c) the input image is
+    interpolated to give the output value at that point.
+
+    Input:
+    ------
+    grey_image          -- Input image of type N.uint8
+    transform_coords_r  -- Coordinates at row positions
+    transform_coords,c  -- Coordinates at column positions
+    mode                -- Values at borders: 'C' for constant, 'M' for mirror
+                           and 'W' for wrap.
+    cval                -- Used in conjunction with mode 'C', this specified
+                           which value is used when the interpolator moves
+                           outside the borders of the input image.
+
+    Optimisation parameters:
+    ------------------------
+    output -- An array of shape transform_coords_r and type N.uint8.  If 'output'
+              is provided, the result is computed in-place.
+
+    Output:
+    -------
+    An image of shape transform_coords_r.shape and type N.uint8.
+
+    """
+    grey_image, = _atype(grey_image,N.uint8)
+    transform_coords_r,transform_coords_c = _atype([transform_coords_r,transform_coords_c],
+                                                   [N.double,N.double])
+    assert grey_image.ndim == 2, "Input image must be 2-dimensional"
+    assert transform_coords_r.ndim == 2 and transform_coords_c.ndim == 2, \
+           "Transform coordinates must be 2-dimensional"
+    if output is None:
+        output = N.empty(transform_coords_r.shape,dtype=N.uint8)        
+    else:
+        output, = _atype(output,N.uint8)
+        output.shape = transform_coords_r.shape        
+
+    rows,columns = grey_image.shape
+    tf_rows,tf_columns = transform_coords_r.shape
+    _lib.interp_bilinear(rows,columns,grey_image,
+                         tf_rows,tf_columns,
+                         transform_coords_r,transform_coords_c,
+                         mode[0],cval,output)
+    
+    return output

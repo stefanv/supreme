@@ -39,7 +39,7 @@ extern "C" {
 #define INF HUGE_VAL
 #define NEARZERO 1e-60
 
-int pnpoly(int nr_verts, double *xp, double *yp, double x, double y)
+unsigned char pnpoly(int nr_verts, double *xp, double *yp, double x, double y)
 /* 
    Code from:
    http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -47,7 +47,8 @@ int pnpoly(int nr_verts, double *xp, double *yp, double x, double y)
    Copyright (c) 1970-2003, Wm. Randolph Franklin
 */
 {
-    int i,j, c = 0;
+    int i,j;
+    unsigned char c = 0;
     for (i = 0, j = nr_verts-1; i < nr_verts; j = i++) {
         if ((((yp[i]<=y) && (y<yp[j])) ||
              ((yp[j]<=y) && (y<yp[i]))) &&
@@ -60,7 +61,7 @@ int pnpoly(int nr_verts, double *xp, double *yp, double x, double y)
 
 void npnpoly(int nr_verts, double *xp, double *yp,
 	     int N, double *x, double *y,
-	     int *result)
+	     unsigned char *result)
 /*
  * For N provided points, calculate whether they are in
  * the polygon defined by vertices *xp, *yp.

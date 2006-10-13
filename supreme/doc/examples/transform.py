@@ -13,7 +13,7 @@ restore_path()
 images = ['misc/nova_grey.png', 'misc/nova.png', 'misc/nova_alpha.png']
 im_descr = {'misc/nova_grey.png': 'Grey-level input',
            'misc/nova.png': 'Colour input',
-	   'misc/nova_alpha.png': 'Alpha layered input'} 
+           'misc/nova_alpha.png': 'Alpha layered input'} 
 for im in images:
     img1 = supreme.imread(os.path.join(supreme.config.data_path,im))
     print "Input image shape: ", img1.shape
@@ -23,15 +23,15 @@ for im in images:
     img2 = supreme.transform.logpolar(img1)
     print "Output image shape: ", img2.shape
     toc = timeit.time.time()
-    print "Transform completed in %.2f seconds." % (toc-tic)
+    print "Transform completed in %.2f seconds.\n" % (toc-tic)
 
     if img2.ndim == 3 and img2.shape[2] == 4:
-	img1[...,1] = img1[...,1] & img1[...,3]
-	img1 = img1[...,0:3]
-	
-	img2[...,1] = img2[...,1] & img2[...,3]
-	img2 = img2[...,0:3]
-	
+        img1[...,1] = img1[...,1] & img1[...,3]
+        img1 = img1[...,0:3]
+
+        img2[...,1] = img2[...,1] & img2[...,3]
+        img2 = img2[...,0:3]
+
     P.figure()
     P.subplot(121)
     P.title(im_descr[im])
