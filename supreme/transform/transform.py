@@ -5,6 +5,7 @@ __all__ = ['logpolar','matrix']
 
 import supreme
 import supreme.config as SC
+from supreme.ext import interp_bilinear
 
 def stackcopy(a,b):
     """a[:,:,0] = a[:,:,1] = ... = b"""
@@ -43,7 +44,7 @@ def _lpcoords(ishape,w,angles=None):
 
     return r*N.sin(theta) + centre[0], r*N.cos(theta) + centre[1]
 
-def logpolar(image,angles=None,output=None,
+def logpolar(image,angles=None,mode='M',cval=0,output=None,
              _coords_r=None,_coords_c=None):
     """Perform the log polar transform on an image.
 
@@ -51,6 +52,9 @@ def logpolar(image,angles=None,output=None,
     ------
     image  -- MxNxC image
     angles -- Angles at which to evaluate. Defaults to 0..2*Pi in 359 steps.
+    mode   -- Value outside border: 'C' for constant, 'M' for mirror and
+              'W' for wrap.
+    cval   -- Outside border value for mode 'C'.
     
     Optimisation parameters:
     ------------------------
@@ -72,9 +76,9 @@ def logpolar(image,angles=None,output=None,
     if output is None:
         output = N.empty(_coords_r.shape + (bands,),dtype=N.uint8)
     for band in range(bands):
-        output[...,band] = supreme.ext.interp_bilinear(image[...,band],
-                                                       _coords_r,_coords_c,mode='W',
-                                                       output=output[...,band])
+        output[...,band] = interp_bilinear(image[...,band],
+                                           _coords_r,_coords_c,mode=mode,
+                                           cval=cval,output=output[...,band])
         
     return output.squeeze()
 
