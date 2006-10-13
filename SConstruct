@@ -1,0 +1,2 @@
+SConscript('supreme/ext/SConstruct')
+
