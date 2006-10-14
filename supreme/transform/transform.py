@@ -75,6 +75,8 @@ def logpolar(image,angles=None,mode='M',cval=0,output=None,
     bands = image.shape[2]
     if output is None:
         output = N.empty(_coords_r.shape + (bands,),dtype=N.uint8)
+    else:
+        output = N.atleast_3d(N.ascontiguousarray(output))
     for band in range(bands):
         output[...,band] = interp_bilinear(image[...,band],
                                            _coords_r,_coords_c,mode=mode,
