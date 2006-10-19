@@ -4,10 +4,13 @@ __all__ = ['logpolar','phase_correlation']
 
 import numpy as N
 import scipy as S
+fft2 = S.fftpack.fft2
+ifft2 = S.fftpack.ifft2
 
 from numpy.testing import set_local_path, restore_path
 import sys
 from itertools import izip
+import timeit
 
 set_local_path('../../..')
 from supreme.config import ftype,itype
@@ -75,32 +78,11 @@ def _peaks(image,nr):
         peaks.append(N.array(q_maxarg) + q.origin)
     return peaks
 
-class ImageSequence(object):
-    """Store a sequence of images with descriptions."""
-    
-    class Image(N.ndarray):
-         """Description wrapper around ndarray"""
-         def __new__(image_cls,arr,info=[{}]):
-             image_cls.info = info
-             return N.array(arr).view(image_cls)
-    
-    def __init__(self,images=None,images_info=None):
-        self.images = []
-        if images is not None:
-            for img in images: self.append(img)
-        if images_info is not None:
-            for i,info in enumerate(images_info):
-                self[i].info = info
-
-    def append(self,image,info=[{}]):
-        self.images.append(self.Image(image,info))
-
-    def __getitem__(self,n):
-        return self.images[n]
-
-    def __iter__(self):
-        for ii in self.image_descr:
-            yield ii
+class ImageInfo(N.ndarray):
+    """Description wrapper around ndarray"""
+    def __new__(image_cls,arr,info={}):
+        image_cls.info = info
+        return N.array(arr).view(image_cls)
             
 def logpolar(ref_img,img_list,window_shape=(65,65),angles=180):
     """Register the given images using log polar transforms.
@@ -135,22 +117,18 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=180):
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
-    reference = []
+    reference_frames = []
     for pos,original,lpt in lpt_on_path(ref_img,_peaks(vm,4),window_shape):
-        reference.append(ImageSequence([original,lpt],[{'pos':pos}]))
+        reference_frames.append({'source':ImageInfo(original,{'pos':pos}),
+                                 'lpt': lpt})
 
     # Calculate Fourier transforms of reference log-polar transforms.
     fft_shape = (angles,window_shape[1]*2-1)
-    for s,seq in enumerate(reference):
-        reference[s].append(S.fftpack.fft2(seq[1][::-1,::-1],fft_shape))
+    for frame in reference_frames:
+        frame['fft'] = fft2(frame['lpt'][::-1,::-1],fft_shape)
 
-    pos_var = N.zeros(len(img_list),
-                      dtype=[('ref',int),('r',int),
-                             ('c',int),('var',N.float)])
-
-    best_match = [[]]*len(img_list)
+    best_matched_frame = [{}]*len(img_list)
     for fnum,frame in enumerate(img_list):
-        import timeit
         tic = timeit.time.time()
         
         print "Calculate variance map for image #", fnum
@@ -161,38 +139,41 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=180):
         for pos_x,cut,lpt_x in lpt_on_path(frame,_peaks(vm,40),window_shape):
             import pylab as P
             # prepare correlation FFT
-            X = S.fftpack.fft2(lpt_x,fft_shape)
-            for s in reference:
-                corr = abs(S.fftpack.ifft2(X*s[2]))/N.sqrt((lpt_x**2).sum()*(s[1]**2).sum())
+            X = fft2(lpt_x,fft_shape)
+            for rf in reference_frames:
+                corr = abs(ifft2(X*rf['fft']))
+                corr /= N.sqrt((lpt_x**2).sum()*(rf['lpt']**2).sum())
                 corr_max_arg = corr.argmax()
 
-                try:
-                    max_corr_sofar = best_match[fnum][0].info['variance']
-                except:
+                bmf = best_matched_frame[fnum]
+                if bmf.has_key('source'):
+                    max_corr_sofar = bmf['source'].info['variance']
+                else:
                     max_corr_sofar = 0
 
                 print max_corr_sofar
                 if corr.flat[corr_max_arg] > max_corr_sofar:
                     rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
-                    import copy
-                    best_match[fnum] = ImageSequence([cut,lpt_x,X],
-                                         [{'variance': corr.flat[corr_max_arg],
+                    bmf.update({'source': ImageInfo(cut,
+                                          {'variance': corr.flat[corr_max_arg],
                                            'position': pos_x,
                                            'rotation': rotation,
                                            'scale': scale,
-                                           'reference': s}])
+                                           'reference': rf}),
+                                'lpt': lpt_x,
+                                'fft': X})
 
         toc = timeit.time.time()
         print "Registration completed in %.2f seconds.\n" % (toc-tic)
 
-    for s in best_match:
+    for f in best_matched_frame:
         import pylab as P
         P.subplot(121)
-        P.imshow(s[0].info['reference'][0])
+        P.imshow(f['source'].info['reference']['source'])
         ws = [[c] for c in window_shape[::-1]/2]
         P.plot(ws[0],ws[1],'o')
         P.subplot(122)
-        P.imshow(s[0])
+        P.imshow(f['source'])
         P.plot(ws[0],ws[1],'o')        
         P.show()
 
