@@ -15,5 +15,15 @@ from supreme import register
 restore_path()
 
 images = [supreme.imread(fn,flatten=True) for fn in glob.glob(os.path.join(data_path,'toystory/*.png'))]
+#images = [supreme.imread(fn,flatten=True) for fn in glob.glob(os.path.join(data_path,'test/flower*.jpg'))]
 
-print register.logpolar(images[0],images[1:])
+frames = images[:13]
+tf_matrices = register.logpolar(frames[0],frames[1:])
+tf_matrices = [N.eye(3)] + tf_matrices
+
+print "Reconstructing..."
+out = register.stack.with_transform(frames,tf_matrices)
+
+P.imshow(out,cmap=P.cm.gray)
+P.show()
+

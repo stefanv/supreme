@@ -4,6 +4,7 @@ __all__ = ['logpolar','phase_correlation']
 
 import numpy as N
 import scipy as S
+from scipy import ndimage as ndi
 fft2 = S.fftpack.fft2
 ifft2 = S.fftpack.ifft2
 
@@ -87,7 +88,7 @@ def _clearborder(image,border_shape):
     rows,cols = image.shape
     br,bc = border_shape
     image[:br,:] = 0
-    image[rows-br,:] = 0
+    image[rows-br:,:] = 0
     image[:,:bc] = 0
     image[:,cols-bc:] = 0
     return image
@@ -103,7 +104,7 @@ class ImageInfo(N.ndarray):
             self.info = obj.info
         return
             
-def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
+def logpolar(ref_img,img_list,window_shape=None,angles=360):
     """Register the given images using log polar transforms.
 
     The output is a list of 3x3 arrays.
@@ -114,7 +115,7 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
     for img in img_list:
         assert ref_img.shape == img.shape
 
-    window_shape = N.array(window_shape)
+    window_shape = N.array(img.shape)/5 + 1
 
     # Pre-calculate coordinates for log-polar transforms
     angle_samples = N.linspace(-N.pi/2,N.pi/2,angles)
@@ -132,15 +133,23 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
 
     # Divide reference frame into 4 quadrants and calculate log-polar
     # transforms at points of maximum variance.
-    vm = SR.ext.variance_map(ref_img,shape=window_shape/4)
-    vm = _clearborder(vm,window_shape/2)    
+
+    # High-pass filter
+    vmsource = ndi.correlate(ref_img,[[0,1,0],[1,-1,1],[0,1,0]])
+    vm = SR.ext.variance_map(vmsource,shape=window_shape/4)
+    vm = vm/vm.max()
+    vm = _clearborder(vm,window_shape/2)
+
+##     import pylab as P
+##     P.imshow(vm)
+##     P.show()
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
     reference_frames = []
-    ref_pos = _peaks(vm,4)
+    ref_pos = _peaks(vm,4,0.2)
     ref_var = [vm[tuple(p)] for p in ref_pos]
-    for pos,original,lpt in lpt_on_path(ref_img,ref_pos,window_shape):        
+    for pos,original,lpt in lpt_on_path(ref_img,ref_pos,window_shape):
         reference_frames.append({'source':ImageInfo(original,{'pos':pos}),
                                  'lpt': lpt})
 
@@ -152,10 +161,12 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
     best_matched_frame = [{} for i in xrange(len(img_list))]
     for fnum,frame in enumerate(img_list):
         tic = timeit.time.time()
-        bmf = best_matched_frame[fnum]        
+        bmf = best_matched_frame[fnum]
         
         print "Calculate variance map for image #", fnum
-        vm = SR.ext.variance_map(frame,shape=window_shape/4)
+        vmframe = ndi.correlate(frame,[[0,1,0],[1,-1,1],[0,1,0]])        
+        vm = SR.ext.variance_map(vmframe,shape=window_shape/4)
+        vm = vm/vm.max()
         vm = _clearborder(vm,window_shape/2)
 
         print "Performing log polar transforms and correlations..."
@@ -171,7 +182,8 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
 
                 if corr.flat[corr_max_arg] > max_corr_sofar:
                     rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
-                    rotation -= fft_shape[0]
+                    rotation = angle_samples[rotation-1] - N.pi/2
+                    print "rot",rotation
                     scale -= fft_shape[1]/2
                     max_corr_sofar = corr.flat[corr_max_arg]
                     if max_corr_sofar < 0.6:
@@ -200,20 +212,37 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
         print "Frame #%d" % fnum
-        print info['rotation']
-        print info['scale']
-        print info['quality']
+        print "Rotation:", info['rotation']/N.pi*180
+        print "Scale:", info['scale']
+        print "Quality:", info['quality']
         print
         
-        import pylab as P
-        P.subplot(121)
-        P.imshow(f['source'].info['reference']['source'])
-        ws = [[c] for c in window_shape[::-1]/2]
-        P.plot(ws[0],ws[1],'o')
-        P.subplot(122)
-        P.imshow(f['source'])
-        P.plot(ws[0],ws[1],'o')        
-        P.show()
+##         import pylab as P
+##         P.subplot(121)
+##         P.imshow(f['source'].info['reference']['source'])
+##         ws = [[c] for c in window_shape[::-1]/2]
+##         P.plot(ws[0],ws[1],'o')
+##         P.subplot(122)
+##         P.imshow(f['source'])
+##         P.plot(ws[0],ws[1],'o')        
+##         P.show()
+
+    tf_matrices = []
+    for fnum,f in enumerate(best_matched_frame):
+        info = f['source'].info
+        theta = -info['rotation']
+        M = N.array([[N.cos(theta),-N.sin(theta),0],
+                     [N.sin(theta),N.cos(theta),0],
+                     [0,0,1]])
+
+        ref_p = N.append(info['reference']['source'].info['pos'][::-1],1)
+        p = N.append(info['position'][::-1],1)
+
+        delta = ref_p - N.dot(p,M.T)
+        M[:2,2] += delta[:2]
+        tf_matrices.append(M)
+
+    return tf_matrices
 
 def phase_correlation(img,img_list):
     """Register offset by phase correlation.
