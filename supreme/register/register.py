@@ -8,6 +8,7 @@ fft2 = S.fftpack.fft2
 ifft2 = S.fftpack.ifft2
 
 from numpy.testing import set_local_path, restore_path
+
 import sys
 from itertools import izip
 import timeit
@@ -69,22 +70,40 @@ def _rects(shape,divide_rows,divide_cols):
 
     return rects
 
-def _peaks(image,nr):
+def _peaks(image,nr,minvar=0):
+    """Divide image into nr quadrants and return peak value positions."""
     n = N.ceil(N.sqrt(nr))
     quadrants = _rects(image.shape,n,n)
     peaks = []
     for q in quadrants:
-        q_maxarg = N.unravel_index(image[q.as_slice()].argmax(),q.shape)
-        peaks.append(N.array(q_maxarg) + q.origin)
+        q_image = image[q.as_slice()]
+        q_argmax = q_image.argmax()
+        q_maxpos = N.unravel_index(q_argmax,q.shape)
+        if q_image.flat[q_argmax] > minvar:
+            peaks.append(N.array(q_maxpos) + q.origin)
     return peaks
+
+def _clearborder(image,border_shape):
+    rows,cols = image.shape
+    br,bc = border_shape
+    image[:br,:] = 0
+    image[rows-br,:] = 0
+    image[:,:bc] = 0
+    image[:,cols-bc:] = 0
+    return image
 
 class ImageInfo(N.ndarray):
     """Description wrapper around ndarray"""
     def __new__(image_cls,arr,info={}):
-        image_cls.info = info
-        return N.array(arr).view(image_cls)
+        x = N.array(arr).view(image_cls)
+        x.info = info
+        return x
+    def __array_finalize__(self, obj):
+        if hasattr(obj,'info'):
+            self.info = obj.info
+        return
             
-def logpolar(ref_img,img_list,window_shape=(65,65),angles=180):
+def logpolar(ref_img,img_list,window_shape=(65,65),angles=90):
     """Register the given images using log polar transforms.
 
     The output is a list of 3x3 arrays.
@@ -114,11 +133,14 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=180):
     # Divide reference frame into 4 quadrants and calculate log-polar
     # transforms at points of maximum variance.
     vm = SR.ext.variance_map(ref_img,shape=window_shape/4)
+    vm = _clearborder(vm,window_shape/2)    
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
     reference_frames = []
-    for pos,original,lpt in lpt_on_path(ref_img,_peaks(vm,4),window_shape):
+    ref_pos = _peaks(vm,4)
+    ref_var = [vm[tuple(p)] for p in ref_pos]
+    for pos,original,lpt in lpt_on_path(ref_img,ref_pos,window_shape):        
         reference_frames.append({'source':ImageInfo(original,{'pos':pos}),
                                  'lpt': lpt})
 
@@ -127,46 +149,62 @@ def logpolar(ref_img,img_list,window_shape=(65,65),angles=180):
     for frame in reference_frames:
         frame['fft'] = fft2(frame['lpt'][::-1,::-1],fft_shape)
 
-    best_matched_frame = [{}]*len(img_list)
+    best_matched_frame = [{} for i in xrange(len(img_list))]
     for fnum,frame in enumerate(img_list):
         tic = timeit.time.time()
+        bmf = best_matched_frame[fnum]        
         
         print "Calculate variance map for image #", fnum
         vm = SR.ext.variance_map(frame,shape=window_shape/4)
+        vm = _clearborder(vm,window_shape/2)
 
-        print "Performing log polar transforms and correlations..."        
-
-        for pos_x,cut,lpt_x in lpt_on_path(frame,_peaks(vm,40),window_shape):
-            import pylab as P
+        print "Performing log polar transforms and correlations..."
+        max_corr_sofar = 0
+        for pos,cut,lpt in lpt_on_path(frame,_peaks(vm,40,0.95*min(ref_var)),window_shape):
             # prepare correlation FFT
-            X = fft2(lpt_x,fft_shape)
+            X = fft2(lpt,fft_shape)
+            
             for rf in reference_frames:
                 corr = abs(ifft2(X*rf['fft']))
-                corr /= N.sqrt((lpt_x**2).sum()*(rf['lpt']**2).sum())
+                corr /= (N.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
                 corr_max_arg = corr.argmax()
 
-                bmf = best_matched_frame[fnum]
-                if bmf.has_key('source'):
-                    max_corr_sofar = bmf['source'].info['variance']
-                else:
-                    max_corr_sofar = 0
-
-                print max_corr_sofar
                 if corr.flat[corr_max_arg] > max_corr_sofar:
                     rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
+                    rotation -= fft_shape[0]
+                    scale -= fft_shape[1]/2
+                    max_corr_sofar = corr.flat[corr_max_arg]
+                    if max_corr_sofar < 0.6:
+                        quality = 'rejected'
+                    elif max_corr_sofar < 0.7:
+                        quality = 'bad'
+                    elif max_corr_sofar < 0.8:
+                        quality = 'good'
+                    else:
+                        quality = 'stable'
+
                     bmf.update({'source': ImageInfo(cut,
-                                          {'variance': corr.flat[corr_max_arg],
-                                           'position': pos_x,
-                                           'rotation': rotation,
-                                           'scale': scale,
-                                           'reference': rf}),
-                                'lpt': lpt_x,
+                                                    {'variance': max_corr_sofar,
+                                                     'position': pos,
+                                                     'rotation': rotation,
+                                                     'scale': scale,
+                                                     'reference': rf,
+                                                     'quality': quality}),
+                                'lpt': lpt,
                                 'fft': X})
 
         toc = timeit.time.time()
+        print "Peak correlation was", best_matched_frame[fnum]['source'].info['variance']        
         print "Registration completed in %.2f seconds.\n" % (toc-tic)
 
-    for f in best_matched_frame:
+    for fnum,f in enumerate(best_matched_frame):
+        info = f['source'].info
+        print "Frame #%d" % fnum
+        print info['rotation']
+        print info['scale']
+        print info['quality']
+        print
+        
         import pylab as P
         P.subplot(121)
         P.imshow(f['source'].info['reference']['source'])

@@ -16,4 +16,4 @@ restore_path()
 
 images = [supreme.imread(fn,flatten=True) for fn in glob.glob(os.path.join(data_path,'toystory/*.png'))]
 
-print register.logpolar(images[0],images[2:3])
+print register.logpolar(images[0],images[1:])
