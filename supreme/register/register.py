@@ -132,6 +132,48 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
             lpt = SR.transform.logpolar(cut,_coords_r=cr,_coords_c=cc)
             yield (pos,cut,lpt - lpt.mean())
 
+    def lpt_corr(reference_frames,frame,descr,path,window_shape,fft_shape):
+        try:
+            print descr['source'].info['variance'], "<<<"
+            max_corr_sofar = descr['source'].info['variance']
+        except:
+            max_corr_sofar = 0
+        for pos,cut,lpt in lpt_on_path(frame,path,window_shape):
+            # prepare correlation FFT
+            X = fft2(lpt,fft_shape)
+            
+            for rf in reference_frames:
+                corr = abs(ifft2(X*rf['fft']))
+                corr /= (N.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
+                corr_max_arg = corr.argmax()
+
+                if corr.flat[corr_max_arg] > max_corr_sofar:
+                    print corr.flat[corr_max_arg]
+                    rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
+                    rotation = angle_samples[rotation-1] - N.pi/2
+                    scale -= fft_shape[1]/2
+                    max_corr_sofar = corr.flat[corr_max_arg]
+                    if max_corr_sofar < 0.6:
+                        quality = 'rejected'
+                    elif max_corr_sofar < 0.7:
+                        quality = 'bad'
+                    elif max_corr_sofar < 0.8:
+                        quality = 'good'
+                    elif max_corr_sofar < 0.85:
+                        quality = 'stable'
+                    else:
+                        quality = 'trusted'
+
+                    descr.update({'source': ImageInfo(cut,
+                                                    {'variance': max_corr_sofar,
+                                                     'position': pos,
+                                                     'rotation': rotation,
+                                                     'scale': scale,
+                                                     'reference': rf,
+                                                     'quality': quality}),
+                                'lpt': lpt,
+                                'fft': X})
+
     # Divide reference frame into 4 quadrants and calculate log-polar
     # transforms at points of maximum variance.
 
@@ -140,10 +182,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
     vm = SR.ext.variance_map(vmsource,shape=window_shape/4)
     vm = vm/vm.max()
     vm = _clearborder(vm,window_shape/2)
-
-##     import pylab as P
-##     P.imshow(vm)
-##     P.show()
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
@@ -170,45 +208,18 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
         vm = _clearborder(vm,window_shape/2)
 
         print "Performing log polar transforms and correlations..."
-        max_corr_sofar = 0
         path = _peaks(vm,40,0.95*min(ref_var))
-        for pos,cut,lpt in lpt_on_path(frame,path,window_shape):
-            # prepare correlation FFT
-            X = fft2(lpt,fft_shape)
-            
-            for rf in reference_frames:
-                corr = abs(ifft2(X*rf['fft']))
-                corr /= (N.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
-                corr_max_arg = corr.argmax()
-
-                if corr.flat[corr_max_arg] > max_corr_sofar:
-                    rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
-                    rotation = angle_samples[rotation] - N.pi/2
-                    print "rot",rotation
-                    scale -= fft_shape[1]/2
-                    max_corr_sofar = corr.flat[corr_max_arg]
-                    if max_corr_sofar < 0.6:
-                        quality = 'rejected'
-                    elif max_corr_sofar < 0.7:
-                        quality = 'bad'
-                    elif max_corr_sofar < 0.8:
-                        quality = 'good'
-                    else:
-                        quality = 'stable'
-
-                    bmf.update({'source': ImageInfo(cut,
-                                                    {'variance': max_corr_sofar,
-                                                     'position': pos,
-                                                     'rotation': rotation,
-                                                     'scale': scale,
-                                                     'reference': rf,
-                                                     'quality': quality}),
-                                'lpt': lpt,
-                                'fft': X})
+        lpt_corr(reference_frames,frame,bmf,path,window_shape,fft_shape)
 
         toc = timeit.time.time()
         print "Peak correlation was", best_matched_frame[fnum]['source'].info['variance']        
         print "Registration completed in %.2f seconds.\n" % (toc-tic)
+
+    for fnum,frame in enumerate(img_list):
+        print "Refining frame %d..." % fnum
+        bmf = best_matched_frame[fnum]        
+        path = (N.mgrid[-4:5,-4:5].T + bmf['source'].info['position']).reshape((-1,2))
+        lpt_corr([bmf['source'].info['reference']],frame,bmf,path,window_shape,fft_shape)
 
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
@@ -231,7 +242,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
     tf_matrices = []
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
-        if info['variance'] > 0.85:
+        if info['quality'] in ['trusted']:
             accepted_frames.append(fnum)
         else:
             continue
@@ -283,9 +294,8 @@ def refine(reference,target,tf_matrix):
         """Calculate difference between reference and transformed target."""
         tf_matrix = _build_tf(p)
         diff = reference - SR.transform.matrix(target,tf_matrix)
-        # do polygon overlap check
-        rows,cols = diff.shape
-        br,bc = N.array(diff.shape)/4
+        # TODO: do polygon overlap check
+        _clearborder(diff,N.array(diff.shape)/4)
         return N.square(diff).sum()
 
     theta = N.arccos(tf_matrix[0,0])
@@ -293,7 +303,7 @@ def refine(reference,target,tf_matrix):
     ty = tf_matrix[1,2]
 
     p = [theta,tx,ty]
-    p = scipy.optimize.fmin(_tf_difference,p,
-                            args=(reference,target))
+    p = scipy.optimize.fmin_cg(_tf_difference,p,
+                               args=(reference,target))
     return _build_tf(p)
 
