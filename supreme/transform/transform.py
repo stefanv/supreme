@@ -104,9 +104,9 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
 
     Input:
     ------
-    reshape -- whether or not to reshape the output to contain
-               the whole transformed image
     order   -- order of splines used in interpolation.
+    mode    -- passed to ndimage -- what to do outside boundaries
+    cval    -- value to return outside boundaries, if mode is 'constant'
     
     """
 

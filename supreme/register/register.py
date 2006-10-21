@@ -1,10 +1,11 @@
 """Perform image registration."""
 
-__all__ = ['logpolar','phase_correlation']
+__all__ = ['logpolar','phase_correlation','refine']
 
 import numpy as N
 import scipy as S
 from scipy import ndimage as ndi
+import scipy.optimize
 fft2 = S.fftpack.fft2
 ifft2 = S.fftpack.ifft2
 
@@ -104,7 +105,7 @@ class ImageInfo(N.ndarray):
             self.info = obj.info
         return
             
-def logpolar(ref_img,img_list,window_shape=None,angles=360):
+def logpolar(ref_img,img_list,window_shape=None,angles=180):
     """Register the given images using log polar transforms.
 
     The output is a list of 3x3 arrays.
@@ -115,7 +116,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
     for img in img_list:
         assert ref_img.shape == img.shape
 
-    window_shape = N.array(img.shape)/5 + 1
+    window_shape = N.array(img.shape,dtype=int)/5 + 1
 
     # Pre-calculate coordinates for log-polar transforms
     angle_samples = N.linspace(-N.pi/2,N.pi/2,angles)
@@ -163,7 +164,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
         tic = timeit.time.time()
         bmf = best_matched_frame[fnum]
         
-        print "Calculate variance map for image #", fnum
         vmframe = ndi.correlate(frame,[[0,1,0],[1,-1,1],[0,1,0]])        
         vm = SR.ext.variance_map(vmframe,shape=window_shape/4)
         vm = vm/vm.max()
@@ -171,7 +171,8 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
 
         print "Performing log polar transforms and correlations..."
         max_corr_sofar = 0
-        for pos,cut,lpt in lpt_on_path(frame,_peaks(vm,40,0.95*min(ref_var)),window_shape):
+        path = _peaks(vm,40,0.95*min(ref_var))
+        for pos,cut,lpt in lpt_on_path(frame,path,window_shape):
             # prepare correlation FFT
             X = fft2(lpt,fft_shape)
             
@@ -182,7 +183,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
 
                 if corr.flat[corr_max_arg] > max_corr_sofar:
                     rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
-                    rotation = angle_samples[rotation-1] - N.pi/2
+                    rotation = angle_samples[rotation] - N.pi/2
                     print "rot",rotation
                     scale -= fft_shape[1]/2
                     max_corr_sofar = corr.flat[corr_max_arg]
@@ -214,8 +215,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
         print "Frame #%d" % fnum
         print "Rotation:", info['rotation']/N.pi*180
         print "Scale:", info['scale']
-        print "Quality:", info['quality']
-        print
+        print "Quality:", info['quality']        
         
 ##         import pylab as P
 ##         P.subplot(121)
@@ -227,9 +227,15 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
 ##         P.plot(ws[0],ws[1],'o')        
 ##         P.show()
 
+    accepted_frames = []
     tf_matrices = []
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
+        if info['variance'] > 0.85:
+            accepted_frames.append(fnum)
+        else:
+            continue
+            
         theta = -info['rotation']
         M = N.array([[N.cos(theta),-N.sin(theta),0],
                      [N.sin(theta),N.cos(theta),0],
@@ -242,7 +248,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=360):
         M[:2,2] += delta[:2]
         tf_matrices.append(M)
 
-    return tf_matrices
+    return accepted_frames,tf_matrices
 
 def phase_correlation(img,img_list):
     """Register offset by phase correlation.
@@ -264,3 +270,30 @@ def phase_correlation(img,img_list):
     P.show()
     P.close()
     
+def refine(reference,target,tf_matrix):
+    """Refine registration parameters iteratively."""
+    def _build_tf(p):
+        C = N.cos(p[0])
+        S = N.sin(p[0])        
+        return N.array([[C,-S,p[1]],
+                        [S,C,p[1]],
+                        [0,0,1]])
+    
+    def _tf_difference(p,reference,target):
+        """Calculate difference between reference and transformed target."""
+        tf_matrix = _build_tf(p)
+        diff = reference - SR.transform.matrix(target,tf_matrix)
+        # do polygon overlap check
+        rows,cols = diff.shape
+        br,bc = N.array(diff.shape)/4
+        return N.square(diff).sum()
+
+    theta = N.arccos(tf_matrix[0,0])
+    tx = tf_matrix[0,2]
+    ty = tf_matrix[1,2]
+
+    p = [theta,tx,ty]
+    p = scipy.optimize.fmin(_tf_difference,p,
+                            args=(reference,target))
+    return _build_tf(p)
+
