@@ -42,6 +42,7 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant'):
 
     Each image is transformed, weighted by the given weight and
     stacked.
+    
     """
     nr_images = len(images)
     if weights is None:
@@ -70,10 +71,11 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant'):
     oshape[:2][::-1] = N.absolute(bbox_bottom_right - bbox_top_left).astype(int)+1
 
     out = N.zeros(oshape,dtype=SC.ftype)
-    for img,tf_matrix,weight in zip(images,matrices,weights):
-        tf_matrix[:2,2] = tf_matrix[:2,2] - bbox_top_left
+    for img,tf_matrix,weight in zip(images,affine_matrices,weights):
+        tf_matrix = tf_matrix.copy()
+        tf_matrix[:2,2] -= bbox_top_left
         out += weight * transform.matrix(img,tf_matrix,
                                          output_shape=oshape,order=order,
                                          mode=mode)
 
-    return out
+    return out / sum(weights)

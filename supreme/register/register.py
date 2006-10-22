@@ -182,6 +182,8 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
     vm = SR.ext.variance_map(vmsource,shape=window_shape/4)
     vm = vm/vm.max()
     vm = _clearborder(vm,window_shape/2)
+    import pylab as P
+    P.imshow(vm)
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
@@ -242,7 +244,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
     tf_matrices = []
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
-        if info['quality'] in ['trusted']:
+        if info['quality'] in ['stable','trusted']:
             accepted_frames.append(fnum)
         else:
             continue
@@ -282,12 +284,12 @@ def phase_correlation(img,img_list):
     P.close()
     
 def refine(reference,target,tf_matrix):
-    """Refine registration parameters iteratively."""
+    """Refine registration parameters iteratively."""    
     def _build_tf(p):
         C = N.cos(p[0])
         S = N.sin(p[0])        
         return N.array([[C,-S,p[1]],
-                        [S,C,p[1]],
+                        [S,C,p[2]],
                         [0,0,1]])
     
     def _tf_difference(p,reference,target):
@@ -295,15 +297,12 @@ def refine(reference,target,tf_matrix):
         tf_matrix = _build_tf(p)
         diff = reference - SR.transform.matrix(target,tf_matrix)
         # TODO: do polygon overlap check
-        _clearborder(diff,N.array(diff.shape)/4)
+#        _clearborder(diff,N.array(diff.shape)/3)
         return N.square(diff).sum()
 
-    theta = N.arccos(tf_matrix[0,0])
-    tx = tf_matrix[0,2]
-    ty = tf_matrix[1,2]
-
-    p = [theta,tx,ty]
+    p = [N.arccos(tf_matrix[0,0]),tf_matrix[0,2],tf_matrix[1,2]]
     p = scipy.optimize.fmin_cg(_tf_difference,p,
                                args=(reference,target))
+    
     return _build_tf(p)
 
