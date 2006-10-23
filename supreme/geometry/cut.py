@@ -34,6 +34,7 @@ def along_path(path,image,shape=(3,3),centre=None):
     oshape = N.array(image.shape)
     oshape[:2] = shape
     for p in path:
+        p = N.asarray(p,dtype=int)
         out = N.zeros(oshape,dtype=image.dtype)
 
         # Coordinates in the target matrix
