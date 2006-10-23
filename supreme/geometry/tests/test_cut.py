@@ -35,6 +35,12 @@ class test_cut(NumpyTestCase):
         cp = cut.along_path(p,image,shape=(5,5),centre=(0,0))
         list(cp)
 
+    def check_completely_outside(self):
+        p = (50,50)
+        image = N.arange(12).reshape((4,3))
+        cp = cut.along_path(p,image,shape=(5,5),centre=(0,0))
+        list(cp)
+
     def check_2D(self):
         self.failUnlessRaises(ValueError,
                               cut.along_path(None,None,shape=(3,3,3)).next)

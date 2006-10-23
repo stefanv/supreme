@@ -40,16 +40,19 @@ def along_path(path,image,shape=(3,3),centre=None):
         cut_coords = block_coords - centre + p
 
         # Limit the coordinates to the matrix extent
-        cut_coords = N.where((cut_coords >= img_limits[[0]]) &
+        cut_coords = N.where((cut_coords >= img_limits[[0]]) & \
                              (cut_coords <= img_limits[[1]]),
                              cut_coords, img_limits)
 
         # Position of limited coordinates in input
         rc = cut_coords - p + centre
 
-        dest_idx = [slice(*coord) for coord in rc.transpose()]
-        src_idx = [slice(*coord) for coord in cut_coords.transpose()]
+        # Check for case where requested cut is completely outside image
+        invalid_idx = N.any(cut_coords < 0) | N.any(rc < 0)
 
-        out[dest_idx] = image[src_idx]
-
+        if not invalid_idx:
+            dest_idx = [slice(*coord) for coord in rc.transpose()]
+            src_idx = [slice(*coord) for coord in cut_coords.transpose()]
+            out[dest_idx] = image[src_idx]
+        
         yield out
