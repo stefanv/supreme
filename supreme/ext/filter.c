@@ -5,8 +5,8 @@ extern "C" {
 #include <math.h>
 
 void variance_map(int rows, int columns,
-		  unsigned char* input, double* output,
-		  int window_size_rows, int window_size_columns)
+                  unsigned char* input, double* output,
+                  int window_size_rows, int window_size_columns)
 {
     unsigned int offset_rows, offset_columns;
     unsigned int r, c, j, k, rr, cc, N;
@@ -17,36 +17,36 @@ void variance_map(int rows, int columns,
     N = window_size_columns * window_size_rows;
 
     for (r = 0; r < rows; r++) {
-	for (c = 0; c < columns; c++) {
-	    j = r*columns + c;
+        for (c = 0; c < columns; c++) {
+            j = r*columns + c;
 
-	    mean = 0;
-	    var = 0;
+            mean = 0;
+            var = 0;
 
-	    if ((r >= offset_rows) && (r < rows - offset_rows) &&
-		(c >= offset_columns) && (c < columns - offset_columns)) {
+            if ((r >= offset_rows) && (r < rows - offset_rows - 1) &&
+                (c >= offset_columns) && (c < columns - offset_columns - 1)) {
 
-		/* Calculate mean */
-		for (rr = 0; rr < window_size_rows; rr++)
-		    for (cc = 0; cc < window_size_columns; cc++) {
-			k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
-			mean += input[k];
-		    }
-		mean = mean / N;
-	 
-		/* Calculate variance */
-		for (rr = 0; rr < window_size_rows; rr++)
-		    for (cc = 0; cc < window_size_columns; cc++) {
-			k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
-			var += pow(input[k] - mean, 2);
-		    }
-		var = var / N;
+                /* Calculate mean */
+                for (rr = 0; rr < window_size_rows; rr++)
+                    for (cc = 0; cc < window_size_columns; cc++) {
+                        k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
+                        mean += input[k];
+                    }
+                mean = mean / N;
 
-		output[j] = var;
-	    } else {
-		output[j] = 0;
-	    }
-	}
+                /* Calculate variance */
+                for (rr = 0; rr < window_size_rows; rr++)
+                    for (cc = 0; cc < window_size_columns; cc++) {
+                        k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
+                        var += pow(input[k] - mean, 2);
+                    }
+                var = var / N;
+
+                output[j] = var;
+            } else {
+                output[j] = 0;
+            }
+        }
     }
 }
 
