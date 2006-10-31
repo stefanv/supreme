@@ -23,8 +23,9 @@ void variance_map(int rows, int columns,
             mean = 0;
             var = 0;
 
-            if ((r >= offset_rows) && (r < rows - offset_rows - 1) &&
-                (c >= offset_columns) && (c < columns - offset_columns - 1)) {
+	    /* Possible memory leak for windows of length % 2 == 0 -- run valgrind to check */
+            if ((r >= offset_rows) && (r < rows - offset_rows) &&
+                (c >= offset_columns) && (c < columns - offset_columns)) {
 
                 /* Calculate mean */
                 for (rr = 0; rr < window_size_rows; rr++)
