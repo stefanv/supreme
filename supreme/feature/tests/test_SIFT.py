@@ -8,7 +8,7 @@ from supreme import feature
 restore_path()
 
 class test_SIFT(NumpyTestCase):
-    def check_read(self):
+    def check_read_SIFT(self):
         f = TemporaryFile()
         f.write('''2 128
 133.92 135.88 14.38 -2.732
@@ -35,16 +35,6 @@ class test_SIFT(NumpyTestCase):
         assert_equal(len(features['data'][0]),128)
         assert_equal(features['row'][0],133.92)
         assert_equal(features['column'][1],99.75)
-
-    def check_match_features(self):
-        f = [[0,1,2,3],
-             [3,2,1,2],
-             [0,1,2,3.1]]
-        featureset = [[3,2,1,0],[0,1,2,3],[9,10,11,12],[3,2,1,0.5]]
-        match,dists,valid = feature.SIFT.match_features(f,featureset)
-        assert_equal(match,[1,3,1])
-        assert_equal(valid,[True,False,True])
-        assert_almost_equal(dists,[0,1.5,0.1])
 
 if __name__ == "__main__":
     NumpyTest().run()
