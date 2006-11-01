@@ -8,6 +8,7 @@ import geometry
 import transform
 import register
 import ext
+import io
 
 imread = scipy.misc.pilutil.imread
 test = NumpyTest('supreme').test
