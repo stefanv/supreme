@@ -4,7 +4,7 @@ from numpy.testing import *
 from tempfile import TemporaryFile
 
 set_local_path('../../..')
-from supreme import io
+from supreme import feature
 restore_path()
 
 class test_SIFT(NumpyTestCase):
@@ -28,13 +28,20 @@ class test_SIFT(NumpyTestCase):
  13 12 75 119 35 0 0 13 28 14 37 121 12 0 0 21 46 5 11 93
  29 0 0 3 14 4 11 99''')
         f.seek(0)
-        data = io.SIFT.fromfile(f)
+        features = feature.SIFT.fromfile(f)
         f.close()
 
-        assert_equal(len(data),2)
-        assert_equal(len(data['feature'][0]),128)
-        assert_equal(data['row'][0],133.92)
-        assert_equal(data['column'][1],99.75)
+        assert_equal(len(features),2)
+        assert_equal(len(features['data'][0]),128)
+        assert_equal(features['row'][0],133.92)
+        assert_equal(features['column'][1],99.75)
+
+    def check_match_features(self):
+        f = [[0,1,2,3],
+             [3,2,1,2]]
+        featureset = [[3,2,1,0],[0,1,2,3],[9,10,11,12]]
+        assert_equal(feature.SIFT.match_features(f,featureset),
+                     [1,0])
 
 if __name__ == "__main__":
     NumpyTest().run()
