@@ -48,8 +48,8 @@ class test_SIFT(NumpyTestCase):
 
         assert_equal(len(features),2)
         assert_equal(len(features['data'][0]),64)
-        assert_equal(features['row'][0],38.3727)
-        assert_equal(features['column'][1],61.474)
+        assert_equal(features['column'][1],68.5773)
+        assert_equal(features['row'][0],62.0491)
 
 if __name__ == "__main__":
     NumpyTest().run()
