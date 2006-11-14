@@ -60,7 +60,7 @@ def _rects(shape,divide_rows,divide_cols):
         def __str__(self):
             return "Rectangle: (%d,%d), height: %d, width: %d" % \
                    (self.top_r,self.top_c,self.height,self.width)
-                     
+
     rows,cols = shape
     rows = N.linspace(0,rows,divide_rows+1).astype(int)
     cols = N.linspace(0,cols,divide_cols+1).astype(int)
@@ -104,53 +104,58 @@ class ImageInfo(N.ndarray):
         if hasattr(obj,'info'):
             self.info = obj.info
         return
-            
-def logpolar(ref_img,img_list,window_shape=None,angles=180):
+
+def logpolar(ref_img,img_list,window_shape=None,angles=180,
+             variance_threshold=0.75,alpha=1,beta=1):
     """Register the given images using log polar transforms.
 
     The output is a list of 3x3 arrays.
-    
+
     """
     assert ref_img.ndim == 2, "Images must be 2-dimensional arrays"
 
     for img in img_list:
         assert ref_img.shape == img.shape
 
-    window_shape = N.array(img.shape,dtype=int)/5 + 1
+    if window_shape is None:
+        window_shape = N.array(img.shape,dtype=int)/5 + 1
+    else:
+        window_shape = N.asarray(window_shape,dtype=int)
 
     # Pre-calculate coordinates for log-polar transforms
-    angle_samples = N.linspace(-N.pi/2,N.pi/2,angles)
+    angle_samples = N.linspace(0,2*N.pi,angles)
+    w = max(window_shape[:2])
     cr,cc = SR.transform.transform._lpcoords(N.append(window_shape,1),
-                                             max(window_shape[:2]),
-                                             angles=angle_samples)
+                                             w,angles=angle_samples)
 
     def lpt_on_path(image,path,shape):
         """Calculate log polar transforms along a given path."""
         path = list(path)
         cutouts = SR.geometry.cut.along_path(path,image,shape=shape)
         for pos,cut in izip(path,cutouts):
-            lpt = SR.transform.logpolar(cut,_coords_r=cr,_coords_c=cc)
+            lpt = SR.transform.logpolar(cut,_coords_r=cr,_coords_c=cc,mode='W')
             yield (pos,cut,lpt - lpt.mean())
 
     def lpt_corr(reference_frames,frame,descr,path,window_shape,fft_shape):
         try:
-            print descr['source'].info['variance'], "<<<"
             max_corr_sofar = descr['source'].info['variance']
         except:
             max_corr_sofar = 0
+        corr_vals = []
         for pos,cut,lpt in lpt_on_path(frame,path,window_shape):
             # prepare correlation FFT
             X = fft2(lpt,fft_shape)
-            
+
             for rf in reference_frames:
                 corr = abs(ifft2(X*rf['fft']))
                 corr /= (N.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
                 corr_max_arg = corr.argmax()
+                corr_vals.append(corr.flat[corr_max_arg])
 
                 if corr.flat[corr_max_arg] > max_corr_sofar:
                     print corr.flat[corr_max_arg]
                     rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
-                    rotation = angle_samples[rotation-1] - N.pi/2
+                    rotation = angle_samples[rotation]
                     scale -= fft_shape[1]/2
                     max_corr_sofar = corr.flat[corr_max_arg]
                     if max_corr_sofar < 0.6:
@@ -173,29 +178,44 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
                                                      'quality': quality}),
                                 'lpt': lpt,
                                 'fft': X})
+        return corr_vals
 
     # Divide reference frame into 4 quadrants and calculate log-polar
     # transforms at points of maximum variance.
 
     # High-pass filter
-    vmsource = ndi.correlate(ref_img,[[0,1,0],[1,-1,1],[0,1,0]])
-    vm = SR.ext.variance_map(vmsource,shape=window_shape/4)
-    vm = vm/vm.max()
-    vm = _clearborder(vm,window_shape/2)
+
+    def _prepare_varmap(ref_img):
+        vm_filter_mask = [[0,      alpha, 0],
+                          [alpha, -beta,  alpha],
+                          [0,      alpha, 0]]
+
+        vmsource = ndi.correlate(ref_img,vm_filter_mask)
+        vm = SR.ext.variance_map(vmsource,shape=window_shape/4)
+        vm = vm/vm.max()
+        vm = _clearborder(vm,window_shape/2)
+        return vm
+    vm = _prepare_varmap(ref_img)
+
     import pylab as P
+    P.subplot(121)
+    P.imshow(ref_img)
+    P.subplot(122)
     P.imshow(vm)
+    P.show()
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
     reference_frames = []
     ref_pos = _peaks(vm,4,0.2)
+    assert len(ref_pos) > 0, "Could not find suitable reference position."
     ref_var = [vm[tuple(p)] for p in ref_pos]
     for pos,original,lpt in lpt_on_path(ref_img,ref_pos,window_shape):
         reference_frames.append({'source':ImageInfo(original,{'pos':pos}),
                                  'lpt': lpt})
 
     # Calculate Fourier transforms of reference log-polar transforms.
-    fft_shape = (angles,window_shape[1]*2-1)
+    fft_shape = (angles,w*2-1)
     for frame in reference_frames:
         frame['fft'] = fft2(frame['lpt'][::-1,::-1],fft_shape)
 
@@ -203,23 +223,27 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
     for fnum,frame in enumerate(img_list):
         tic = timeit.time.time()
         bmf = best_matched_frame[fnum]
-        
-        vmframe = ndi.correlate(frame,[[0,1,0],[1,-1,1],[0,1,0]])        
-        vm = SR.ext.variance_map(vmframe,shape=window_shape/4)
-        vm = vm/vm.max()
-        vm = _clearborder(vm,window_shape/2)
+
+        vm = _prepare_varmap(frame)
 
         print "Performing log polar transforms and correlations..."
         path = _peaks(vm,40,0.95*min(ref_var))
         lpt_corr(reference_frames,frame,bmf,path,window_shape,fft_shape)
 
         toc = timeit.time.time()
-        print "Peak correlation was", best_matched_frame[fnum]['source'].info['variance']        
+        print "Peak correlation was", best_matched_frame[fnum]['source'].info['variance']
         print "Registration completed in %.2f seconds.\n" % (toc-tic)
+
+    def _lpt_peak(pos,frame,bmf,window_shape,fft_shape):
+        corr = lpt_corr([bmf['source'].info['reference']],frame,bmf,[pos],window_shape,fft_shape)
+        return corr[0]
 
     for fnum,frame in enumerate(img_list):
         print "Refining frame %d..." % fnum
-        bmf = best_matched_frame[fnum]        
+#        bmf = best_matched_frame[fnum]
+#        pos = list(bmf['source'].info['position'])
+#        scipy.optimize.fmin_cg(_lpt_peak,bmf['source'].info['position'],
+#                               args=(frame,bmf,window_shape,fft_shape))
         path = (N.mgrid[-4:5,-4:5].T + bmf['source'].info['position']).reshape((-1,2))
         lpt_corr([bmf['source'].info['reference']],frame,bmf,path,window_shape,fft_shape)
 
@@ -228,8 +252,8 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
         print "Frame #%d" % fnum
         print "Rotation:", info['rotation']/N.pi*180
         print "Scale:", info['scale']
-        print "Quality:", info['quality']        
-        
+        print "Quality:", info['quality']
+
 ##         import pylab as P
 ##         P.subplot(121)
 ##         P.imshow(f['source'].info['reference']['source'])
@@ -237,18 +261,18 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180):
 ##         P.plot(ws[0],ws[1],'o')
 ##         P.subplot(122)
 ##         P.imshow(f['source'])
-##         P.plot(ws[0],ws[1],'o')        
+##         P.plot(ws[0],ws[1],'o')
 ##         P.show()
 
     accepted_frames = []
     tf_matrices = []
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
-        if info['quality'] in ['stable','trusted']:
+        if info['variance'] >= variance_threshold:
             accepted_frames.append(fnum)
         else:
             continue
-            
+
         theta = -info['rotation']
         M = N.array([[N.cos(theta),-N.sin(theta),0],
                      [N.sin(theta),N.cos(theta),0],
@@ -282,16 +306,16 @@ def phase_correlation(img,img_list):
     P.imshow(Z/Z.max()*255,cmap=P.cm.gray)
     P.show()
     P.close()
-    
+
 def refine(reference,target,tf_matrix):
-    """Refine registration parameters iteratively."""    
+    """Refine registration parameters iteratively."""
     def _build_tf(p):
         C = N.cos(p[0])
-        S = N.sin(p[0])        
+        S = N.sin(p[0])
         return N.array([[C,-S,p[1]],
                         [S,C,p[2]],
                         [0,0,1]])
-    
+
     def _tf_difference(p,reference,target):
         """Calculate difference between reference and transformed target."""
         tf_matrix = _build_tf(p)
@@ -303,6 +327,6 @@ def refine(reference,target,tf_matrix):
     p = [N.arccos(tf_matrix[0,0]),tf_matrix[0,2],tf_matrix[1,2]]
     p = scipy.optimize.fmin_cg(_tf_difference,p,
                                args=(reference,target))
-    
+
     return _build_tf(p)
 

@@ -78,4 +78,4 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant'):
                                          output_shape=oshape,order=order,
                                          mode=mode)
 
-    return out / sum(weights)
+    return out
