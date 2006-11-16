@@ -1,0 +1,69 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt3.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt5.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> Chapter 4: Speeding Up the Process 
+	(of Tracking through an Image Sequence) </h2>
+
+In the two functions KLTTrackFeatures() and
+KLTReplaceLostFeatures(), the majority of the computing time is taken
+up by convolution, which
+is necessary both to smooth the image and to compute its gradients.
+Much of this convolution is unnecessary 
+when an image sequence is being processed, 
+because each image is processed more than once.  For 
+example, the features are tracked between frames 0 and 1, then between
+frames 1 and 2, then between frames 2 and 3, etc.  During each iteration
+the second image, after being processed, can be stored and recalled
+the next time as the first image.<p>
+
+The tracking context has a member called <b>sequentialMode</b> which,
+when set to <code>TRUE</code>, 
+causes KLTTrackFeatures() to store the gradients of the second image,
+along with its smoothed version, into the tracking context.
+When KLTTrackFeatures() is called, it ignores its second parameter and
+replaces it with the previously stored image (except for the first 
+time the function is called, in which case it must use both images);
+in the same way, KLTReplaceLostFeatures() also ignores its second parameter.
+The computation is identical, but the speed is improved.<p>
+
+WARNING:  If it is desired to turn the sequential mode off after
+it has been set 
+and KLTTrackFeatures() has been called, do NOT simply set
+<code>tc->sequentialMode</code> to <code>FALSE</code>.  You must call 
+KLTStopSequentialMode(), which deletes the images.
+Otherwise, the next call to 
+KLTTrackFeatures() will use the previously computed images,
+even though they are no longer valid.<p>
+
+Sample code demonstrating the use of the sequential mode is
+delayed until the next chapter.
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt3.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt5.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

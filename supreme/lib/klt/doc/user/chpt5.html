@@ -1,0 +1,136 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt4.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt6.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> Chapter 5: Storing All the Features in a Single Structure/File </h2>
+
+Up to now, all the features have been contained in a feature list, 
+which is overwritten when the features are tracked.  Sometimes, however,
+it is desirable to keep the features from the last frame, or from the
+last few frames, or from all the frames.  In these cases, it would be 
+tedious to have to create a new feature list for each image.  Instead, 
+we create what is called a feature table.
+While a feature list is a one-dimensional array of features from a
+single image, a feature table is a two-dimensional array of features
+from many images.  Each column of the table is a feature list.<p>
+
+The sample code below shows the use of the sequential mode from the
+last chapter, as well as the use of a feature table.  
+If the constant <code>REPLACE</code> is defined, then lost features
+are replaced; otherwise they are not.  In the former case, new
+features can be identified in the table because they have positive
+(rather than zero) values. Now let us examine the unfamiliar lines of
+code. <p>
+
+<b>KLTCreateFeatureTable()</b> creates a feature table, given the 
+number of frames and the number
+of features to store.  Although in this example the number of frames is
+the same as the total number of actual images, this does not have to be
+the case if all the features do not need to be stored.<p>
+
+<b>KLTStoreFeatureList()</b> stores a feature list as the <i>i</i>th
+column of a feature table, where <i>i</i> is given by the third parameter
+(<i>i</i> must be between <code>0</code> and 
+<code>fl->nFeatures-1</code>).
+The dimensions of the feature list and feature table must be compatible,
+meaning that they must both contain the same number of features.
+It is perfectly legal to overwrite a column that has already been used,
+although this is not done in the current example.<p>
+
+<b>KLTWriteFeatureTable()</b> writes a feature table to a file, in
+a manner similar to that of KLTWriteFeatureList(), which was
+described in Chapter 2.<p>
+
+NOTE: To facilitate easy distribution, only three images are included
+with the code, making this example less impressive than it otherwise
+would be; however, it does demonstrate the principle.  If desired, more 
+images can be obtained from the 
+<a href="../installation.html"> installation page (item 7)</a>, 
+and the code below can be easily modified to track through all
+ten frames, by setting <code>nFrames = 10</code>. <p>
+
+<hr>
+
+<h3> Example 3</h3>
+
+<pre width=80>
+/**********************************************************************
+Finds the 150 best features in an image and tracks them through the 
+next two images.  The sequential mode is set in order to speed
+processing.  The features are stored in a feature table, which is then
+saved to a text file; each feature list is also written to a PPM file.
+**********************************************************************/
+
+#include &ltstdlib.h&gt
+#include &ltstdio.h&gt
+#include "pnmio.h"
+#include "klt.h"
+
+#define REPLACE
+
+void main()
+{
+     unsigned char *img1, *img2;
+     char fnamein[100], fnameout[100];
+     KLT_TrackingContext tc;
+     KLT_FeatureList fl;
+     KLT_FeatureTable ft;
+     int nFeatures = 150, nFrames = 3;
+     int ncols, nrows;
+     int i;
+
+     tc = KLTCreateTrackingContext();
+     fl = KLTCreateFeatureList(nFeatures);
+     ft = KLTCreateFeatureTable(nFrames, nFeatures);
+     tc->sequentialMode = TRUE;
+
+     img1 = pgmReadFile("img0.pgm", NULL, &ncols, &nrows);
+     img2 = (unsigned char *) malloc(ncols*nrows*sizeof(unsigned char));
+
+     KLTSelectGoodFeatures(tc, img1, ncols, nrows, fl);
+     KLTStoreFeatureList(fl, ft, 0);
+     KLTWriteFeatureListToPPM(fl, img1, ncols, nrows, "feat0.ppm");
+
+     for (i = 1 ; i < nFrames ; i++)  {
+          sprintf(fnamein, "img%d.pgm", i);
+          pgmReadFile(fnamein, img2, &ncols, &nrows);
+          KLTTrackFeatures(tc, img1, img2, ncols, nrows, fl);
+#ifdef REPLACE
+          KLTReplaceLostFeatures(tc, img2, ncols, nrows, fl);
+#endif
+          KLTStoreFeatureList(fl, ft, i);
+          sprintf(fnameout, "feat%d.ppm", i);
+          KLTWriteFeatureListToPPM(fl, img2, ncols, nrows, fnameout);
+     }
+     KLTWriteFeatureTable(ft, "features.txt", "%5.1f");
+}
+</pre>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt4.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt6.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

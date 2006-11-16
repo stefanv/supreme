@@ -1,0 +1,206 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "verbosity.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "feature.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLT_TrackingContext </h2> 
+
+<h2> 
+<code>
+typedef struct  {<br>
+     int mindist;<br>
+     int window_width, window_height;<br>
+     KLT_BOOL sequentialMode;<br>
+     KLT_BOOL smoothBeforeSelecting;<br>
+     KLT_BOOL writeInternalImages;<br>
+	 KLT_BOOL lighting_insensitive;<br>
+     int min_eigenvalue;<br>
+     float min_determinant;<br>
+     float min_displacement;<br>
+     int max_iterations;<br>
+     float max_residue;<br>
+     float grad_sigma;<br>
+     float smooth_sigma_fact;<br>
+     float pyramid_sigma_fact;<br>
+     int nSkippedPixels;<br>
+     int borderx;<br>
+     int bordery;<br>
+     int nPyramidLevels;<br>
+     int subsampling;<br>
+     void *pyramid_last;<br>
+     void *pyramid_last_gradx;<br>
+     void *pyramid_last_grady;<br>
+}  *KLT_TrackingContext;<br>
+</code>
+</h2>
+
+A KLT_TrackingContext collects all the parameters governing the tracker,
+so that calls to the tracker do not have to involve an exhorbitant
+number of parameters.  Each parameter may be changed manually by the
+user except for the last three, which must not be touched.
+In addition, a few of the parameters can be more easily changed via
+the convenience functions KLTChangeTCPyramid() and
+KLTUpdateTCBorder().
+Below is a brief description of each parameter, along with suggested default
+values (which are located in <code>"klt.c"</code>).
+The parameters preceded by an asterisk (*) are those whose effects can be
+viewed by setting <code>writeInternalImages</code>.
+
+<ul>
+<li> <b>mindist</b> The minimum distance between each feature being
+selected, in pixels.
+Used by KLTSelectGoodFeatures() and KLTReplaceLostFeatures().
+<i>Default:</i> 10.
+
+<li> <b>window_width, window_height</b> The size of the feature window,
+in pixels.
+It is suggested that you call the convenience function
+KLTUpdateTCBorder() after changing this parameter.
+<i>Default:</i> 7.
+
+<li> <b>sequentialMode </b> If <code>TRUE</code>, then the previous image is saved and
+used later.  Used by KLTTrackFeatures() and KLTReplaceLostFeatures() to speed the 
+computation when tracking through an image sequence.
+<i>Default:</i> <code>FALSE</code>.
+
+<li> * <b>smoothBeforeSelecting   </b> If <code>TRUE</code>, then the image is smoothed
+before features are selected in both
+KLTSelectGoodFeatures() and KLTReplaceLostFeatures().
+This is to ensure that the image used for
+selecting features is identical to the image used for tracking features, 
+in which case the feature selection is optimal by construction.  If you only need to select features but not
+track them, or if you are willing to sacrifice a slight decrease in 
+performance for a slight
+improvement in speed, then set this parameter to <code>FALSE</code>.
+After setting to <code>TRUE</code>, do not manually set to <code>FALSE</code>, 
+but rather call KLTStopSequentialMode().
+<i>Default:</i> <code>TRUE</code>.
+
+<li> <b>writeInternalImages</b> If <code>TRUE</code>, then the internal images
+used for feature selection and tracking, that is, the smoothed and
+differentiated versions of the original images, are written to files
+<code>"kltimg_sgfrlf*.pgm"</code> by KLTSelectGoodFeatures() and 
+KLTReplaceLostFeatures().  The smoothed and differentiated versions at each
+level of the pyramid are written to files <code>"kltimg_tf*.pgm"</code>
+by KLTTrackFeatures().  By examining these files, the user can better
+determine the desired parameters for smoothing, etc.
+<i>Default:</i> <code>FALSE</code>.
+
+<li> <b>lighting_insensitive</b>  Whether to normalize the image intensities for gain and bias 
+within the window.  This is an extension beyond the standard algorithm.
+Used by KLTTrackFeatures().
+<i>Default:</i> FALSE.
+
+<li> <b>min_eigenvalue</b>  The minimum allowable eigenvalue for new features
+being selected.  In other words, KLTSelectGoodFeatures() and 
+KLTReplaceLostFeatures() add only those features whose minimum eigenvalue is
+at least <code>min_eigenvalue</code>, which must not be less than one.  By 
+setting this parameter to a number larger than one and 
+<code>nFeatures</code> to a very large number, the effect is to select all
+features whose minimum eigenvalue is above a threshold.
+<i>Default:</i> 1.
+
+<li> <b>min_determinant</b>  The minimum allowable determinant before 
+a feature is declared lost.
+Used by KLTTrackFeatures().
+<i>Default:</i> 0.01.
+
+<li> <b>min_displacement</b>  The minimum displacement, in pixels,
+ necessary to stop the
+iterative tracker and declare tracking successful.
+Used by KLTTrackFeatures().
+<i>Default:</i> 0.1.
+
+<li> <b>max_iterations</b>  The maximum number of iterations allowed when
+tracking.  If exceeded, the feature is lost.
+Used by KLTTrackFeatures().
+<i>Default:</i> 10.
+
+<li> <b>max_residue</b> The maximum residue, averaged per pixel, allowed
+when tracking.  If exceeded, the feature is lost.
+Used by KLTTrackFeatures().
+<i>Default:</i> 1.0.
+
+<li> * <b>grad_sigma</b>  The standard deviation, in pixels, of the Gaussian 
+used for computing the image gradients.
+<i>Default:</i> 1.0.
+
+<li> * <b>smooth_sigma_fact</b> Multiplied by 
+<code>max(window_width,window_height)</code>
+to yield the standard deviation of the Gaussian 
+used for smoothing the image.  Because the tracker uses a Newton-Raphson method,
+there must be no local minima within each window.
+It is suggested that you call the convenience function
+KLTUpdateTCBorder() after changing this parameter.
+<i>Default:</i> 0.1.
+
+<li> * <b>pyramid_sigma_fact</b> Multiplied by <code>subsampling</code> to 
+yield the standard deviation of the Gaussian used for
+smoothing the image before subsampling.
+It is suggested that you call the convenience function
+KLTUpdateTCBorder() after changing this parameter.
+<i>Default:</i> 0.9.
+
+<li> <b>nSkippedPixels</b> The number of pixels in between each
+pair of possible features.  Used to speed up the computation of 
+KLTSelectGoodFeatures() and KLTReplaceLostFeatures().
+<i>Default:</i> 0.
+
+<li> <b>borderx, bordery</b>  The size of the border, in pixels,
+that is not analyzed
+by the computation of KLTSelectGoodFeatures() and KLTReplaceLostFeatures().
+This border is necessary because convolution with the Gaussian causes
+much of the image's values to become unknown.  Tracking in those regions
+can produce strange results.
+Can be changed more easily using the convenience function
+KLTUpdateTCBorder().
+<i>Default:</i> KLTUpdateTCBorder() => 23.
+
+<li> * <b>nPyramidLevels</b> The number of pyramid levels.
+Can be changed more easily using the convenience function
+KLTChangeTCPyramid().
+<i>Default:</i> KLTChangeTCPyramid(15) => 2.
+
+<li> * <b>subsampling</b>  The amount of subsampling between adjacent
+pyramid levels.
+Must be either 2, 4, 8, 16, or 32.
+Can be changed more easily using the convenience function
+KLTChangeTCPyramid().
+It is suggested that you call the convenience function
+KLTUpdateTCBorder() after changing this parameter.
+<i>Default:</i> KLTChangeTCPyramid(15) => 4.
+
+<li> <b>pyramid_last, pyramid_last_gradx, pyramid_last_grady</b> Used
+to hold the most recent image.  These fields must not be touched manually.
+<i>Default:</i> NULL.
+
+</ul>
+
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "stop.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "feature.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

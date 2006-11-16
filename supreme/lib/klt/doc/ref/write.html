@@ -1,0 +1,116 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "create.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "store.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTWrite...() / KLTRead...() </h2> 
+
+<hr>
+
+<h2> 
+<code>
+void KLTWriteFeatureListToPPM(<br>
+     KLT_FeatureList fl,<br>
+     KLT_PixelType *greyimg,<br>
+     int ncols,<br>
+     int nrows,<br>
+     char *filename);<br>
+</code>
+</h2>
+
+KLTWriteFeatureListToPPM() writes the image pointed to by 
+<code>greyimg</code> to the PPM file named 
+<code>filename</code>.  The features in 
+<code>fl</code> are overlayed 
+in red.<p>
+
+<hr>
+
+<h2>
+<code>
+void KLTWriteFeatureList(<br>
+     KLT_FeatureList fl,<br>
+     char *filename,<br>
+     char *fmt);<br><br>
+void KLTWriteFeatureHistory(<br>
+     KLT_FeatureHistory fh,<br>
+     char *filename,<br>
+     char *fmt);<br><br>
+void KLTWriteFeatureTable(<br>
+     KLT_FeatureTable ft,<br>
+     char *filename,<br>
+     char *fmt);<br><br>
+</code>
+</h2>
+
+These functions write feature lists, feature histories, and feature
+tables to a file named filename (or to stderr if filename is NULL).
+The third parameter, 'fmt', is either:
+<ul>
+<li> NULL, indicating that a binary file is being created, or
+<li> a format string, indicating that a text file is being created.  
+The string, which must begin with '%' and end with 'd' or 'f' (e.g.,
+"%3d" or "%5.1f"), governs the printing of the feature
+locations (the feature values are always printed with "%5d").  
+For example, a particular feature
+will be written as "(128.2,364.8)= 7634" if 'fmt' is "%5.1f", or as
+"(128,365)= 7634" if 'fmt' is "%3d".
+</ul>
+Binary files are generally preferred since they are smaller and
+introduce no truncation error.  However, text files permit easy
+viewing off-line.
+<p>
+
+<hr> 
+
+<h2>
+<code>
+KLT_FeatureList KLTReadFeatureList(<br>
+     KLT_FeatureList fl,<br>
+     char *filename);<br><br>
+KLT_FeatureHistory KLTReadFeatureHistory(<br>
+     KLT_FeatureHistory fh,<br>
+     char *filename);<br><br>
+KLT_FeatureTable KLTReadFeatureTable(<br>
+     KLT_FeatureTable ft,<br>
+     char *filename);<br>
+</code>
+</h2>
+
+These functions read feature lists, feature histories, and feature
+tables from a file named 'filename' (The file may be either text or
+binary).  If the first parameter is NULL, then a structure 
+of the same size as that in the file is created, filled, 
+and returned. Otherwise, the structure indicated by the first parameter
+is filled and returned.  Note that
+the structure passed must be the same size as the structure in 
+the file (i.e., the nFeatures field must be identical, as well as
+the nFrames field).  
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "create.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "store.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

@@ -1,0 +1,89 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt2.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt4.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> Chapter 3: Replacing Lost Features </h2>
+
+KLTTrackFeatures() sometimes loses features (either because
+they actually became occluded or go out of bounds, or because the computation fails
+for one reason or another).  If it is desired to always maintain
+a certain number of features, e.g. 100, then the lost features can
+be replaced by calling <b>KLTReplaceLostFeatures()</b>.  This function
+calls the same underlying computation as
+KLTSelectGoodFeatures() to
+find all the features in the image and rank them accordingly.
+Then, if <i>k</i> features have been lost, the <i>k</i> best
+features are used to replace them. <p>
+
+Below is sample code using this function.
+
+<hr>
+
+<h3> Example 2</h3>
+
+<pre width=80>
+/**********************************************************************
+Finds the 100 best features in an image, tracks these
+features to the next image, and replaces the lost features with new
+features in the second image.  Saves the feature
+locations (before and after tracking) to text files and to PPM files.
+**********************************************************************/
+
+#include "pnmio.h"
+#include "klt.h"
+
+void main()
+{
+     unsigned char *img1, *img2;
+     KLT_TrackingContext tc;
+     KLT_FeatureList fl;
+     int nFeatures = 100;
+     int ncols, nrows;
+
+     tc = KLTCreateTrackingContext();
+     fl = KLTCreateFeatureList(nFeatures);
+
+     img1 = pgmReadFile("img0.pgm", NULL, &ncols, &nrows);
+     img2 = pgmReadFile("img1.pgm", NULL, &ncols, &nrows);
+
+     KLTSelectGoodFeatures(tc, img1, ncols, nrows, fl);
+
+     KLTWriteFeatureListToPPM(fl, img1, ncols, nrows, "feat1.ppm");
+     KLTWriteFeatureList(fl, "feat1.txt", "%3d");
+
+     KLTTrackFeatures(tc, img1, img2, ncols, nrows, fl);
+     KLTReplaceLostFeatures(tc, img2, ncols, nrows, fl);
+
+     KLTWriteFeatureListToPPM(fl, img2, ncols, nrows, "feat2.ppm");
+     KLTWriteFeatureList(fl, "feat2.txt", "%3d");
+}
+</pre>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt2.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt4.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

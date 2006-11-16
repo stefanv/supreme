@@ -1,0 +1,82 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "write.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "count.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTStore...() / KLTExtract...() </h2> 
+
+<hr>
+
+<h2> 
+<code>
+void KLTStoreFeatureList(<br>
+     KLT_FeatureList fl,<br>
+     KLT_FeatureTable ft,<br>
+     int frame);<br><br>
+void KLTStoreFeatureHistory(<br>
+     KLT_FeatureHistory fh,<br>
+     KLT_FeatureTable ft,<br>
+     int feat);<br>
+</code>
+</h2>
+
+KLTStoreFeatureList() stores <code>fl</code> in the <code>frame</code> 
+column of <code>ft</code>.  The number <code>frame</code> must be between 0 and
+<code>ft->nFrames - 1</code>.  The <code>nFeatures</code> field of both
+<code>fl</code> and <code>ft</code>
+must be the same.<p>
+
+KLTStoreFeatureHistory() is similar, except that 
+<code>fh</code> is stored in the <code>feat</code> 
+row of <code>ft</code>.<p>
+
+<hr>
+
+<h2> 
+<code>
+void KLTExtractFeatureList(<br>
+     KLT_FeatureList fl,<br>
+     KLT_FeatureTable ft,<br>
+     int frame);<br><br>
+void KLTExtractFeatureHistory(<br>
+     KLT_FeatureHistory fh,<br>
+     KLT_FeatureTable ft,<br>
+     int feat);<br>
+</code>
+</h2>
+
+KLTExtractFeatureList() sets <code>fl</code> to the 
+<code>frame</code> column
+of <code>ft</code>, while
+KLTExtractFeatureHistory() sets <code>fh</code> to the 
+<code>feat</code> row 
+of <code>ft</code>.  The same restrictions apply as those of the
+KLTStore...() functions.<p>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "write.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "count.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

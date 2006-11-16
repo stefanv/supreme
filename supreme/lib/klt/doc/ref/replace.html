@@ -1,0 +1,75 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "track.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "create.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTReplaceLostFeatures() </h2> 
+
+<h2> 
+<code>
+void KLTReplaceLostFeatures(<br>
+     KLT_TrackingContext tc,<br>
+     KLT_PixelType *img,<br>
+     int ncols,<br>
+     int nrows,<br>
+     KLT_FeatureList fl);<br>
+</code>
+</h2>
+
+KLTReplaceLostFeatures() takes an image pointed to by <code>img</code> 
+and a feature list
+<code>fl</code>.  (NOTE: <code>KLT_PixelType</code>
+is, unless modified by the user, an <code>unsigned char</code>.)  
+If <code>tc->sequentialMode</code> is
+<code>TRUE</code>, and if KLTTrackFeatures() has previously been called, 
+then <code>img</code> is ignored
+and instead the image from 
+<code>tc->pyramid_last</code>, <code>tc->pyramid_last_gradx</code>, 
+and <code>tc->pyramid_last_grady</code> is used.
+Otherwise, the gradients are computed using a Gaussian of sigma = 
+<code>tc->grad_sigma</code>, but not before the image is smoothed with a Gaussian of
+sigma = <code>(tc->smooth_sigma_fact *
+max(tc->window_width, tc->window_height))</code> if 
+<code>tc->smoothBeforeSelecting</code> is <code>TRUE</code>.
+<p>
+
+Essentially, the same computation is performed as that of
+KLTSelectGoodFeatures(), except that only the lost features are replaced,
+rather than all the features.  All new features are guaranteed to be at least
+<code>tc->mindist</code> pixels away from each other and from all 
+the existing features.<p>
+
+Exactly like KLTSelectGoodFeatures(), if <code>tc->writeInternalImages</code> 
+is <code>TRUE</code>, then
+the smoothed image and the image derivatives are written to
+<code>"kltimg_sgfrlf.pgm"</code>,
+<code>"kltimg_sgfrlf_gx.pgm"</code>, and
+<code>"kltimg_sgfrlf_gy.pgm"</code>, respectively.<p>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "track.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "create.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

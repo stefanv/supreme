@@ -1,0 +1,21 @@
+<title> </title>
+
+<hr>
+
+<h2> Using Image Data Other than Unsigned Chars </h2>
+
+Typically, grey-level images are stored as unsigned chars, and
+KLT assumes the same.  However, if this is not the case, then 
+KLT can be modified by changing the line
+
+<blockquote><tt>
+typedef unsigned char KLT_PixelType;
+</tt></blockquote>
+
+in the file <tt>klt.h</tt>.  This has not been tested, but it
+should work.  The only function that will no longer work properly
+is KLTWriteFeatureListToPPM, because the image will now contain
+more than eight bytes per pixel.
+
+<hr>
+

@@ -1,0 +1,66 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "replace.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "write.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTCreate...() / KLTFree...() </h2> 
+
+<hr>
+
+<h2> 
+<code>
+KLT_TrackingContext KLTCreateTrackingContext(void);<br><br>
+KLT_FeatureList KLTCreateFeatureList(<br>
+     int nFeatures);<br><br>
+KLT_FeatureHistory KLTCreateFeatureHistory(<br>
+     int nFrames);<br><br>
+KLT_FeatureTable KLTCreateFeatureTable(<br>
+     int nFrames,<br>
+     int nFeatures);<br><br>
+void KLTFreeTrackingContext(<br>
+     KLT_TrackingContext tc);<br><br>
+void KLTFreeFeatureList(<br>
+     KLT_FeatureList fl);<br><br>
+void KLTFreeFeatureHistory(<br>
+     KLT_FeatureHistory fh);<br><br>
+void KLTFreeFeatureTable(<br>
+     KLT_FeatureTable ft);<br><br>
+</code>
+</h2>
+
+These functions create and free various structures.  Technically, it is
+good programming practice to free the structures after using them, although
+this is not done in any of the example code. <p>
+
+KLTCreateTrackingContext() is a little different from the other creation
+routines in that it uses default values defined 
+in <code>klt.c</code> to set up the structure.  
+These values can be changed if desired.
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "replace.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "write.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

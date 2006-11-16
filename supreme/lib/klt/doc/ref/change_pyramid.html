@@ -1,0 +1,46 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "print_tc.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "update_border.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTChangeTCPyramid() </h2> 
+
+<h2> 
+<code>
+void KLTChangeTCPyramid(<br>
+     KLT_TrackingContext tc,<br>
+     int search_range);<br>
+</code>
+</h2>
+
+KLTChangeTCPyramid() is a convenience function that 
+updates the <code>nPyramidLevels</code> and <code>subsampling</code>
+fields of the <code>tc</code> structure, based on the value 
+of <code>search_range</code>.  The function
+is designed so that the tracker will be able find displacements up to 
+<code>search_range</code>.  For example, if <code>search_range</code> 
+is 1 (pixel), then <code>nPyramidLevels</code>
+will be one and <code>subsampling</code> will be irrelevant, because there will be no
+need for multiresolution tracking.  However, if 
+<code>search_range</code> is 25 (pixels),
+then <code>nPyramidLevels</code> will be 2 and <code>subsampling</code> 
+will be 8.  The tracker is not
+guaranteed to find all displacements up to <code>search_range</code> 
+pixels, so it is
+probably a good idea to overestimate the value.  However, too much
+overestimation will make it more likely for ambiguity to confuse the tracker.<p>
+
+<hr>
+

@@ -1,0 +1,38 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "change_pyramid.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "stop.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTUpdateTCBorder() </h2> 
+
+<h2> 
+<code>
+void KLTUpdateTCBorder(<br>
+     KLT_TrackingContext tc);<br>
+</code>
+</h2>
+
+KLTUpdateTCBorder() is a convenience function that automatically recomputes 
+and updates the <code>borderx</code> and <code>bordery</code> fields of the 
+tracking context, so that the user doesn't have to ever touch these fields.
+Unless the user desires direct control over the border,
+this function should be called whenever
+<code>smooth_sigma_fact</code>,
+<code>pyramid_sigma_fact</code>, <code>window_width</code>,
+<code>window_height</code>, or
+<code>subsampling</code> is changed.
+
+<hr>
+
