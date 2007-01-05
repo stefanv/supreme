@@ -57,7 +57,7 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant'):
     all_tf_cnrs = N.empty((0,3))
     for img,tf_matrix in zip(images,matrices):
         rows,cols = img.shape[:2]
-        cnrs = corners((cols,rows))        
+        cnrs = corners((cols,rows))
         # Turn into homogenous coordinates by adding a column of ones
         cnrs = N.hstack((cnrs,N.ones((len(cnrs),1)))).astype(SC.ftype)
         # Transform coordinates and add to list
