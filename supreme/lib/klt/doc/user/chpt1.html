@@ -1,0 +1,48 @@
+<title> </title>
+
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt2.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> Chapter 1: Introduction </h2>
+
+KLT has been designed to be easy to use.  It should take no more than
+a few minutes to learn how to select and track features, and store 
+and use the results.  For those who wish to maximize performance,
+however, the program allows the flexibility of tweaking nearly every
+parameter that governs the computation, and it includes several 
+methods to improve speed. <p>
+
+This manual guides the user, in a tutorial fashion, through the
+essentials of KLT.  Chapter 2 contains all that is needed to select
+good features, track them from one image to the next, and write the
+results.  When features are lost (due to a large residue, drifting out 
+of bounds, etc.), they can be replaced
+by finding features in the new image, a process which is described in 
+Chapter 3.  Chapter 4 explains a technique for speeding up the computation
+in the case of tracking through an image sequence.  Chapter 5 describes
+an extension allowing the features from multiple frames to be stored
+in one data structure, which can then be saved to a file.  Chapter
+6 shows how to recall this structure and extract features from it.
+Finally, Chapter 7 shows how to customize the tracker by 
+manually setting the various parameters. <p>
+
+Most of these chapters contain example code, which is also provided with 
+the distribution of KLT.  To compile your own code, simply put the line
+<code>#include "klt.h"</code> near the top of your file, and link with
+the KLT library as in this example:  <code>cc file.c -lklt -lm</code>.<p>
+
+<hr>
+

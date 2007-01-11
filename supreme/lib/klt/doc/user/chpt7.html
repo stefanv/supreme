@@ -1,0 +1,137 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt6.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a>
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> Chapter 7: Customizing the Tracker </h2>
+
+Because computer vision is an experimental science, feature tracking
+cannot be accomplished without introducing parameters that must
+be empirically determined.  These parameters are hopefully stable
+enough that they can be considered constant and therefore ignored; 
+nevertheless, KLT provides access to nearly all the parameters for those 
+users who wish to change them.
+As mentioned in Chapters 1 and 2, these parameters
+are contained in the tracking context, whose members we now list, along
+with a brief description of each:<p>
+<pre width=80>
+int mindist;              /* minimum distance between selected features */
+int window_width;         /* dimensions of feature window */
+int window_height;                       "
+KLT_BOOL sequentialMode;  /* whether to save most recent image */
+KLT_BOOL smoothBeforeSelecting; /* whether to smooth image before selecting features */
+KLT_BOOL writeInternalImages;   /* whether to write internal images for later viewing */
+int min_eigenvalue;       /* smallest eigenvalue allowed for selecting */
+float min_determinant;    /* min determinant for declaring tracking failure */
+float min_displacement;   /* amount of pixel shift for stopping tracking iterations */
+int max_iterations;       /* max iterations before declaring tracking failure */
+float max_residue;        /* max residue before declaring tracking failure */
+float grad_sigma;         /* sigma of gaussian for computing gradient */
+float smooth_sigma_fact;  /* sigma factor of gaussian for smoothing image */
+float pyramid_sigma_fact; /* sigma factor of gaussian for computing image pyramid */
+int nSkippedPixels;       /* used to speed up feature selection */
+int borderx;              /* border in which features will not be selected, and */
+int bordery;              /*    tracked features will be declared out-of-bounds */
+int nPyramidLevels;       /* number of pyramid levels */
+int subsampling;          /* amount of subsampling between pyramid levels */
+</pre>
+(There are three additional members which point to the most recent image
+when the sequential mode is set, but these should never be accessed directly
+by the user.  A complete description of the tracking context parameters can be 
+found in the reference manual.)<p>
+
+All of these members are initialized to default values when the tracking 
+context is created.  Afterwards, they can be read and changed at leisure.
+The only exception is that sequentialMode must be set to <code>FALSE</code> 
+via the function KLTStopSequentialMode().<p>
+
+A convenience function named <b>KLTChangeTCPyramid()</b> is 
+provided for changing <code>nPyramidLevels</code> and 
+<code>subsampling</code>.  This function
+accepts the maximum search range as input, and computes and changes the
+two members accordingly.  Therefore, the user can control these rather
+low-level parameters from a more high-level, intuitive objective.  If
+desired, however, these members can be changed directly.<p>
+
+Another convenience function, <b>KLTUpdateTCBorder()</b>, automatically
+recomputes the <code>borderx</code> and <code>bordery</code> fields,
+which are dependent upon <code>smooth_sigma_fact</code>, 
+<code>pyramid_sigma_fact</code>, <code>window_width</code>,
+<code>window_height</code>,
+and <code>subsampling</code>.  
+Unless the user desires
+direct control over the border,
+this function should be called whenever
+one of these parameters is changed.<p>
+
+The example below illustrates how to change some of the parameters.
+It should be self-explanatory.<p>
+
+<hr>
+
+<h3> Example 5</h3>
+
+<pre width=80>
+/**********************************************************************
+Demonstrates manually tweaking the tracking context parameters.
+**********************************************************************/
+
+#include "pnmio.h"
+#include "klt.h"
+
+void main()
+{
+     unsigned char *img1, *img2;
+     KLT_TrackingContext tc;
+     KLT_FeatureList fl;
+     int nFeatures = 100;
+     int ncols, nrows;
+
+     tc = KLTCreateTrackingContext();
+     tc->mindist = 20;
+     tc->window_width  = 9;
+     tc->window_height = 9;
+     KLTChangeTCPyramid(tc, 15);
+     KLTUpdateTCBorder(tc);
+     fl = KLTCreateFeatureList(nFeatures);
+
+     img1 = pgmReadFile("img0.pgm", NULL, &ncols, &nrows);
+     img2 = pgmReadFile("img2.pgm", NULL, &ncols, &nrows);
+
+     KLTSelectGoodFeatures(tc, img1, ncols, nrows, fl);
+
+     KLTWriteFeatureListToPPM(fl, img1, ncols, nrows, "feat1b.ppm");
+
+     KLTTrackFeatures(tc, img1, img2, ncols, nrows, fl);
+
+     KLTWriteFeatureListToPPM(fl, img2, ncols, nrows, "feat2b.ppm");
+}
+</pre>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "chpt6.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a>
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

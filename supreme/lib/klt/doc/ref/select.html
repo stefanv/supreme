@@ -1,0 +1,92 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "track.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTSelectGoodFeatures() </h2> 
+
+<h2> 
+<code>
+void KLTSelectGoodFeatures(<br>
+     KLT_TrackingContext tc,<br>
+     KLT_PixelType *img,<br>
+     int ncols,<br>
+     int nrows,<br>
+     KLT_FeatureList fl);<br>
+</code>
+</h2>
+
+KLTSelectGoodFeatures() takes an image pointed to by 
+<code>img</code>. (NOTE: <code>KLT_PixelType</code>
+is, unless modified by the user, an <code>unsigned char</code>.)  If
+<code>tc->smoothBeforeSelecting</code> is set to <code>TRUE</code>, then the 
+image is smoothed by
+convolving with a Gaussian of sigma = <code>tc->smooth_sigma_fact *
+max(tc->window_width, tc->window_height)</code>;  otherwise, the image
+is not smoothed.  In either case,
+gradients are computed from the resulting image by convolving with the
+derivative of a Gaussian of sigma = <code>tc->grad_sigma</code>.  These 
+gradients (one in
+the <i>x</i> direction and the other in the <i>y</i> direction) are used 
+to select the features.<p>
+
+Pixels throughout the image are then measured as to their "goodness", which
+is a measure of their trackability.
+Generally each pixel within the image's interior is considered, where the
+interior is defined by <code>tc->borderx</code> and 
+<code>tc->bordery</code> (i.e., setting these
+parameters to zero causes the interior to equal the whole image).
+The parameter <code>tc->nSkippedPixels</code> can be used to speed up the process in
+the following way:  its default value is zero, in which case every pixel within
+the interior is considered; if it is set to one,
+then every other pixel within the interior is considered; setting
+it to two causes every third pixel to be considered; and similarly for
+higher values.  Since neighboring 
+pixels generally have similar goodness values, then skipping every
+other one will probably not noticeably decrease performance.<p>
+
+The goodness of each pixel is measured as the minimum eigenvalue of
+the 2 by 2 gradient matrix computed from the <code>tc->window_width</code> by
+<code>tc->window_height</code> window around the pixel.  After all the pixels have been
+considered, they are sorted in descending order according to goodness.
+Then, one by one the top <code>fl->nFeatures</code> 
+features (or pixels) whose minimum eigenvalue is at least 
+<code>tc->min_eigenvalue</code> are selected, ensuring that each new feature is at 
+least <code>tc->mindist</code> pixels away from all the other features.<p>
+
+If <code>tc->writeInternalImages</code> is <code>TRUE</code>, then 
+the smoothed image and the image derivatives are written to 
+<code>"kltimg_sgfrlf.pgm"</code>,
+<code>"kltimg_sgfrlf_gx.pgm"</code>, and
+<code>"kltimg_sgfrlf_gy.pgm"</code>, respectively.  
+This allows the user to more intelligently select the parameters
+for smoothing and differentiating.
+
+<p>
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "track.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

@@ -1,0 +1,55 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "feature.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "fh.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLT_FeatureList </h2> 
+
+<h2> 
+<code>
+typedef struct  {<br>
+     int nFeatures;<br>
+     KLT_Feature *feature;<br>
+}  *KLT_FeatureList;<br>
+</code>
+</h2>
+
+A KLT_FeatureList is an array of features.  The 
+<code>nFeatures</code> field
+indicates the number of features allocated, but not necessarily 
+the number of non-lost features.  It must not be changed manually.<p>
+
+NOTE: Although a feature list and a feature history look similar, the former
+is intended to refer to an array of features from a single image, while
+the latter refers to the same feature tracked through several images.<p>
+
+The following code illustrates how to access the data
+in a feature list:
+
+<pre width = 80>
+KLT_FeatureList fl;
+int feat;
+
+for (feat = 0 ; feat < fl->nFeatures ; feat++)  {
+     printf("(%5.1f,%5.1f) = %d\n",
+          fl->feature[feat]->x,
+          fl->feature[feat]->y,
+          fl->feature[feat]->val);
+}
+</pre>
+
+
+<hr>
+

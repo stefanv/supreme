@@ -1,5 +1,5 @@
 from glob import glob
 
 env = Environment()
-env.Replace(CCFLAGS=['-O2','-Wall','-ansi','-pedantic'])
+env.Replace(CCFLAGS=['-O2','-ggdb','-Wall','-ansi','-pedantic'])
 env.SharedLibrary('supreme_', glob('*.c'))

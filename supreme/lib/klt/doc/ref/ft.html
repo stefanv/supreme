@@ -1,0 +1,52 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "fh.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a>
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLT_FeatureTable </h2> 
+
+<h2> 
+<code>
+typedef struct  {<br>
+     int nFrames;<br>
+     int nFeatures;<br>
+     KLT_Feature **feature;<br>
+}  *KLT_FeatureTable;<br>
+</code>
+</h2>
+
+A KLT_FeatureTable is a two-dimensional array of features with
+<code>nFrames</code> columns and <code>nFeatures</code> rows.  It is used 
+to collect the features tracked through an image sequence.<p>
+
+Data in a feature table is accessed by indexing the feature number before the
+frame number.  For example, if <code>ft</code> is a feature table,
+the following code prints the data:
+
+<pre width = 80>
+KLT_FeatureTable ft;
+int feat, frame;
+
+for (feat = 0 ; feat < ft->nFeatures ; feat++)
+     for (frame = 0 ; frame < ft->nFrames ; frame++)  {
+          printf("(%5.1f,%5.1f) = %d\n", 
+               ft->feature[feat][frame]->x,
+               ft->feature[feat][frame]->y,
+               ft->feature[feat][frame]->val);
+     }
+</pre>
+
+<hr>
+

@@ -1,0 +1,110 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "select.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "replace.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTTrackFeatures() </h2> 
+
+<h2> 
+<code>
+void KLTTrackFeatures(<br>
+     KLT_TrackingContext tc,<br>
+     KLT_PixelType *img1,<br>
+     KLT_PixelType *img2,<br>
+     int ncols,<br>
+     int nrows,<br>
+     KLT_FeatureList fl);<br>
+</code>
+</h2>
+
+KLTTrackFeatures() takes two images pointed to by <code>img1</code>
+and <code>img2</code>.  (NOTE: <code>KLT_PixelType</code>
+is, unless modified by the user, an <code>unsigned char</code>.)  If 
+<code>tc->sequentialMode</code> is
+<code>TRUE</code>, and KLTTrackFeatures() has been previously called, then 
+<code>img1</code> is ignored
+and the first image is taken instead from 
+<code>tc->pyramid_last</code>, <code>tc->pyramid_last_gradx</code>, and 
+<code>tc->pyramid_last_grady</code>.
+In either case, the
+resulting images are smoothed by 
+convolving with a Gaussian of sigma =
+<code>tc->smooth_sigma_fact *
+max(tc->window_width, tc->window_height)</code>.  Then a
+multi-resolution image pyramid is created with <code>tc->nPyramidLevels</code> 
+levels and
+<code>tc->subsampling</code> pixels subsampled between each level; smoothing 
+before sampling is accomplished
+with sigma = <code>tc->subsampling * tc->pyramid_sigma_fact</code>.  
+Gradients are computed at each level
+of the pyramid by convolving with the
+derivative of a Gaussian of sigma = <code>tc->grad_sigma</code>.  
+<p>
+
+In the feature list, each feature that is not lost (i.e., whose value is nonnegative)
+is tracked beginning with the coarsest resolution and ending with the
+finest resolution, with each resolution providing the starting point for the
+subsequent resolution. At each resolution, tracking is accomplished
+by a Newton-Raphson iterative minimization between the intensities of the two
+windows, one window in each image.  There are five conditions that cause the
+iterations to stop (only in the first case is the tracker successful):
+<ol>
+<li> the feature moves by no more than <code>tc->min_displacement</code> 
+<li> the determinant of the 2-by-2 gradient matrix is less than
+	<code>tc->min_determinant</code> 
+<li> the number of iterations exceeds <code>tc->max_iterations</code> 
+<li> the feature is out of bounds (i.e., it is within <code>tc->borderx</code> 
+	or <code>tc->bordery</code> of the border of the image) 
+<li> the residue is too large (i.e., the average intensity difference 
+	between pixels in the two windows is greater than 
+	<code>tc->max_residue</code>)
+</ol>
+The value of the feature in these cases becomes <code>KLT_TRACKED</code>, 
+<code>KLT_SMALL_DET</code>, <code>KLT_MAX_ITERATIONS</code>, 
+<code>KLT_OOB</code>, and <code>KLT_LARGE_RESIDUE</code>, 
+respectively, which are in turn equal to 0,
+-2, -3, -4, and -5.  (See the reference page of 
+<a href="feature.html"><code>KLT_Feature</code></a> to see what a value of
+-1 means.)<p>
+
+If <code>tc->writeInternalImages</code> is <code>TRUE</code>, then
+the smoothed image and the image derivatives at each level of the
+pyramid are written to
+<code>"kltimg_tf_[I][n].pgm"</code>,
+<code>"kltimg_tf_[I][n]_gx.pgm"</code>, and
+<code>"kltimg_tf_[I][n]_gy.pgm"</code>, where <code>[I] = i,j</code>
+denotes either the first image or the second image,
+and <code>[n] = 0,1,2,...</code> denotes the level of the pyramid.<p>
+
+After all the features are tracked, if <code>tc->sequentialMode</code> 
+is <code>TRUE</code>, then the second image and its derivatives are stored in 
+<code>tc->pyramid_last</code>, <code>tc->pyramid_last_gradx</code>, 
+and <code>tc->pyramid_last_grady</code>.<p>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "select.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "replace.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+

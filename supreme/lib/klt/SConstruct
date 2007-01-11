@@ -1,0 +1,6 @@
+env = Environment()
+env.Replace(CCFLAGS=['-O2','-ggdb','-ansi','-pedantic'])
+env.SharedLibrary('klt_', ['convolve.c', 'error.c', 'pnmio.c', \
+                           'pyramid.c', 'selectGoodFeatures.c',\
+                           'storeFeatures.c', 'trackFeatures.c', \
+                           'klt.c', 'klt_util.c', 'writeFeatures.c'])

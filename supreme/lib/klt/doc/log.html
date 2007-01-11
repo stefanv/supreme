@@ -1,0 +1,269 @@
+<title> Log of Changes </title>
+
+<a href = "index.html">
+<IMG SRC="home_motif.gif" ALIGN=bottom width="48" height="24">
+</a>
+
+<hr>
+
+<h1> Log of Changes </h1>
+
+<ul>
+
+<li> <em> Version 1.3.2 (28 March 2006) </em>
+
+<ul>
+
+<li>Now multiplying by 2 in _compute2by1ErrorVector, to make the code consistent with 
+the equations in the derivation.<br> <em>-- Thanks to 
+Hattori Hiroshi (and someone else who also pointed this out a few years ago, whose name was lost)</em></li>
+
+<li>Changed <tt>\rm</tt> to <tt>rm</tt> in the Makefile<br> <em>-- Thanks to Nicolas Saunier</em></li>
+
+<li>Now initializing sum1_squared and sum2_squared in _computeIntensityDifferenceLightingInsensitive and _computeGradientSumLightingInsensitive
+
+</ul>
+
+<li> <em> Version 1.3.1 (21 November 2005) </em>
+
+<ul>
+
+<li>fixed memory leak in the affine consistency check 
+(one line in _am_trackFeatureAffine and several in KLTTrackFeatures)<br> <em>-- Thanks to 
+Miguel Arredondo</em></li>
+
+<li>added optional normalization for gain and bias of image intensities in the window,
+making the tracker lighting insensitive<br> <em>-- Thanks to Zhichao Chen</em></li>
+
+</ul>
+
+<li> <em> Version 1.3 (17 August 2005) </em>
+
+<ul>
+
+<li>combined code for Unix/Linux, Visual C++ 6.0, and Visual Studio.Net 2003.&nbsp; 
+This involved a lot of floating point conversions and replacing expf with exp, 
+fsqrt with sqrt, etc.</li>
+
+<li>fixed memory leak in KLTFreeFeatureTable (line 493 of klt.c)<br> <em>-- Thanks to 
+Stefan Wachter</em></li>
+
+<li>fixed initialization of affine parameters in KLTFreeFeatureTable (line 177 
+of klt.c)<br> <em>-- Thanks to Sinisa Segvic</em></li>
+
+</ul>
+
+<li> <em> Version 1.2.1 -- Visual Studio 2003 port (5 August 2005) </em>
+
+<ul>
+
+<li>ported to Visual Studio 2003<br> <em>-- Thanks to J&eacute;r&ocirc;me Martin</em></li>
+
+</ul>
+
+<li> <em> Version 1.2.1 (30 June 2005) </em>
+
+<ul>
+
+<li>Big fixed in affine code, by Kevin Koeser (University of Kiel), via Thorsten 
+Thormaehlen</li>
+
+</ul>
+
+<li> <em> Version 1.2 (16 June 2004) </em>
+
+<ul>
+
+<li>Affine warping code implemented<br> <em>-- Thanks to Thorsten Thormaehlen</em></li>
+
+</ul>
+
+<li> <em> Version 1.1.5 -- Visual C++ port (2 Mar 2004) </em>
+
+<ul>
+
+<li><em>ported to Visual C++ 6.0</em></li>
+
+</ul>
+
+<li> <em> Version 1.1.5 (7 Oct 1998) </em>
+<ul>
+<li> In trackFeatures.c, renamed _sumFloatWindow to _sumAbsFloatWindow
+ 	(I thought this had been done before in version 1.1.1).  
+	Two bugs in the function were fixed:  
+	<ol>
+	<li> Now, the absolute value is taken of the individual pixels before
+	summing them.
+	<li> The 'for' loop over 'width' now works correctly.
+	</ol>
+	Note: As a result of this bug fix, the default value of tc->max_residue 
+	was changed to 10.
+	<br><i>-- Thanks to Pedro Felzenszwalb</i>
+</ul>
+
+<li> <em> Version 1.1.4 (18 Sep 1998) </em>
+<ul>
+<li> To make code work for Win32 systems, forced fopen() to 
+	use binary rather than text file.  (In Unix, default is
+	to open as binary, whereas in Win32, default is to open as
+	text).
+	<br><i>-- Thanks to Johan, Fredje Helderweirt, and LiYunhao</i>
+<li> In convolve.c:  Simplified formula for maximum of Gaussian
+	and Gaussian derivative.
+<li> In selectFeatures.c, changed the errors to warnings, when
+	checking window size.
+<li> Changed indentation for improved readability.
+<li> Minor changes to eliminate compiler warnings:
+	<ul>
+	<li> In selectGoodFeatures.c:  Changed _quicksort to return void,
+		and wrapped _comparePoints() with #ifdef KLT_USE_QSORT.
+	<li> In trackFeatures.c:  Changed _computeIntensityDifference
+		and _computeGradientSum to return void; removed 
+		search_range_max, nlevels, and ixx, which were not being used.
+	<li> In pnmio.c:  Type conversion made explicit in malloc().
+	<li> In selectFeatures.c:  moved _quicksort() to top of file to
+    		obviate need for prototype.
+	<li> In writeFeatures.c:  _readHeader() now returns a structureType,
+    		instead of an int (A structureType is an int, but some
+    		compilers are really picky).
+	</ul>
+</ul>
+
+<li> <em> Version 1.1.3 (3 Mar 1998) </em>
+<ul>
+<li> Fixed bug in <code>KLTTrackFeatures()</code>.  In the
+	conditional just after the call to <code>_trackFeature()</code>,
+	<code>KLT_OOB</code> is now properly handled.
+<li> Slightly improved bounds-checking by introducing an epsilon,
+	and by giving back an extra pixel along the border that had 
+	been taken away unnecessarily.
+<li> If <tt>tc->window_[width,height]</tt> is unacceptable, 
+	a warning is now generated and the value is corrected.  
+	Previously an error was generated.
+<li> In Example 5, changed search range from 20 to 15.  As a
+	result, if the window size is changed to 5 the number of 
+	pyramid levels remains 2, which prevents the border from 
+	increasing dramatically.
+<li> In Makefile, change example dependencies from lib to libklt.a.
+	Unfortunately, changing the library source code (such as
+	<code>trackFeatures.c</code>) and then calling <tt>make
+	example1</tt> does not work properly, but at least
+	changing <tt>example1.c</tt> and then calling <tt>make
+	example1</tt> does work.  The latter case is probably more 
+	important, so we will have to live with the current tradeoff.
+</ul>
+
+<li> <em> Version 1.1.2 (24 Feb 1998) </em>
+<ul>
+<li> Fixed major bug:  Added an explicit check to ensure that feature
+	does not drift out of bounds during tracking.  This removes the
+	problem of occasional crashes.
+	<br><i>-- Thanks to Rainer Stiefelhagen</i>
+<li> Speeded up sorting by replacing qsort() with Manolis Lourakis' 
+	_quicksort() function.
+	<br><i>-- Thanks to Manolis Lourakis, Luis Rivera</i>
+<li> Added KLTSetVerbosity() to klt.c (It should have already been there)
+<li> Changed ppmWriteFile() to ppmWriteFileRGB()
+<li> Fixed minor bug:  assert() statement in line 314 of convolve.c
+	<br><i>-- Thanks to Rainer Stiefelhagen</i>
+<li> In Makefile, change example dependencies from libklt.a to lib
+</ul>
+
+<li> <em> Version 1.1.1 (18 Dec 1997)</em>
+<ul>
+<li> Fixed minor syntax bug:  Changed 'if feof(fp)' to 'if (feof(fp))' 
+	in writeFeatures.c
+	<br><i>-- Thanks to Matt Last</i>
+<li> Fixed major bug:  When tracking features, 'max_residue' was not
+ 	being computed correctly.  Therefore, feature windows that changed
+	a lot in intensity were not being detected.  Specifically, in
+	trackFeatures.c, I changed _sumFloatWindow to _sumAbsFloatWindow.
+</ul>
+
+<li> <em> Version 1.1 </em>
+<ul>
+<li> <em> (16 Oct 1997) </em>
+	<ul> 
+	<li> Fixed bug in pgmReadFile().  It was not skipping over the
+		last return character.
+	<li> Example 1 was updated to include binary files.
+	<li> Changed KLTWriteFeature...() and KLTReadFeature...()
+		to allow binary files, as well as text files.
+	</ul> 
+<li> <em> (15 Oct 1997) </em>
+	<ul> 
+	<li> Posted
+	<li> Fixed obscure bug in KLTChangeTCPyramid() and
+		improved readability of that function
+	<li> Fixed incorrect assert() statement in _interpolate() function
+	</ul>
+</ul>
+
+<li> <em> Version 1.1 (beta) </em>
+<ul>
+<li> <em> (21 Feb 1997) </em>
+	<ul> 
+	<li> Renamed as Version 1.1 (beta)
+	</ul>
+<li> <em> (15 Feb 1997) </em>
+	<ul>
+	<li> Posted as Version 1.2 <br>
+		(This was a mistake; it should have been named Version 1.1 (beta).)
+	<li> Fixed obscure bug that sometimes caused infinite loop <br>
+		(bug was in _enforceMinimumDistance() function of
+		selectGoodFeatures.c)
+	<li> Amended KLTPrintTrackingContext() to print all the new
+		fields that were added in Version 1.1
+	</ul>
+</ul>
+
+<li> <em> Version 1.1 (alpha) </em>
+<ul>
+<li> <em> (21 Feb 1997) </em>
+	<ul> Renamed as Version 1.1 (alpha) 
+	</ul>
+<li> <em> (10 Feb 1997) </em>
+	<ul>
+	<li> Posted as Version 1.1 <br>
+		(This was a mistake; it should have been named Version 1.1 (alpha).)
+	<li> Features are lost when residue exceeded
+	<li> KLTSelectGoodFeatures() only accepts features whose minimum
+		eigenvalue is at least <code>tc->min_eigenvalue</code>
+	<li> User allowed to output internal images
+	<li> comments allowed in data files
+	<li> Default for <code>tc->smooth_sigma_fact</code> changed from 0.5 to 0.1
+	<li> Simplified _minEigenvalue() routine in selectGoodFeatures.c 
+	</ul>
+</ul>
+
+<li> <em> Version 1.0 (beta) </em>
+<ul>
+<li> <em> (10 Feb 1997) </em>
+	<ul>
+	<li> Posted
+	<li> Print statements are prefaced by "(KLT) "
+	</ul>
+</ul>
+
+<li> <em> Version 1.0 (alpha) </em>
+<ul>
+<li> <em> (28 Jan 1997) </em>
+	<ul>
+	<li> Removed '#include "pyramid.h"' from "klt.h"
+	<li> Changed '_KLT_Pyramid' in "klt.h" to 'void *'
+	<li> Forced coercion of 'void *' to '_KLT_Pyramid' in other files
+	</ul>
+<li> <em> (27 Jan 1997) </em>
+	<dl>
+	<dt> Removed 'makedepend' from Makefile, along with dependencies
+		below '# DO NOT DELETE'
+	</dl>
+<li> <em> (24 Jan 1997) </em>
+	<dl>
+	<dt> Posted
+	</dl>
+</ul>
+
+</ul>
+
+<hr>

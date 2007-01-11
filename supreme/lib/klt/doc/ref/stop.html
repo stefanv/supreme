@@ -1,0 +1,40 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "update_border.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "verbosity.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLTStopSequentialMode() </h2> 
+
+<h2> 
+<code>
+void KLTStopSequentialMode(<br>
+     KLT_TrackingContext tc);<br>
+</code>
+</h2>
+
+KLTStopSequentialMode() must be called when it is desired to set
+<code>tc->sequentialMode</code> to <code>FALSE</code>.  In addition to 
+setting this value,
+the function frees the memory pointed to by the fields
+<code>tc->pyramid_last</code>, <code>tc->pyramid_last_gradx</code>, 
+and <code>tc->pyramid_last_grady</code>.
+This memory is allocated when KLTTrackFeatures() is called with
+<code>tc->sequentialMode</code> to <code>TRUE</code>.  Without calling 
+the present function,
+KLTTrackFeatures() and KLTReplaceLostFeatures() will continue to use
+the old pyramids even though they are no longer valid.<p>
+
+<hr>
+

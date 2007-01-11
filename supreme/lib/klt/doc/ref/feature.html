@@ -1,0 +1,70 @@
+<title> </title>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "tc.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "fl.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
+
+<hr>
+
+<h2> KLT_Feature </h2> 
+
+<h2> 
+<code>
+typedef struct  {<br>
+     KLT_locType x;<br>
+     KLT_locType y;<br>
+     int val;<br>
+}  *KLT_Feature;<br>
+</code>
+</h2>
+
+A KLT_Feature contains an (x,y) location and a value.  
+(<code>KLT_locType</code> is equal
+to <code>float</code>.)  The value is interpreted as follows:
+<ol>
+<li> A positive value means the feature has just been found by
+KLTSelectGoodFeatures() or KLTReplaceLostFeatures().  
+
+<li> <code>KLT_TRACKED</code> (0) means the feature has been successfully tracked.  
+
+<li> <code>KLT_NOT_FOUND</code> (-1) means that no feature could be found.  For example,
+if the user attempts to find 150 features in an image, but only 125 can 
+be found, then the
+remaining 25 will be assigned a value of <code>KLT_NOT_FOUND</code>.
+
+<li> <code>KLT_SMALL_DET</code> (-2) indicates that the feature has been lost due to
+the 2 by 2 gradient matrix having a small determinant.
+
+<li> <code>KLT_MAX_ITERATIONS</code> (-3) means that the feature has been lost 
+because the number of iterations exceeded the maximum allowable.
+
+<li> <code>KLT_OOB</code> (-4) means that the feature has been lost 
+because it was out of bounds (i.e., it was too close to the image border).
+
+<li> <code>KLT_LARGE_RESIDUE</code> (-5) means that the feature has been lost 
+because the residue between the two feature windows was too large.
+</ol>
+
+<hr>
+
+<a href = "../index.html">
+<IMG SRC="../home_motif.gif" ALIGN=bottom>
+</a>
+<a href = "index.html">
+<IMG SRC="../toc_motif.gif" ALIGN=bottom>
+</a>
+<a href = "tc.html">
+<IMG SRC="../previous_motif.gif" ALIGN=bottom>
+</a>
+<a href = "fl.html">
+<IMG SRC="../next_motif.gif" ALIGN=bottom>
+</a>
