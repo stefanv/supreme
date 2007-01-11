@@ -1,3 +1,5 @@
 supreme/ext/.sconsign.dblite
 supreme/ext/*.os
 build
+*.os
+.sconsign.dblite

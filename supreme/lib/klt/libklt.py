@@ -1,6 +1,6 @@
 import numpy as N
 from ctypes import c_int, c_uint8, c_float, c_double, c_char, \
-                   Structure, POINTER, pointer, c_void_p
+                   Structure, POINTER, pointer, c_void_p, c_char_p
 
 from numpy.testing import set_local_path, restore_path
 set_local_path('../../..')
@@ -97,6 +97,27 @@ class FeatureList(Structure):
                        (i, f.x, f.y, f.val)
         return rep
 
+    def to_image(self, img):
+        img, = atype(img,N.uint8)
+        rows,cols = img.shape
+        out = N.zeros((rows,cols,3),N.uint8)
+        out[:] = img[...,N.newaxis]
+        for f in self:
+            x = int(f.x + 0.5)
+            y = int(f.y + 0.5)
+            if (x-2 > 0 and x+1 < cols and
+                y-2 > 0 and y+1 < rows):
+                out[y-1:y+2,x-1:x+2,...] = 0
+                out[y-1:y+2,x-1:x+2,0] = 255
+        return out
+
+    def as_array(self):
+        out = N.empty(len(self),dtype=[('x',float),('y',float),('val',int)])
+        for i in range(len(self)):
+            out[i]['x'] = self._features[i].x
+            out[i]['y'] = self._features[i].y
+            out[i]['val'] = self._features[i].val
+        return out
 
 class FeatureHistory(Structure):
     _fields_ = [
@@ -107,9 +128,7 @@ class FeatureTable(Structure):
     _fields_ = [
         ('nFrames', c_int),
         ('nFeatures', c_int),
-        ('feature', POINTER(Feature))]
-
-PixelType = c_uint8
+        ('feature', POINTER(POINTER(POINTER(Feature))))]
 
 libklt_api = {
    'KLTSelectGoodFeatures' : (None,
@@ -124,6 +143,9 @@ libklt_api = {
                                 c_int, c_int, POINTER(FeatureList)]),
    'KLTCreateTrackingContext' : (POINTER(TrackingContext),[]),
    'KLTFreeTrackingContext' : (None,[POINTER(TrackingContext)]),
+   'KLTWriteFeatureListToPPM' : (None,[POINTER(FeatureList),
+                                       array_2d_uchar,
+                                       c_int, c_int, c_char_p]),
    }
 
 def register_api(lib,api):

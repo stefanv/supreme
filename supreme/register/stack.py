@@ -27,7 +27,8 @@ def corners(dims):
         corners[i] = N.where(mask,dims-1,zeros)
     return corners
 
-def with_transform(images,matrices,weights=None,order=1,mode='constant'):
+def with_transform(images,matrices,weights=None,order=1,mode='constant',
+                   oshape=None):
     """Stack images after performing coordinate transformations.
 
     images - list of arrays
@@ -53,25 +54,31 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant'):
     images = [N.atleast_2d(i) for i in images]
     affine_matrices = [N.atleast_2d(m) for m in matrices]
 
-    all_tf_cnrs = N.empty((0,3))
-    for img,tf_matrix in zip(images,matrices):
-        rows,cols = img.shape[:2]
-        cnrs = corners((cols,rows))        
-        # Turn into homogenous coordinates by adding a column of ones
-        cnrs = N.hstack((cnrs,N.ones((len(cnrs),1)))).astype(SC.ftype)
-        # Transform coordinates and add to list
-        all_tf_cnrs = N.vstack((all_tf_cnrs,N.dot(cnrs,tf_matrix.transpose())))
+    reshape = False
+    if oshape is None:
+        reshape = True
+        all_tf_cnrs = N.empty((0,3))
+        for img,tf_matrix in zip(images,matrices):
+            rows,cols = img.shape[:2]
+            cnrs = corners((cols,rows))
+            # Turn into homogenous coordinates by adding a column of ones
+            cnrs = N.hstack((cnrs,N.ones((len(cnrs),1)))).astype(SC.ftype)
+            # Transform coordinates and add to list
+            all_tf_cnrs = N.vstack((all_tf_cnrs,N.dot(cnrs,tf_matrix.transpose())))
 
-    # Calculate bounding box [(x0,y0),(x1,y1)]
-    bbox_top_left = N.floor(all_tf_cnrs.min(axis=0))[:2]
-    bbox_bottom_right = N.ceil(all_tf_cnrs.max(axis=0))[:2]
+        # Calculate bounding box [(x0,y0),(x1,y1)]
+        bbox_top_left = N.floor(all_tf_cnrs.min(axis=0))[:2]
+        bbox_bottom_right = N.ceil(all_tf_cnrs.max(axis=0))[:2]
 
-    oshape = N.array(images[0].shape)
-    oshape[:2][::-1] = N.absolute(bbox_bottom_right - bbox_top_left).astype(int)+1
+        oshape = N.array(images[0].shape)
+        oshape[:2][::-1] = N.absolute(bbox_bottom_right -
+                                      bbox_top_left).astype(int)+1
 
     out = N.zeros(oshape,dtype=SC.ftype)
     for img,tf_matrix,weight in zip(images,matrices,weights):
-        tf_matrix[:2,2] = tf_matrix[:2,2] - bbox_top_left
+        if reshape:
+            tf_matrix = tf_matrix.copy()
+            tf_matrix[:2,2] = tf_matrix[:2,2] - bbox_top_left
         out += weight * transform.matrix(img,tf_matrix,
                                          output_shape=oshape,order=order,
                                          mode=mode)
