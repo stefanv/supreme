@@ -46,6 +46,7 @@ for poly in grid1:
     
 
 def plotgrid(ax, grid, mode='k-'):
+    P.axis('off')
     for b in grid:
         ax.plot(b.x, b.y, mode)
 
@@ -84,9 +85,18 @@ def plot_overlap(n):
             x,y = ext.poly_clip(x,y,0,1,1,0)
             if len(x) >= 3:
                 weights[i,j] = Polygon(x,y).area()
+                
+    
+    P.rcParams['figure.figsize'] = (6.67,3.335)
     P.imshow(weights)
+    P.subplots_adjust(wspace=0.4)
     P.xlabel("Offset")
     P.ylabel("Angle")
+    P.xlim([0,50])
+    P.ylim([0,50])
+    P.xticks([0,25,50],('-1','0.25','1.5'))
+    P.yticks([0,25,50],('$\pi$','0','$-\pi$'))
+    P.savefig('gridoverlap.eps')
 
 plot_overlap(54)
 P.show()
