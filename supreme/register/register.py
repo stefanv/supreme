@@ -65,7 +65,7 @@ def sparse(ref_feat_rows,ref_feat_cols,
         warnings.warn("Sparse registration did not converge.")
     else:
         print "P = ", p
-    return p, ier
+    return _buildmat(p), ier
 
 def rectangle_inside(shape,percent=10):
     """Return a path inside the border defined by shape."""

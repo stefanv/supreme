@@ -19,8 +19,8 @@ basename = 'D'
 imagetype = 'png'
 featuretype = 'sift'
 T = 0.6
-image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))
-feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
+image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))[:10]
+feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))[:10]
 
 images = [sr.imread(fn,flatten=True) for fn in image_files]
 features = [sr.feature.SIFT.fromfile(fn,mode=featuretype.upper()) for fn in feature_files]
@@ -69,7 +69,7 @@ images = [i for i,v in zip(images,valid_matrices) if v]
 tf_matrices = [t for t,v in zip(tf_matrices,valid_matrices) if v]
 
 # Scale for super-resolution
-scale = 3
+scale = 3.
 for M in tf_matrices:
     M[:2,:] *= scale
 oshape = N.ceil(N.array(images[0].shape)*scale).astype(int)
