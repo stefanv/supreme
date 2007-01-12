@@ -164,7 +164,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
     for img in img_list:
         assert ref_img.shape == img.shape
 
-<<<<<<< TREE
     if window_shape is None:
         window_shape = N.array(img.shape,dtype=int)/5 + 1
         window_shape[window_shape < 21] = 21
