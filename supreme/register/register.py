@@ -1,6 +1,6 @@
 """Perform image registration."""
 
-__all__ = ['logpolar','phase_correlation','refine','sparse']
+__all__ = ['logpolar','refine','sparse']
 
 import numpy as N
 import scipy as S
@@ -30,14 +30,11 @@ def sparse(ref_feat_rows,ref_feat_cols,
     rcoord = N.vstack((rx,ry,one)).T
     tcoord = N.vstack((tx,ty,one)).T
 
-    def _buildmat(p):
-        theta,a,b,tx,ty = p
-        return N.array([[a*N.cos(theta),-a*N.sin(theta),tx],
-                        [a*N.sin(theta),a*N.cos(theta),ty],
-                        [0,0,1]])
+    _build_tf = sr.register.register._build_tf
 
     def tf_model(p):
-        M = _buildmat(p)
+        p[2] = 1. # Force b to be 1
+        M = _build_tf(p)
         tc = N.dot(tcoord,M.T)
         return N.sqrt(N.sum((rcoord - tc)**2,axis=1))
 
@@ -46,11 +43,9 @@ def sparse(ref_feat_rows,ref_feat_cols,
 
     for i in range(3):
         try:
-            p,ier = S.optimize.leastsq(tf_model,p,maxfev=500000)
+            p,ier = S.optimize.leastsq(tf_model,p,maxfev=50000)
         except:
             p,ier = p_default, -1
-
-        print "Number of features: ", len(tcoord)
 
         # trivial outlier rejection
         d = tf_model(p)
@@ -63,9 +58,8 @@ def sparse(ref_feat_rows,ref_feat_cols,
 
     if ier != 1:
         warnings.warn("Sparse registration did not converge.")
-    else:
-        print "P = ", p
-    return _buildmat(p), ier
+
+    return _build_tf(p), ier
 
 def rectangle_inside(shape,percent=10):
     """Return a path inside the border defined by shape."""
@@ -331,16 +325,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         P.savefig('features_%d.eps' % fnum)
         P.show()
 
-##         import pylab as P
-##         P.subplot(121)
-##         P.imshow(f['source'].info['reference']['source'])
-##         ws = [[c] for c in window_shape[::-1]/2]
-##         P.plot(ws[0],ws[1],'o')
-##         P.subplot(122)
-##         P.imshow(f['source'])
-##         P.plot(ws[0],ws[1],'o')
-##         P.show()
-
     accepted_frames = []
     tf_matrices = []
     for fnum,f in enumerate(best_matched_frame):
@@ -364,26 +348,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
 
     return accepted_frames,tf_matrices
 
-def phase_correlation(img,img_list):
-    """Register offset by phase correlation.
-
-    """
-    F0 = N.angle(N.fft.fftshift(N.fft.fft2(img)))
-    for frame in img_list:
-        F1 = N.angle(N.fft.fftshift(N.fft.fft2(frame)))
-        Z = N.fft.fft2(F1)*N.fft.fft2(F0)
-        ind = N.unravel_index(Z.argmax(),Z.shape)
-        print ind
-#    import pylab as P
-#    P.subplot(131)
-#    P.imshow(img)
-#    P.subplot(132)
-#    P.imshow(frame)
-#    P.subplot(133)
-#    P.imshow(Z/Z.max()*255,cmap=P.cm.gray)
-#    P.show()
-#    P.close()
-
 def _tf_difference(M_target,M_ref,target,reference):
     """Calculate difference between reference and transformed target."""
     M_target[[6,7]] = 0
@@ -405,7 +369,7 @@ def _build_tf(p):
         S = N.sin(theta)
         return N.array([[a*C, -a*S, tx],
                         [a*b*S, a*C, ty],
-                        [0,0,1]])
+                        [0,0,1.]])
 
 def _tf_difference(p,p_ref,reference,target):
     """Calculate difference between reference and transformed target."""

@@ -14,21 +14,19 @@ print "Reading images and features..."
 features = []
 images = []
 
-dataset = 'reflectometer'
-basename = 'D'
+dataset = 'pathfinder'
+basename = 'i44'
 imagetype = 'png'
-featuretype = 'sift'
+featuretype = 'surf'
 T = 0.6
-image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))[:10]
-feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))[:10]
+image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))
+feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
 
 images = [sr.imread(fn,flatten=True) for fn in image_files]
 features = [sr.feature.SIFT.fromfile(fn,mode=featuretype.upper()) for fn in feature_files]
 
 for pair in zip(image_files,feature_files):
     print pair[0], '->', pair[1]
-
-image_plane = N.hstack((images[0],images[1]))
 
 print "Matching features..."
 ref = features[0]
@@ -46,24 +44,6 @@ for frame in features[1:]:
     tf_matrices.append(M)
 
     print "Found %d matches." % valid.sum()
-
-# Adjust coordinates for image plane
-rows,cols = images[0].shape
-xf += cols
-yf = rows - yf
-yr = rows - yr
-
-# Display matches
-#P.imshow(image_plane,cmap=P.cm.gray)
-#P.gca().set_autoscale_on(False)
-
-#P.plot(xf,yf,'.b')
-#P.plot(xr,yr,'.r')
-#xzip = zip(xf,xr)
-#yzip = zip(yf,yr)
-#for i in range(len(xzip)):
-#    P.plot(xzip[i:i+1],yzip[i:i+1],'-w')
-#P.show()
 
 images = [i for i,v in zip(images,valid_matrices) if v]
 tf_matrices = [t for t,v in zip(tf_matrices,valid_matrices) if v]
