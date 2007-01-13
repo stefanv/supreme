@@ -1,5 +1,10 @@
+import sys
 import numpy as N
-from ctypes import c_int, c_uint8, c_double, c_char, Structure, POINTER
+try:
+    from ctypes import c_int, c_uint8, c_double, c_char, Structure, POINTER
+except:
+    print "Requires ctypes > 1.0.1"
+    sys.exit(-1)
 
 from numpy.testing import set_local_path, restore_path
 set_local_path('../..')
