@@ -11,7 +11,11 @@ set_local_path('../..')
 import supreme.config as SC
 restore_path()
 
-_lib = N.ctypeslib.load_library('libsupreme_',__file__)
+try:
+    _lib = N.ctypeslib.load_library('libsupreme_',__file__)
+except:
+    print "Failed to load libsupreme_.so.  Please compile first."
+    sys.exit(-1)
 
 array_1d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=1,flags='CONTIGUOUS')
 array_2d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=2,flags='CONTIGUOUS')
