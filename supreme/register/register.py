@@ -1,6 +1,6 @@
 """Perform image registration."""
 
-__all__ = ['logpolar','phase_correlation','refine','sparse']
+__all__ = ['logpolar','refine','sparse']
 
 import numpy as N
 import scipy as S
@@ -339,16 +339,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         P.savefig('features_%d.eps' % fnum)
         P.show()
 
-##         import pylab as P
-##         P.subplot(121)
-##         P.imshow(f['source'].info['reference']['source'])
-##         ws = [[c] for c in window_shape[::-1]/2]
-##         P.plot(ws[0],ws[1],'o')
-##         P.subplot(122)
-##         P.imshow(f['source'])
-##         P.plot(ws[0],ws[1],'o')
-##         P.show()
-
     accepted_frames = []
     tf_matrices = []
     for fnum,f in enumerate(best_matched_frame):
@@ -372,26 +362,6 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
 
     return accepted_frames,tf_matrices
 
-def phase_correlation(img,img_list):
-    """Register offset by phase correlation.
-
-    """
-    F0 = N.angle(N.fft.fftshift(N.fft.fft2(img)))
-    for frame in img_list:
-        F1 = N.angle(N.fft.fftshift(N.fft.fft2(frame)))
-        Z = N.fft.fft2(F1)*N.fft.fft2(F0)
-        ind = N.unravel_index(Z.argmax(),Z.shape)
-        print ind
-#    import pylab as P
-#    P.subplot(131)
-#    P.imshow(img)
-#    P.subplot(132)
-#    P.imshow(frame)
-#    P.subplot(133)
-#    P.imshow(Z/Z.max()*255,cmap=P.cm.gray)
-#    P.show()
-#    P.close()
-
 def _tf_difference(M_target,M_ref,target,reference):
     """Calculate difference between reference and transformed target."""
     M_target[[6,7]] = 0
@@ -413,7 +383,7 @@ def _build_tf(p):
         S = N.sin(theta)
         return N.array([[a*C, -a*S, tx],
                         [a*b*S, a*C, ty],
-                        [0,0,1]])
+                        [0,0,1.]])
 
 def _tf_difference(p,p_ref,reference,target):
     """Calculate difference between reference and transformed target."""
