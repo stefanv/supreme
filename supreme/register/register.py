@@ -6,6 +6,7 @@ import numpy as N
 import scipy as S
 from scipy import ndimage as ndi
 import scipy.optimize
+import scipy.linalg
 fft2 = S.fftpack.fft2
 ifft2 = S.fftpack.ifft2
 
@@ -22,50 +23,57 @@ from supreme.config import ftype,itype
 import supreme as sr
 restore_path()
 
+class PointCorrespondence(object):
+    def __init__(self, ref_feat_rows, ref_feat_cols,
+                 target_feat_rows, target_feat_cols):
+        self.rx,self.ry,self.tx,self.ty = \
+                map(N.asarray,[ref_feat_cols,ref_feat_rows,
+                               target_feat_cols,target_feat_rows])
+
+        assert len(self.rx) == len(self.ry) == len(self.tx) == len(self.ty), \
+               "Equal number of coordinates expected."
+
+    def estimate(self):
+        """See Digital Image Warping by George Wolberg, p. 54."""
+        rx,ry,tx,ty = self.rx,self.ry,self.tx,self.ty
+
+        nr = len(self)
+
+        U = N.zeros((2*nr,8),dtype=ftype)
+        U[:nr,0] = tx
+        U[:nr,1] = ty
+        U[:nr,2] = 1.
+        U[:nr,6] = -tx*rx
+        U[:nr,7] = -ty*rx
+
+        U[nr:,3] = tx
+        U[nr:,4] = ty
+        U[nr:,5] = 1.
+        U[nr:,6] = -tx*ry
+        U[nr:,7] = -ty*ry
+
+        B = N.concatenate((rx,ry))[:,N.newaxis]
+
+        M,res,rank,s = scipy.linalg.lstsq(U,B)
+
+        return N.append(M,1).reshape((3,3))
+
+    def transform(self,M):
+        pass
+
+    def reject(self,off_mean=0.8):
+        pass
+
+    def __len__(self):
+        return len(self.rx)
+
 def sparse(ref_feat_rows,ref_feat_cols,
            target_feat_rows,target_feat_cols):
-    rx,ry,tx,ty = map(N.asarray,[ref_feat_cols,ref_feat_rows,
-                                 target_feat_cols,target_feat_rows])
-    one = N.ones(len(rx))
-    rcoord = N.vstack((rx,ry,one)).T
-    tcoord = N.vstack((tx,ty,one)).T
+    p = PointCorrespondence(ref_feat_rows,ref_feat_cols,
+                            target_feat_rows,target_feat_cols)
 
-    def _buildmat(p):
-        theta,a,b,tx,ty = p
-        return N.array([[a*N.cos(theta),-a*N.sin(theta),tx],
-                        [a*N.sin(theta),a*N.cos(theta),ty],
-                        [0,0,1]])
-
-    def tf_model(p):
-        M = _buildmat(p)
-        tc = N.dot(tcoord,M.T)
-        return N.sqrt(N.sum((rcoord - tc)**2,axis=1))
-
-    p_default = N.array([0,1,1,0,0])
-    p = p_default.copy()
-
-    for i in range(3):
-        try:
-            p,ier = S.optimize.leastsq(tf_model,p,maxfev=500000)
-        except:
-            p,ier = p_default, -1
-
-        print "Number of features: ", len(tcoord)
-
-        # trivial outlier rejection
-        d = tf_model(p)
-        mask = (d <= 0.8*d.mean()) | (d <= .25)
-        tcoord = tcoord[mask]
-        rcoord = rcoord[mask]
-
-        if len(tcoord) < 10:
-            return N.eye(3), -1
-
-    if ier != 1:
-        warnings.warn("Sparse registration did not converge.")
-    else:
-        print "P = ", p
-    return p, ier
+    M = p.estimate()
+    return M
 
 def rectangle_inside(shape,percent=10):
     """Return a path inside the border defined by shape."""

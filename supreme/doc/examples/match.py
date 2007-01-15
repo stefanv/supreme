@@ -14,8 +14,8 @@ print "Reading images and features..."
 features = []
 images = []
 
-dataset = 'reflectometer'
-basename = 'D'
+dataset = 'pathfinder'
+basename = 'i44'
 imagetype = 'png'
 featuretype = 'sift'
 T = 0.6
@@ -41,9 +41,10 @@ for frame in features[1:]:
     xf,yf = frame['column'][valid],frame['row'][valid]
     xr,yr = ref['column'][valid_ref],ref['row'][valid_ref]
 
-    M,ier = sr.register.sparse(yr,xr,yf,xf)
-    valid_matrices.append(ier == 1)
+    M = sr.register.sparse(yr,xr,yf,xf)
+    valid_matrices.append(1)
     tf_matrices.append(M)
+    print M
 
     print "Found %d matches." % valid.sum()
 
@@ -69,7 +70,7 @@ images = [i for i,v in zip(images,valid_matrices) if v]
 tf_matrices = [t for t,v in zip(tf_matrices,valid_matrices) if v]
 
 # Scale for super-resolution
-scale = 3
+scale = 5
 for M in tf_matrices:
     M[:2,:] *= scale
 oshape = N.ceil(N.array(images[0].shape)*scale).astype(int)
