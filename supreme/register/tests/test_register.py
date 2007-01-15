@@ -11,9 +11,9 @@ class test_logpolar(NumpyTestCase):
 
 class test_sparse(NumpyTestCase):
     def test_rot90(self):
-        n = 1000
-        xp = N.random.random(n)*100
-        yp = N.random.random(n)*100
+        n = 10
+        xp = N.random.random(n)
+        yp = N.random.random(n)
 
         theta = 15./180*N.pi
         C = N.cos(theta)
@@ -26,12 +26,8 @@ class test_sparse(NumpyTestCase):
         tx = C*xp - S*yp + 3
         ty = S*xp + C*yp + 7
 
-        # Add some noise
-        tx += N.random.random(n)-0.5
-        ty += N.random.random(n)-0.5
-
-        tf_est,ier = register.sparse(ty,tx,yp,xp)
-        assert(N.linalg.norm(tf - tf_est) < 0.1)
+        tf_est = register.sparse(ty,tx,yp,xp)
+        assert_array_almost_equal(tf,tf_est)
 
 if __name__ == "__main__":
     NumpyTest().run()
