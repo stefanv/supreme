@@ -1,0 +1,797 @@
+The ``decorator`` module
+=============================================================
+
+:author: Michele Simionato
+:E-mail: michele.simionato@gmail.com
+:version: 2.0
+:Download page: http://www.phyast.pitt.edu/~micheles/python/decorator.zip
+:Installation: ``easy_install decorator``
+:License: Python license
+
+.. contents::
+
+Introduction
+------------------------------------------------
+
+Python 2.4 decorators are an interesting example of why syntactic sugar 
+matters: in principle, their introduction changed nothing, since they do 
+not provide any new functionality which was not already present in the
+language; in practice, their introduction has significantly changed the way 
+we structure our programs in Python. I believe the change is for the best, 
+and that decorators are a great idea since:
+
+* decorators help reducing boilerplate code;
+* decorators help separation of concerns; 
+* decorators enhance readability and maintenability;
+* decorators are very explicit.
+
+Still, as of now, writing custom decorators correctly requires
+some experience and it is not as easy as it could be. For instance,
+typical implementations of decorators involve nested functions, and
+we all know that flat is better than nested.
+
+The aim of the ``decorator`` module it to simplify the usage of 
+decorators for the average programmer, and to popularize decorators
+usage giving examples of useful decorators, such as ``memoize``,
+``tracing``, ``redirecting_stdout``, ``locked``, etc.
+
+The core of this module is a decorator factory called ``decorator``. 
+All decorators discussed here are built as simple recipes on top 
+of  ``decorator``. You may find their source code in the ``_main.py`` 
+file, which is generated automatically when you run the doctester
+(included into the decorator package) on this documentation::
+
+  $ python doctester.py documentation.txt
+
+At the same time the doctester runs all the examples contained here as 
+test cases.
+
+Definitions
+------------------------------------
+
+Technically speaking, any Python object which can be called with one argument
+can be used as  a decorator. However, this definition is somewhat too large 
+to be really useful. It is more convenient to split the generic class of 
+decorators in two groups:
+
++ *signature-preserving* decorators, i.e. callable objects taking a
+  function as input and returning a function *with the same
+  signature* as output;
+
++ *signature-changing* decorators, i.e. decorators that change
+  the signature of their input function, or decorators returning
+  non-callable objects.
+
+Signature-changing decorators have their use: for instance the
+builtin classes ``staticmethod`` and ``classmethod`` are in this
+group, since they take functions and return descriptor objects which 
+are not functions, nor callables.
+
+However, signature-preserving decorators are more common and easier to
+reason about; in particular signature-preserving decorators can be
+composed together whereas other
+decorators in general cannot (for instance you cannot 
+meaningfully compose a staticmethod with a classmethod or viceversa).
+
+Writing signature-preserving decorators from scratch is not that
+obvious, especially if one wants to define proper decorators that 
+can accept functions with any signature. A simple example will clarify 
+the issue.
+
+Statement of the problem
+------------------------------
+
+Suppose you want to trace a function: this is a typical use case
+for a decorator and you can find in many places code like this::
+
+ #<_main.py>
+
+ try:
+     from functools import update_wrapper
+ except ImportError: # using Python version < 2.5
+     def decorator_trace(f):
+         def newf(*args, **kw):
+            print "calling %s with args %s, %s" % (f.__name__, args, kw)
+            return f(*args, **kw)
+         newf.__name__ = f.__name__
+         newf.__dict__.update(f.__dict__)
+         newf.__doc__ = f.__doc__
+         newf.__module__ = f.__module__
+         return newf
+ else: # using Python 2.5+
+     def decorator_trace(f):
+         def newf(*args, **kw):
+             print "calling %s with args %s, %s" % (f.__name__, args, kw)
+             return f(*args, **kw)
+         return update_wrapper(newf, f)
+
+ #</_main.py>
+
+The implementation above works in the sense that the decorator 
+can accept functions with generic signatures; unfortunately this
+implementation does *not* define a signature-preserving decorator, since in
+general ``decorator_trace`` returns a function with a
+*different signature* from the original function.
+
+Consider for instance the following case:
+
+>>> @decorator_trace
+... def f1(x):
+...     pass
+
+Here the original function takes a single argument named ``x``,
+but the decorated function takes any number of arguments and
+keyword arguments:
+
+>>> from inspect import getargspec 
+>>> print getargspec(f1) 
+([], 'args', 'kw', None)
+
+This means that introspection tools such as pydoc will give
+wrong informations about the signature of ``f1``. This is pretty bad:
+pydoc will tell you that the function accepts a generic signature 
+``*args``, ``**kw``, but when you try to call the function with more than an 
+argument, you will get an error:
+
+>>> f1(0, 1)
+Traceback (most recent call last):
+   ...
+TypeError: f1() takes exactly 1 argument (2 given)
+
+The solution
+-----------------------------------------
+
+The solution is to provide a generic factory of generators, which
+hides the complexity of making signature-preserving decorators
+from the application programmer. The ``decorator`` factory
+allows to define decorators without the need to use nested functions 
+or classes. As an example, here is how you can define
+``decorator_trace``.
+
+First of all, you must import ``decorator``:
+
+>>> from decorator import decorator
+
+Then you must define an helper function with signature ``(f, *args, **kw)``
+which calls the original function ``f`` with arguments ``args`` and ``kw``
+and implements the tracing capability::
+
+ #<_main.py>
+
+ def trace(f, *args, **kw):
+     print "calling %s with args %s, %s" % (f.func_name, args, kw)
+     return f(*args, **kw)
+
+ #</_main.py>
+
+
+``decorator`` is able to convert the helper function into a 
+signature-preserving decorator 
+object, i.e  is a callable object that takes a function and returns a 
+decorated function with the same signature of the original function.
+Therefore, you can write the following:
+ 
+>>> @decorator(trace)
+... def f1(x):
+...     pass
+
+It is immediate to verify that ``f1`` works
+
+>>> f1(0)
+calling f1 with args (0,), {}
+
+and it that it has the correct signature:
+
+>>> print getargspec(f1) 
+(['x'], None, None, None)
+
+The same decorator works with functions of any signature:
+
+>>> @decorator(trace)
+... def f(x, y=1, z=2, *args, **kw):
+...     pass
+
+>>> f(0, 3)
+calling f with args (0, 3, 2), {}
+
+>>> print getargspec(f) 
+(['x', 'y', 'z'], 'args', 'kw', (1, 2))
+
+That includes even functions with exotic signatures like the following:
+
+>>> @decorator(trace)
+... def exotic_signature((x, y)=(1,2)): return x+y
+
+>>> print getargspec(exotic_signature)
+([['x', 'y']], None, None, ((1, 2),))
+>>> exotic_signature() 
+calling exotic_signature with args ((1, 2),), {}
+3
+
+
+``decorator`` is a decorator
+---------------------------------------------
+
+The ``decorator`` factory itself can be considered as a signature-changing
+decorator, just as ``classmethod`` and ``staticmethod``.
+However, ``classmethod`` and ``staticmethod`` return generic
+objects which are not callable, while ``decorator`` returns
+signature-preserving decorators, i.e. functions of a single argument.
+Therefore, you can write
+
+>>> @decorator
+... def tracing(f, *args, **kw):
+...     print "calling %s with args %s, %s" % (f.func_name, args, kw)
+...     return f(*args, **kw)
+
+and this idiom is actually redefining ``tracing`` to be a decorator.
+We can easily check that the signature has changed:
+
+>>> print getargspec(tracing)
+(['f'], None, None, None)
+
+Therefore now ``tracing`` can be used as a decorator and
+the following will work:
+
+>>> @tracing
+... def func(): pass
+
+>>> func()
+calling func with args (), {}
+
+BTW, you may use the decorator on lambda functions too:
+
+>>> tracing(lambda : None)()
+calling <lambda> with args (), {}
+
+For the rest of this document, I will discuss examples of useful
+decorators built on top of ``decorator``.
+
+
+``memoize``
+---------------------------------------------------------
+
+This decorator implements the ``memoize`` pattern, i.e. it caches
+the result of a function in a dictionary, so that the next time
+the function is called with the same input parameters the result is retrieved
+from the cache and not recomputed.
+
+::
+
+ #<_main.py>
+ 
+ from decorator import *
+
+ def getattr_(obj, name, default_thunk):
+     "Similar to .setdefault in dictionaries."
+     try:
+         return getattr(obj, name)
+     except AttributeError: 
+         default = default_thunk()
+         setattr(obj, name, default)
+         return default
+    
+ @decorator
+ def memoize(func, *args):
+     dic = getattr_(func, "memoize_dic", dict) 
+     # memoize_dic is created at the first call
+     if args in dic:
+         return dic[args]
+     else:
+         result = func(*args)
+         dic[args] = result
+         return result
+ 
+ #</_main.py>
+
+Here is a test of usage:
+
+>>> @memoize
+... def heavy_computation():
+...     time.sleep(2)
+...     return "done"
+
+>>> print heavy_computation() # the first time it will take 2 seconds
+done
+
+>>> print heavy_computation() # the second time it will be instantaneous
+done
+
+As an exercise, try to implement ``memoize`` *properly* without the
+``decorator`` factory.
+
+Notice that this ``memoize`` only works for functions with no keyword
+arguments, since it is impossible to memoize correctly something that 
+depends on mutable arguments. One can relax this requirement, and
+allow keyword arguments in the signature: however, if keyword
+arguments are passed, the result should not be cached. For an
+example see http://www.python.org/moin/PythonDecoratorLibrary
+
+``locked``
+---------------------------------------------------------------
+
+There are good use cases for decorators is in multithreaded programming.
+For instance, a ``locked`` decorator can remove the boilerplate 
+for acquiring/releasing locks [#]_.
+
+::
+
+ #<_main.py>
+
+ import threading
+
+ @decorator
+ def locked(func, *args, **kw):
+     lock = getattr_(func, "lock", threading.Lock)
+     lock.acquire()
+     try:
+         result = func(*args, **kw)
+     finally:
+         lock.release()
+     return result
+
+ #</_main.py>
+
+.. [#] In Python 2.5, the preferred way to manage locking is via 
+       the ``with`` statement: http://docs.python.org/dev/lib/with-locks.html
+
+To show an example of usage, suppose one wants to write some data to
+an external resource which can be accessed by a single user at once
+(for instance a printer). Then the access to the writing function must 
+be locked::
+
+ #<_main.py>
+
+ import time
+
+ datalist = [] # for simplicity the written data are stored into a list.
+
+ @locked
+ def write(data):
+     "Writing to a sigle-access resource"
+     time.sleep(1)
+     datalist.append(data)
+
+ #</_main.py>
+
+Since the writing function is locked, we are guaranteed that at any given time 
+there is at most one writer. An example multithreaded program that invokes
+``write`` and prints the datalist is shown in the next section.
+
+``delayed`` and ``threaded``
+--------------------------------------------
+
+Often, one wants to define families of decorators, i.e. decorators depending
+on one or more parameters. 
+
+Here I will consider the example of a one-parameter family of ``delayed`` 
+decorators taking a procedure and converting it into a delayed procedure. 
+In this case the time delay is the parameter. 
+
+A delayed procedure is a procedure that, when called, 
+is executed in a separate thread after a certain time 
+delay. The implementation is not difficult::
+
+ #<_main.py>
+
+ def delayed(nsec):
+     def call(proc, *args, **kw):
+         thread = threading.Timer(nsec, proc, args, kw)
+         thread.start()
+         return thread
+     return decorator(call)
+
+ #</_main.py>
+
+Notice that without the help of ``decorator``, an additional level of 
+nesting would have been needed.
+
+Delayed decorators as intended to be used on procedures, i.e.
+on functions returning ``None``, since the return value of the original 
+function is discarded by this implementation. The decorated function returns 
+the current execution thread, which can be stored and checked later, for 
+instance to verify that the thread ``.isAlive()``.
+
+Delayed procedures can be useful in many situations. For instance, I have used 
+this pattern to start a web browser *after* the web server started, 
+in code such as
+
+>>> @delayed(2)
+... def start_browser():
+...     "code to open an external browser window here"
+
+>>> #start_browser() # will open the browser in 2 seconds
+>>> #server.serve_forever() # enter the server mainloop
+
+The particular case in which there is no delay is important enough
+to deserve a name::
+
+ #<_main.py>
+
+ threaded = delayed(0) # no-delay decorator
+
+ #</_main.py>
+
+Threaded procedures will be executed in a separated thread as soon
+as they are called. Here is an example using the ``write``
+routine defined before:
+
+>>> @threaded
+... def writedata(data):
+...     write(data)
+
+Each call to ``writedata`` will create a new writer thread, but there will 
+be no synchronization problems since ``write`` is locked.
+
+>>> writedata("data1") 
+<_Timer(Thread-1, started)>
+
+>>> time.sleep(.1) # wait a bit, so we are sure data2 is written after data1
+
+>>> writedata("data2") 
+<_Timer(Thread-2, started)>
+
+>>> time.sleep(2) # wait for the writers to complete
+
+>>> print datalist
+['data1', 'data2']
+
+``blocking``
+-------------------------------------------
+
+Sometimes one has to deal with blocking resources, such as ``stdin``, and
+sometimes it is best to have back a "busy" message than to block everything. 
+This behavior can be implemented with a suitable decorator::
+
+ #<_main.py>
+
+ def blocking(not_avail="Not Available"):
+     def call(f, *args, **kw):
+         if not hasattr(f, "thread"): # no thread running
+             def set_result(): f.result = f(*args, **kw)
+             f.thread = threading.Thread(None, set_result)
+             f.thread.start()
+             return not_avail
+         elif f.thread.isAlive():
+             return not_avail
+         else: # the thread is ended, return the stored result
+             del f.thread 
+             return f.result
+     return decorator(call)
+         
+ #</_main.py>
+   
+Functions decorated with ``blocking`` will return a busy message if
+the resource is unavailable, and the intended result if the resource is 
+available. For instance:
+
+>>> @blocking("Please wait ...")
+... def read_data():
+...     time.sleep(3) # simulate a blocking resource
+...     return "some data"
+
+>>> print read_data() # data is not available yet
+Please wait ...
+
+>>> time.sleep(1)  
+>>> print read_data() # data is not available yet
+Please wait ...
+
+>>> time.sleep(1)
+>>> print read_data() # data is not available yet
+Please wait ...
+
+>>> time.sleep(1.1) # after 3.1 seconds, data is available
+>>> print read_data()
+some data
+
+``redirecting_stdout``
+-------------------------------------------
+
+Decorators help in removing the boilerplate associated to ``try .. finally``
+blocks. We saw the case of ``locked``; here is another example::
+
+ #<_main.py>
+
+ import sys
+
+ def redirecting_stdout(new_stdout):
+     def call(func, *args, **kw):
+         save_stdout = sys.stdout
+         sys.stdout = new_stdout
+         try:
+             result = func(*args, **kw)
+         finally:
+             sys.stdout = save_stdout
+         return result
+     return decorator(call)
+
+ #</_main.py>
+
+Here is an example of usage:
+
+>>> from StringIO import StringIO
+
+>>> out = StringIO()
+
+>>> @redirecting_stdout(out)
+... def helloworld():
+...     print "hello, world!"
+
+>>> helloworld()
+
+>>> out.getvalue()
+'hello, world!\n'
+
+
+Similar tricks can be used to remove the boilerplate associate with
+transactional databases. I think you got the idea, so I will leave
+the transactional example as an exercise for the reader. Of course
+in Python 2.5 these use cases can also be addressed with the ``with``
+statement.
+
+``tail_recursive``
+------------------------------------------------------------
+
+Sometimes, you may find on the net cool decorators that you would
+like to include in your code. However, it is likely these decorators 
+have not been written using ``decorator`` and that they are not
+signature-preserving. So, you need an easy way to convert
+third party decorators in signature-preserving decorators without
+having to rewrite them in terms of ``decorator``. Luckily, the
+``decorator`` module provides a convenience function ``update_wrapper``
+which can be used for this purpose. By default, ``update_wrapper`` 
+mimic the behavior of ``functools.update_wrapper`` which has been 
+added to the standard library in Python 2.5 (i.e. it just copies the
+function attributes ``__name__``, ``__doc__``, ``__dict__`` and 
+``__module__``), but is has the additional power to copy the signature, 
+simply by setting the flag ``create=True``.
+
+For instance, suppose you have a function ``func``
+with a "permissive" signature (say ``func(*args, **kw)``, returned by the
+third party non signature-preserving decorator) and another
+function ``model`` which has a stricter signature; then 
+``update_wrapper(func, model, create=True)`` 
+returns a copy of ``func`` with signature copied from ``model``. Notice that 
+it is your responsability to make sure that the original function and the model
+function have compatibile signature, i.e. that the signature of
+the model is stricter (or equivalent) than the signature of the
+original function. If not, you will get an error at function calling
+time.
+
+In order to give an example of usage for ``update_wrapper``, I will show a 
+pretty slick decorator that converts a tail-recursive function in an iterative
+function. I have shamelessly stolen the basic idea from Kay Schluehr's recipe
+in the Python Cookbook, 
+http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/496691.
+
+::
+    
+    #<_main.py>
+
+    from decorator import update_wrapper
+
+    class TailRecursive(object):
+        """
+        tail_recursive decorator based on Kay Schluehr's recipe
+        http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/496691
+        """
+        CONTINUE = object() # sentinel
+        
+        def __init__(self, func):
+            self.func = func
+            self.firstcall = True
+    
+        def __call__(self, *args, **kwd):
+            try:
+                if self.firstcall: # start looping
+                    self.firstcall = False
+                    while True:            
+                        result = self.func(*args, **kwd)
+                        if result is self.CONTINUE: # update arguments
+                            args, kwd = self.argskwd
+                        else: # last call
+                            break
+                else: # return the arguments of the tail call
+                    self.argskwd = args, kwd
+                    return self.CONTINUE
+            except: # reset and re-raise
+                self.firstcall = True
+                raise
+            else: # reset and exit
+                self.firstcall = True 
+                return result
+    
+    def tail_recursive(func):
+        "Convert TailRecursive into a signature-preserving decorator"
+        return update_wrapper(TailRecursive(func), func, create=True) 
+    
+    #</_main.py>
+
+Here is how you apply the decorator to the good old factorial::
+ 
+    #<_main.py>
+
+    @tail_recursive
+    def factorial(n, acc=1):
+        "The good old factorial"
+        if n == 0: return acc
+        return factorial(n-1, n*acc)
+
+    #</_main.py>
+ 
+
+>>> print factorial(4) 
+24
+
+This decorator is pretty impressive, and should give you some food for
+your mind ;) Notice that there is no recursion limit now, and you can 
+easily compute ``factorial(1001)`` or larger without filling the stack
+frame. Notice also that the decorator will not work on functions which
+are not tail recursive, such as
+
+::
+
+    def fact(n): # this is not tail-recursive
+        if n == 0: return 1
+        return n * fact(n-1)
+
+(a function is tail recursive if it either returns a value without
+making a recursive call, or returns directly the result of a recursive
+call).
+
+Caveats and limitations
+-------------------------------------------
+
+You should be aware that decorators have a performance penalty. 
+The worse case is shown by the following example::
+
+ $ cat performance.sh
+ python -m timeit -s "
+ from decorator import decorator
+
+ @decorator
+ def do_nothing(func, *args, **kw):
+     return func(*args, **kw) 
+
+ @do_nothing
+ def f():
+     pass
+ " "f()"
+
+ python -m timeit -s "
+ def f():
+     pass
+ " "f()"
+
+On my Linux system, using the ``do_nothing`` decorator instead of the
+plain function is more than four times slower::
+
+ $ bash performance.sh 
+ 1000000 loops, best of 3: 1.68 usec per loop
+ 1000000 loops, best of 3: 0.397 usec per loop
+
+It should be noted that a real life function would probably do 
+something more useful than ``f`` here, and therefore in real life the
+performance penalty could be completely negligible.  As always, the
+only way to know if there is 
+a penalty in your specific use case is to measure it.
+
+You should be aware that decorators will make your tracebacks
+longer and more difficult to understand. Consider this example:
+
+>>> @tracing
+... def f():
+...     1/0
+
+Calling ``f()`` will give you a ``ZeroDivisionError``, but since the
+function is decorated the traceback will be longer:
+
+>>> f()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in ?
+    f()
+  File "<string>", line 2, in f
+  File "<stdin>", line 4, in tracing
+    return f(*args, **kw)
+  File "<stdin>", line 3, in f
+    1/0
+ZeroDivisionError: integer division or modulo by zero
+
+You see here the inner call to the decorator ``tracing``, which calls 
+``f(*args, **kw)``, and a reference to  ``File "<string>", line 2, in f``. 
+This latter reference is due to the fact that internally the decorator
+module uses ``eval`` to generate the decorated function. Notice that
+``eval`` is *not* responsibile for the performance penalty, since is the
+called *only once* at function decoration time, and not every time
+the decorated function is called.
+
+At present, there is no way to avoid ``eval``. A clean solution
+would require to change the CPython implementation of functions and
+add an hook to make it possible to change their signature directly. 
+This may happen in future versions of Python and then this module
+would become obsolete.
+
+For debugging purposes, it may be useful to know that the decorator
+module also provides a ``getinfo`` utility function which returns a 
+dictionary containing information about a function.
+For instance, for the factorial function we will get
+
+>>> d = getinfo(factorial)
+>>> d['name']
+'factorial'
+>>> d['argnames']
+['n', 'acc']
+>>> d['signature']
+'n, acc'
+>>> d['defaults']
+(1,)
+>>> d['doc']
+'The good old factorial'
+
+In the present implementation, decorators generated by ``decorator``
+can only be used on user-defined Python functions or methods, not on generic 
+callable objects, nor on built-in functions, due to limitations of the
+``inspect`` module in the standard library.
+Also, there is a restriction on the names of the arguments: if try to
+call an argument ``_call_`` or ``_func_`` you will get an AssertionError:
+
+>>> @tracing
+... def f(_func_): print f
+... 
+Traceback (most recent call last):
+  ...
+AssertionError: You cannot use _call_ or _func_ as argument names!
+
+(the existence of these two reserved names is an implementation detail).
+
+Moreover, the implementation is such that the decorated function contais
+a copy of the original function attributes:
+
+>>> def f(): pass # the original function
+>>> f.attr1 = "something" # setting an attribute
+>>> f.attr2 = "something else" # setting another attribute
+
+>>> traced_f = tracing(f) # the decorated function
+
+>>> traced_f.attr1
+'something'
+>>> traced_f.attr2 = "something different" # setting attr
+>>> f.attr2 # the original attribute did not change
+'something else'
+
+
+That's all folks, enjoy!
+
+
+LICENCE
+---------------------------------------------
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met::
+
+  Redistributions of source code must retain the above copyright 
+  notice, this list of conditions and the following disclaimer.
+  Redistributions in bytecode form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in
+  the documentation and/or other materials provided with the
+  distribution. 
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+  DAMAGE.
+
+If you use this software and you are happy with it, consider sending me a 
+note, just to gratify my ego. On the other hand, if you use this software and
+you are unhappy with it, send me a patch!
+
