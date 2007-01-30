@@ -14,7 +14,16 @@ restore_path()
 try:
     _lib = N.ctypeslib.load_library('libsupreme_',__file__)
 except:
-    print "Failed to load libsupreme_.so.  Please compile first."
+    print \
+"""Failed to load libsupreme_.so.  The library can be compiled by running
+
+python setup.py build_ext -i
+
+or
+
+scons
+
+from the package root directory."""
     sys.exit(-1)
 
 array_1d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=1,flags='CONTIGUOUS')
