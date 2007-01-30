@@ -10,7 +10,7 @@ restore_path()
 class test_libsupreme(NumpyTestCase):
     def test_variance_map(self,level=1):
         x = N.arange(12).reshape((3,4))
-        
+
         vm = ext.variance_map(x)
         assert_almost_equal(vm[1,1], N.var(x[:3,:3]))
         assert_almost_equal(vm[1,2], N.var(x[:3,1:4]))
@@ -70,6 +70,6 @@ class test_libsupreme(NumpyTestCase):
         out = ext.interp_bilinear(x,[[1,2],[1.5,1.5]],
                                     [[2,1],[1.5,1.5]])
         assert_equal(out,[[3,3],[3,3]])
-        
+
 if __name__ == "__main__":
     NumpyTest().run()

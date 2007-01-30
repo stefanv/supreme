@@ -1,10 +1,7 @@
-from os.path import join, dirname
-from glob import glob
-
-def configuration(parent_package='', top_path=None, package_name='ext'):
+def configuration(parent_package='', top_path=None, package_name='lib'):
     from numpy.distutils.misc_util import Configuration
     config = Configuration(package_name,parent_package,top_path)
-    config.add_extension('libsupreme_', sources=glob(join(dirname(__file__),'*.c')))
+    config.add_subpackage('klt')
     return config
 
 if __name__ == '__main__':

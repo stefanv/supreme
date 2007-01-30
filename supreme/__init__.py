@@ -9,6 +9,7 @@ import transform
 import register
 import ext
 import feature
+import lib
 
 imread = scipy.misc.pilutil.imread
 test = NumpyTest('supreme').test
