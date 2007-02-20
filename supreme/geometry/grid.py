@@ -3,7 +3,7 @@ __all__ = ['Grid']
 import numpy as N
 from numpy.testing import *
 
-set_local_path('../../..')
+set_local_path('../..')
 import supreme as SR
 import supreme.config as SC
 restore_path()

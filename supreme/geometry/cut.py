@@ -2,7 +2,7 @@ from numpy.testing import set_local_path, restore_path
 import numpy as N
 import warnings
 
-set_local_path('../../..')
+set_local_path('../..')
 from supreme.config import ftype,itype
 restore_path()
 

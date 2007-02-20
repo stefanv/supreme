@@ -17,13 +17,15 @@ from itertools import izip
 import timeit
 import warnings
 
-set_local_path('../../..')
+set_local_path('../..')
 import supreme as sr
 from supreme.config import ftype,itype
 import supreme as sr
 restore_path()
 
 class PointCorrespondence(object):
+    """Estimate point correspondence homographies."""
+
     def __init__(self, ref_feat_rows, ref_feat_cols,
                  target_feat_rows, target_feat_cols):
         self.rx,self.ry,self.tx,self.ty = \
@@ -34,7 +36,33 @@ class PointCorrespondence(object):
                "Equal number of coordinates expected."
 
     def estimate(self):
-        """See Digital Image Warping by George Wolberg, p. 54."""
+        """Estimate the homographic point correspondence.
+
+        Output:
+        -------
+
+        A (3,3) array H, describing the point correspondence.
+
+        Input point: x = [[c_0]
+                          [c_1]
+                          [c_2]]
+
+        Output point: x' = [[c'_0]
+                            [c'_1]
+                            [c'_2]]
+
+        Input and output points are related by
+
+        x' = Hx
+
+        Given errors in the measurement, H minimises
+
+        |x' - Hx'|
+
+        See Digital Image Warping by George Wolberg, p. 54.
+
+        """
+
         rx,ry,tx,ty = self.rx,self.ry,self.tx,self.ty
 
         nr = len(self)

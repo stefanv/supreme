@@ -12,7 +12,7 @@ import numpy as N
 print "Excercising documentation examples:"
 print "-----------------------------------"
 
-ignore_modules = ['example','setup','test']
+ignore_modules = ['example','setup','test','lib']
 
 def setup(doctest):
     doctest.globs['numpy'] = N
