@@ -93,8 +93,8 @@ class PointCorrespondence(object):
 
 def sparse(ref_feat_rows,ref_feat_cols,
         target_feat_rows,target_feat_cols):
-        """Compatibility wrapper. Calculate the PointCorrespondence
-        homography which maps reference features to target features."""
+    """Compatibility wrapper. Calculate the PointCorrespondence
+    homography which maps reference features to target features."""
     
     p = PointCorrespondence(ref_feat_rows,ref_feat_cols,
                             target_feat_rows,target_feat_cols)
