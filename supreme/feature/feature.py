@@ -3,30 +3,33 @@ __all__ = ['match']
 import numpy as N
 
 def match(features,featureset,threshold=0.6):
-    """Find the most closely matched feature from a feature-set.
+    """For each given feature, find the nearest feature from a feature-set.
 
     Input:
     ------
-    features -- An array of M row-wise features of length N
+    features : (M,N) array
+        M row-wise features of length N.
 
-    featureset -- An array of any number of row-wise features of
-                  length N.  Typically field 'data' of the record
-                  array produced by SIFT.fromfile.
+    featureset : (Q,N) array
+        Q row-wise features of length N.  This is typically the field
+        'data' of the record array produced by SIFT.fromfile.
 
     Output:
     -------
-    nearest -- An array of indices into featureset.
+    nearest : Length M integer array.
+        Indices into featureset.
 
-    distances -- Distances between the provided features and the
-                 closest features in featureset.
+    distances : Length M floating point array.
+        distances[i] is the distance between features[i] and featureset[nearest[i]], i.e.
+        the distance between features[i] and the nearest feature in the feature-set.
 
-    valid -- A boolean array indicating whether the given feature
-             match is valid, according to the criterion described in
-             the SIFT README. It states that a match is valid when the
-             match is less than 0.6 times the distance to the
-             second-closest match.
+    valid : boolean array
+        A boolean array indicating whether the given feature match is
+        valid, according to the criterion described in the SIFT
+        README. It states that a match is valid when the match is less
+        than 0.6 times the distance to the second-closest match.
 
-    See original implementation by Tim Hochberg at
+    See original implementation of vector quantisation by Tim Hochberg at
 
     http://thread.gmane.org/gmane.comp.python.numeric.general/8459/focus=8459
 

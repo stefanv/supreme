@@ -1,6 +1,6 @@
 """Perform image registration."""
 
-__all__ = ['logpolar','refine','sparse']
+__all__ = ['PointCorrespondence','logpolar','refine','sparse']
 
 import numpy as N
 import scipy as S
@@ -40,24 +40,19 @@ class PointCorrespondence(object):
 
         Output:
         -------
+        H : (3,3) array of floats
+        
+            Input point: x = [c_0, c_1, c_2]^T
 
-        A (3,3) array H, describing the point correspondence.
+            Output point: x' = [c'_0, c'_1, c'_2]^T
 
-        Input point: x = [[c_0]
-                          [c_1]
-                          [c_2]]
+            Input and output points are related by
 
-        Output point: x' = [[c'_0]
-                            [c'_1]
-                            [c'_2]]
+                x' = Hx
 
-        Input and output points are related by
+            Given errors in the measurement, H minimises
 
-        x' = Hx
-
-        Given errors in the measurement, H minimises
-
-        |x' - Hx'|
+                |x' - Hx'|
 
         See Digital Image Warping by George Wolberg, p. 54.
 
@@ -104,7 +99,7 @@ def sparse(ref_feat_rows,ref_feat_cols,
     return M
 
 def rectangle_inside(shape,percent=10):
-    """Return a path inside the border defined by shape."""
+    """Return a path inside the border as defined by shape."""
     shape = N.asarray(shape)
     rtop = N.round_(shape*percent/100.)
     rbottom = shape - rtop
@@ -192,8 +187,15 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
              variance_threshold=0.75,peak_thresh=5):
     """Register the given images using log polar transforms.
 
-    The output is a list of 3x3 arrays.
-
+    Output:
+    -------
+    accepted : bool array
+        For each of the input frames, return whether the image could be used.
+        
+    Hs : list of (3,3) floating point arrays
+        For each of the input frames, the homography H that maps
+        the frame to the reference image.
+    
     """
     assert ref_img.ndim == 2, "Images must be 2-dimensional arrays"
 

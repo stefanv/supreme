@@ -15,8 +15,8 @@ class Grid(object):
         """
         Create a grid given rows and columns.
 
-        Input
-        -----
+        Input:
+        ------
         rows,cols : 1D array
             If the grid is rectangular, the coordinates are specified
             as 1D arrays.  Otherwise give all the coordinates, as in a
@@ -25,8 +25,8 @@ class Grid(object):
 
                rows == N.arange(rows), cols == N.arange(cols)
 
-        Output
-        ------
+        Output:
+        -------
         A grid object representing homogenous coordinates.  Each coordinate
         describes the (col,row,z) co-ordinate of the top right-hand
         corner of a pixel.

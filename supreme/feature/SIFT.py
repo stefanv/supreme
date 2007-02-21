@@ -5,18 +5,19 @@ def fromfile(f,mode='SIFT'):
 
     Input:
     ------
-    file -- Filename or file object.
-    mode -- 'SIFT' or 'SURF'
+    f : string or open file
+        Input file.
+    mode : string
+        'SIFT' or 'SURF'
 
     Output:
     -------
-    Record array with fields
-
-    row -- row position of feature
-    column -- column position of feature
-    scale -- feature scale
-    orientation -- feature orientation
-    data -- feature values
+    data : record array with fields
+        row : row position of feature
+        column : column position of feature
+        scale : feature scale
+        orientation : feature orientation
+        data : feature values
 
     """
     if not hasattr(f,'readline'):
