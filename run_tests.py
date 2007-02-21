@@ -37,8 +37,10 @@ for root,dir,files in os.walk(supreme_root):
             suite.addTest(doctest.DocTestSuite(module,setUp=setup))
         except ImportError, e:
             # No such module
+            print e
             pass
         except ValueError, e:
+            print e
             # No tests
             pass
 
