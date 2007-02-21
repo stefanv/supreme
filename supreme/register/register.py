@@ -82,16 +82,20 @@ class PointCorrespondence(object):
         return N.append(M,1).reshape((3,3))
 
     def transform(self,M):
-        pass
+        raise NotImplementedError
 
-    def reject(self,off_mean=0.8):
-        pass
+    def reject(self):
+        raise NotImplementedError
 
     def __len__(self):
+        """The number of points."""
         return len(self.rx)
 
 def sparse(ref_feat_rows,ref_feat_cols,
-           target_feat_rows,target_feat_cols):
+        target_feat_rows,target_feat_cols):
+        """Compatibility wrapper. Calculate the PointCorrespondence
+        homography which maps reference features to target features."""
+    
     p = PointCorrespondence(ref_feat_rows,ref_feat_cols,
                             target_feat_rows,target_feat_cols)
 

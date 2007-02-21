@@ -1,3 +1,5 @@
+"""Global configuration and utility functions."""
+
 import numpy as N
 import os.path
 import sys
@@ -10,6 +12,7 @@ itype = N.int_
 eps = N.finfo(ftype).eps
 
 def abs_path(relpath):
+    """Given a relative path, return the absolute path."""
     return os.path.join(os.path.dirname(__file__),
                         relative_data_path)
 

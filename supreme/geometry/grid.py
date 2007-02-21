@@ -1,3 +1,5 @@
+"""Coordinate grids."""
+
 __all__ = ['Grid']
 
 import numpy as N

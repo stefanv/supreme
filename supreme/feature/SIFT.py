@@ -1,3 +1,5 @@
+"""Read SIFT and SURF feature files."""
+
 import numpy as N
 
 def fromfile(f,mode='SIFT'):
@@ -13,11 +15,16 @@ def fromfile(f,mode='SIFT'):
     Output:
     -------
     data : record array with fields
-        row : row position of feature
-        column : column position of feature
-        scale : feature scale
-        orientation : feature orientation
-        data : feature values
+      - row: int
+          row position of feature
+      - column: int
+          column position of feature
+      - scale: float
+          feature scale
+      - orientation: float
+          feature orientation
+      - data: array
+          feature values
 
     """
     if not hasattr(f,'readline'):

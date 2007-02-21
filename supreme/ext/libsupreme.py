@@ -1,3 +1,5 @@
+"""C extensions implemented using ctypes to enhance speed critical algorithms."""
+
 import sys
 import numpy as N
 try:

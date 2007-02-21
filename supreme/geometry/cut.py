@@ -1,3 +1,5 @@
+"""Cut blocks from images along a given coord_path."""
+
 from numpy.testing import set_local_path, restore_path
 import numpy as N
 import warnings

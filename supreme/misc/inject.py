@@ -1,3 +1,5 @@
+"""Dependency injector with interface checking."""
+
 __all__ = ['interface','inject']
 
 import inspect

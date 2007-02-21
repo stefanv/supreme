@@ -1,3 +1,5 @@
+"""Image warping algorithms, e.g. log-polar transform."""
+
 import numpy as N
 from scipy.ndimage import interpolation as ndii
 

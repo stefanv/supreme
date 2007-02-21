@@ -1,3 +1,5 @@
+"""Feature matching (vector quantisation)."""
+
 __all__ = ['match']
 
 import numpy as N
