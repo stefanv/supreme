@@ -203,15 +203,21 @@ def correlate(A,B,
               rows=None,columns=None, mode_row='zero', mode_column='zero'):
     """Correlate A and B.
 
-    A,B         -- data arrays
-    columns     -- do correlation at columns 0..columns,
-                   defaults to the number of columns in A
-    rows        -- do correlation at columns 0..rows,
-                   defaults to the number of rows in A
-    mode_row,
-    mode_column -- values outside boundaries, 'zero' or 'mirror'
+    Input:
+    ------
+    A,B : array
+        Input data.
+    columns : int
+        Do correlation at columns 0..columns, defaults to the number of columns in A.
+    rows : int
+        Do correlation at columns 0..rows, defaults to the number of rows in A.
+    mode_row, mode_column : string
+        How values outside boundaries are handled ('zero' or 'mirror').
 
-    Returns a rows-by-columns array of correlation values.
+    Output:
+    -------
+    Y : array
+      Rows-by-columns array of correlation values.
 
     """
 
@@ -250,23 +256,29 @@ def interp_bilinear(grey_image,
 
     Input:
     ------
-    grey_image          -- Input image of type N.uint8
-    transform_coords_r  -- Coordinates at row positions
-    transform_coords,c  -- Coordinates at column positions
-    mode                -- Values at borders: 'C' for constant, 'M' for mirror
-                           and 'W' for wrap.
-    cval                -- Used in conjunction with mode 'C', this specified
-                           which value is used when the interpolator moves
-                           outside the borders of the input image.
+    grey_image : uint8 array
+        Input image.
+    transform_coords_r : 2D array
+        Coordinates at row positions.
+    transform_coords_c : 2D array
+        Coordinates at column positions.
+    mode : string
+        How values at borders are handled. 'C' for constant, 'M' for
+        mirror and 'W' for wrap.
+    cval : int or float
+        Used in conjunction with mode 'C', this specifies which value
+        is used when the interpolator moves outside the borders of the
+        input image.
 
     Optimisation parameters:
     ------------------------
-    output -- An array of shape transform_coords_r and type N.uint8.  If 'output'
-              is provided, the result is computed in-place.
+    output : uint8 array of same shape as transform_coords_*
+        If 'output' is provided, the result is computed in-place.
 
     Output:
     -------
-    An image of shape transform_coords_r.shape and type N.uint8.
+    interpolated_image : uint8 array of same shape as transform_coords_*
+        The interpolated image.
 
     """
     grey_image, = atype(grey_image,N.uint8)

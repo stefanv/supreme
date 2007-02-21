@@ -52,15 +52,20 @@ def logpolar(image,angles=None,mode='M',cval=0,output=None,
 
     Input:
     ------
-    image  -- MxNxC image
-    angles -- Angles at which to evaluate. Defaults to 0..2*Pi in 359 steps.
-    mode   -- Value outside border: 'C' for constant, 'M' for mirror and
-              'W' for wrap.
-    cval   -- Outside border value for mode 'C'.
+    image : MxNxC array
+        An MxN image with C colour bands.
+    angles : 1D array of floats
+        Angles at which to evaluate. Defaults to 0..2*Pi in 359 steps.
+    mode : string
+        How values outside borders are handled. 'C' for constant, 'M'
+        for mirror and 'W' for wrap.
+    cval : int or float
+        Used in conjunction with mode 'C', the value outside the border.
     
     Optimisation parameters:
     ------------------------
-    _coords_r, _coords_c -- Pre-calculated coords, as given by _lpcoords.
+    _coords_r, _coords_c : 2D array
+        Pre-calculated coords, as given by _lpcoords.
     
     """
 
@@ -106,9 +111,12 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
 
     Input:
     ------
-    order   -- order of splines used in interpolation.
-    mode    -- passed to ndimage -- what to do outside boundaries
-    cval    -- value to return outside boundaries, if mode is 'constant'
+    order : int
+        Order of splines used in interpolation.
+    mode : string
+        How to handle values outside the image borders.  Passed as-is to ndimage.
+    cval : string
+        Used in conjunction with mode 'constant', the value outside the image boundaries.
     
     """
 
