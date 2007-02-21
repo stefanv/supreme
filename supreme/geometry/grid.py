@@ -17,11 +17,11 @@ class Grid(object):
 
         Input
         -----
-        
-        rows,cols -- If the grid is rectangular, the coordinates are
-                     specified as 1D arrays.  Otherwise give all
-                     the coordinates, as in a meshgrid.  If cols and
-                     rows are scalar, a rectangular grid is generated with
+        rows,cols : 1D array
+            If the grid is rectangular, the coordinates are specified
+            as 1D arrays.  Otherwise give all the coordinates, as in a
+            meshgrid.  If cols and rows are scalar, a rectangular grid
+            is generated with
 
                rows == N.arange(rows), cols == N.arange(cols)
 
