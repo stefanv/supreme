@@ -20,9 +20,12 @@ def inject(cls, member_name, new_instance):
 
     Inputs:
     -------
-    cls -- Class into which to inject the new instance.
-    member_name -- Member name to replace.
-    new_instance -- Instance to replace member by.
+    cls : class instance
+        Class instance into which the new member is injected.
+    member_name : string
+        Member name to replace.
+    new_instance : class instance
+        cls.member_name is set to new_instance.
 
     Example:
     --------

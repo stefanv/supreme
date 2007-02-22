@@ -13,6 +13,8 @@ import supreme
 restore_path()
 
 class ImageCollection(object):
+    """Load and manage a collection of images."""
+
     def __init__(self,file_pattern,conserve_memory=True):
         """Load image files.
 
@@ -25,6 +27,17 @@ class ImageCollection(object):
         conserve_memory : bool
             If True, never keep more than one in memory at a specific
             time.  Otherwise, images will be cached once they are loaded.
+
+        Example:
+        --------
+        >>> from os.path import dirname, join
+        >>> data_dir = join(dirname(__file__),'tests')
+
+        >>> c = ImageCollection(data_dir + '/*.png')
+        >>> len(c)
+        3
+        >>> c[2].shape
+        (20, 20, 3)
 
         """
         self.files = sorted(glob(file_pattern))
@@ -64,7 +77,7 @@ class ImageCollection(object):
     def __iter__(self):
         """Iterate over the images."""
         for i in range(len(self)):
-            yield i
+            yield self[i]
 
     def __len__(self):
         """Number of images in collection."""
