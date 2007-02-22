@@ -11,7 +11,7 @@ class test_cut(NumpyTestCase):
         p = coord_path.build(coord_path.line((1,1),(1,1)))
         image = N.arange(12).reshape((4,3))
         cp = cut.along_path(p,image,shape=(3,3))
-        
+
         cut_img = cp.next()
         assert_equal(cut_img.shape,(3,3))
         assert_array_almost_equal(cut_img,[[0,1,2],[3,4,5],[6,7,8]])
@@ -58,6 +58,6 @@ class test_cut(NumpyTestCase):
         image = N.arange(12).reshape((4,3)).astype(N.uint8)
         cut_img = cut.along_path(p,image).next()
         assert_equal(image.dtype,cut_img.dtype)
-        
+
 if __name__ == "__main__":
     NumpyTest().run()

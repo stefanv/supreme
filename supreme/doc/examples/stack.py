@@ -12,10 +12,11 @@ set_local_path('../../..')
 import supreme
 from supreme.config import data_path
 from supreme import register
+import supreme.misc
 restore_path()
 
 images = ['NASA/hubble_crop.jpg','NASA/hubble_crop_rot5.jpg']
-images = [supreme.imread(os.path.join(data_path,fn),flatten=True) for fn in images]
+images = [supreme.misc.imread(os.path.join(data_path,fn),flatten=True) for fn in images]
 
 theta = 5/180.*N.pi
 tf_matrices = [N.array([[1,0,0],

@@ -6,11 +6,12 @@ import pylab as P
 
 set_local_path('../../..')
 import supreme as sr
+import supreme.misc
 from supreme.config import data_path
 restore_path()
 
-fn0 = sr.imread(os.path.join(data_path,'NASA/hubble_crop.jpg'),flatten=True)
-fn1 = sr.imread(os.path.join(data_path,'NASA/hubble_crop_rot5.jpg'),flatten=True)
+fn0 = sr.misc.imread(os.path.join(data_path,'NASA/hubble_crop.jpg'),flatten=True)
+fn1 = sr.misc.imread(os.path.join(data_path,'NASA/hubble_crop_rot5.jpg'),flatten=True)
 
 def build_array(theta,tx,ty,s):
     A = N.array([[N.cos(theta),-N.sin(theta),tx],

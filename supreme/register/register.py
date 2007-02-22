@@ -41,7 +41,7 @@ class PointCorrespondence(object):
         Output:
         -------
         H : (3,3) array of floats
-        
+
             Input point: x = [c_0, c_1, c_2]^T
 
             Output point: x' = [c'_0, c'_1, c'_2]^T
@@ -94,8 +94,12 @@ class PointCorrespondence(object):
 def sparse(ref_feat_rows,ref_feat_cols,
         target_feat_rows,target_feat_cols):
     """Compatibility wrapper. Calculate the PointCorrespondence
-    homography which maps reference features to target features."""
-    
+    homography which maps reference features to target features.
+
+    See also: PointCorrespondence
+
+    """
+
     p = PointCorrespondence(ref_feat_rows,ref_feat_cols,
                             target_feat_rows,target_feat_cols)
 
@@ -195,11 +199,11 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
     -------
     accepted : bool array
         For each of the input frames, return whether the image could be used.
-        
+
     Hs : list of (3,3) floating point arrays
         For each of the input frames, the homography H that maps
         the frame to the reference image.
-    
+
     """
     assert ref_img.ndim == 2, "Images must be 2-dimensional arrays"
 

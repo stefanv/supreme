@@ -10,6 +10,7 @@ import os.path
 
 set_local_path('../../..')
 import supreme
+import supreme.misc
 from supreme.geometry import coord_path as cp
 from supreme.config import data_path
 restore_path()
@@ -21,7 +22,7 @@ def add_line(img,c0,c1,col=[1.,0,0]):
     p = cp.build(cp.line(c0,c1))
     add_path(img,p,col)
 
-img = supreme.imread(os.path.join(data_path, 'toystory/toystory000.png'))
+img = supreme.misc.imread(os.path.join(data_path, 'toystory/toystory000.png'))
 shape = N.array(img.shape[:2])-1
 height,width = shape
 centre = shape/2.

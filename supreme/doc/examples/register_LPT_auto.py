@@ -13,10 +13,11 @@ import supreme
 from supreme.config import data_path,ftype
 from supreme import register
 import supreme as SR
+import supreme.misc
 restore_path()
 
 def getframes(path):
-    return [supreme.imread(fn,flatten=True) for fn in
+    return [supreme.misc.imread(fn,flatten=True) for fn in
             sorted(glob.glob(os.path.join(data_path,path)))]
 
 images = getframes('toystory/*.png')[:3]
@@ -44,9 +45,9 @@ tf_matrices = [N.eye(3)] + list(tf_matrices)
 usedframes = [frames[0]] + list(frames[i+1] for i in accepted_frames)
 
 #print "Iteratively refining frames (this may take a while)..."
-tf_matrices = [tf_matrices[0]] + \
-              [register.refine(usedframes[0],F,tf_matrices[0],M)
-               for F,M in zip(usedframes[1:],tf_matrices[1:])]
+#tf_matrices = [tf_matrices[0]] + \
+#              [register.refine(usedframes[0],F,tf_matrices[0],M)
+#               for F,M in zip(usedframes[1:],tf_matrices[1:])]
 
 print "Reconstructing..."
 scale = 1

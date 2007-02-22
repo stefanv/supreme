@@ -36,7 +36,7 @@ print
 inside = pb.inside(grid_x,grid_y)
 P.plot(grid_x[inside], grid_y[inside], 'g.')
 P.plot(grid_x[~inside], grid_y[~inside],'r.')
-P.plot(pb.x,pb.y, '-k')    
+P.plot(pb.x,pb.y, '-k')
 P.plot([xc], [yc], 'co')
 P.show()
 
@@ -50,7 +50,7 @@ xc, yc = pc.centroid()
 
 print pc
 print "Area: ", pc.area()
-print "Centroid: ", xc, yc    
+print "Centroid: ", xc, yc
 print "%d points inside %d vertex poly..." % (grid_x.size/2,len(pc.x)),
 sys.stdout.flush()
 inside = pc.inside(grid_x,grid_y)

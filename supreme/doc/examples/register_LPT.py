@@ -9,12 +9,13 @@ import os.path
 
 set_local_path('../../..')
 import supreme
+import supreme.misc
 from supreme.config import data_path,ftype
 from supreme import transform
 restore_path()
 
-img1 = supreme.imread(os.path.join(data_path,'NASA/hubble_crop.jpg'),flatten=True)
-img2 = supreme.imread(os.path.join(data_path,'NASA/hubble_crop_rot25_centre.jpg'),flatten=True)
+img1 = supreme.misc.imread(os.path.join(data_path,'NASA/hubble_crop.jpg'),flatten=True)
+img2 = supreme.misc.imread(os.path.join(data_path,'NASA/hubble_crop_rot25_centre.jpg'),flatten=True)
 
 img1_tf = transform.logpolar(img1)
 img2_tf = transform.logpolar(img2)
