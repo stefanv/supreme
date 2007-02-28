@@ -15,7 +15,7 @@ im_descr = {'misc/nova_grey.png': 'Grey-level input',
            'misc/nova.png': 'Colour input',
            'misc/nova_alpha.png': 'Alpha layered input'} 
 for im in images:
-    img1 = supreme.imread(os.path.join(supreme.config.data_path,im))
+    img1 = supreme.misc.imread(os.path.join(supreme.config.data_path,im))
     print "Input image shape: ", img1.shape
                                    
     import timeit

@@ -14,7 +14,7 @@ from supreme.ext import variance_map
 restore_path()
 
 fn = 'toystory/toystory001.png'
-x = supreme.imread(os.path.join(data_path,fn),flatten=True)
+x = supreme.misc.imread(os.path.join(data_path,fn),flatten=True)
 
 P.subplot(121)
 P.imshow(x,cmap=P.cm.gray)

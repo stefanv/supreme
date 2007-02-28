@@ -10,6 +10,7 @@ import register
 import ext
 import feature
 import lib
+import misc
 
 test = NumpyTest('supreme').test
 
