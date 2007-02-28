@@ -7,8 +7,8 @@ import sys
 __all__ = ['abs_path','add_path','remove_path','ftype','itype',
            'data_path','lib_path']
 
-ftype = N.float_
-itype = N.int_
+ftype = N.float64
+itype = N.int32
 eps = N.finfo(ftype).eps
 
 def abs_path(relpath):
