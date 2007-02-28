@@ -135,6 +135,9 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
     tf_coords = N.dot(tf_coords,N.linalg.inv(matrix).transpose())
     tf_coords[N.absolute(tf_coords) < SC.eps] = 0.
 
+    # normalize coordinates
+    tf_coords[...,:2] /= tf_coords[...,2,N.newaxis]
+
     # y-coordinate mapping
     stackcopy(coords[0,...], tf_coords[...,1])
 
