@@ -22,7 +22,7 @@ T = 0.6
 image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))
 feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
 
-images = [sr.imread(fn,flatten=True) for fn in image_files]
+images = [sr.misc.imread(fn,flatten=True) for fn in image_files]
 features = [sr.feature.SIFT.fromfile(fn,mode=featuretype.upper()) for fn in feature_files]
 
 for pair in zip(image_files,feature_files):
