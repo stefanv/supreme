@@ -36,8 +36,8 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant',
     weights - weights of input images (default: weighted equally)
 
     For each image, a 3x3 coordinate transformation matrix, A,
-    must be given. Each coordinate, c = [[x],[y],[1]], in the source image
-    is then translated to its position in the destination image,
+    must be given. Each coordinate, c = [x,y,1]^T, in the source
+    image is then translated to its position in the destination image,
 
     d = A*c.
 
@@ -55,9 +55,8 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant',
     images = [N.atleast_2d(i) for i in images]
     affine_matrices = [N.atleast_2d(m) for m in matrices]
 
-    reshape = False
-    if oshape is None:
-        reshape = True
+    reshape = (oshape is None)
+    if reshape:
         all_tf_cnrs = N.empty((0,3))
         for img,tf_matrix in zip(images,matrices):
             rows,cols = img.shape[:2]

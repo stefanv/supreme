@@ -25,7 +25,7 @@ def _lpcoords(ishape,w,angles=None):
 
     ishape = N.array(ishape)
     bands = ishape[2]
-    
+
     oshape = ishape.copy()
     centre = (ishape[:2]-1)/2.
 
@@ -37,7 +37,7 @@ def _lpcoords(ishape,w,angles=None):
     theta = N.empty((len(angles),w),dtype=SC.ftype)
     # Use broadcasting to replicate angles
     theta.transpose()[:] = angles
-    
+
     L = N.empty_like(theta)
     # Use broadcasting to replicate distances
     L[:] = N.arange(w).astype(SC.ftype)
@@ -61,12 +61,12 @@ def logpolar(image,angles=None,mode='M',cval=0,output=None,
         for mirror and 'W' for wrap.
     cval : int or float
         Used in conjunction with mode 'C', the value outside the border.
-    
+
     Optimisation parameters:
     ------------------------
     _coords_r, _coords_c : 2D array
         Pre-calculated coords, as given by _lpcoords.
-    
+
     """
 
     if image.ndim < 2 or image.ndim > 3:
@@ -88,7 +88,7 @@ def logpolar(image,angles=None,mode='M',cval=0,output=None,
         output[...,band] = interp_bilinear(image[...,band],
                                            _coords_r,_coords_c,mode=mode,
                                            cval=cval,output=output[...,band])
-        
+
     return output.squeeze()
 
 def matrix(image,matrix,output_shape=None,order=1,mode='constant',
@@ -117,7 +117,7 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
         How to handle values outside the image borders.  Passed as-is to ndimage.
     cval : string
         Used in conjunction with mode 'constant', the value outside the image boundaries.
-    
+
     """
 
     if image.ndim < 2:
@@ -126,7 +126,7 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
     image = N.atleast_3d(image)
     ishape = N.array(image.shape)
     bands = ishape[2]
-        
+
     if output_shape is None:
         output_shape = ishape
 
@@ -143,7 +143,7 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
 
     # colour-coordinate mapping
     coords[2,...] = range(bands)
-    
+
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
     mapped = ndii.map_coordinates(image,coords,prefilter=prefilter,
