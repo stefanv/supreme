@@ -15,10 +15,10 @@ features = []
 images = []
 
 dataset = 'pathfinder'
-basename = 'i44'
+basename = 'i'
 imagetype = 'png'
-featuretype = 'surf'
-T = 0.6
+featuretype = 'sift'
+T = 0.5
 image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))
 feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
 
@@ -39,8 +39,8 @@ for frame in features[1:]:
     xf,yf = frame['column'][valid],frame['row'][valid]
     xr,yr = ref['column'][valid_ref],ref['row'][valid_ref]
 
-    M = sr.register.sparse(yr,xr,yf,xf)
-    valid_matrices.append(1)
+    converged,M = sr.register.sparse(yr,xr,yf,xf,mode='iterative')
+    valid_matrices.append(converged)
     tf_matrices.append(M)
     print M
 
@@ -50,7 +50,7 @@ images = [i for i,v in zip(images,valid_matrices) if v]
 tf_matrices = [t for t,v in zip(tf_matrices,valid_matrices) if v]
 
 # Scale for super-resolution
-scale = 3.
+scale = 5.
 for M in tf_matrices:
     M[:2,:] *= scale
 oshape = N.ceil(N.array(images[0].shape)*scale).astype(int)
@@ -71,7 +71,7 @@ for i,(img,M) in enumerate(zip(images,tf_matrices)):
     print "Stacking frame %d" % i
     out2 += sr.ext.interp_transf_polygon(img,N.linalg.inv(M),oshape)
 out2 /= len(images)
-#out2[out2 > 500] = 500
+out2[out2 > 500] = 500
 
 import scipy as S
 imsave = S.misc.pilutil.imsave

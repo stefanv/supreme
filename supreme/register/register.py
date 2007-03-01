@@ -27,7 +27,8 @@ class PointCorrespondence(object):
     """Estimate point correspondence homographies."""
 
     def __init__(self, ref_feat_rows, ref_feat_cols,
-                 target_feat_rows, target_feat_cols):
+                 target_feat_rows, target_feat_cols,
+                 mode='direct'):
         self.rx,self.ry,self.tx,self.ty = \
                 map(N.asarray,[ref_feat_cols,ref_feat_rows,
                                target_feat_cols,target_feat_rows])
@@ -35,7 +36,12 @@ class PointCorrespondence(object):
         assert len(self.rx) == len(self.ry) == len(self.tx) == len(self.ty), \
                "Equal number of coordinates expected."
 
-    def estimate(self):
+        if mode == 'direct':
+            self.estimate = self._estimate_direct
+        else:
+            self.estimate = self._estimate_iterative
+
+    def _estimate_direct(self):
         """Estimate the homographic point correspondence.
 
         Output:
@@ -79,7 +85,29 @@ class PointCorrespondence(object):
 
         M,res,rank,s = scipy.linalg.lstsq(U,B)
 
-        return N.append(M,1).reshape((3,3))
+        return True,N.append(M,1).reshape((3,3))
+
+    def _estimate_iterative(self):
+        rx,ry,tx,ty = self.rx,self.ry,self.tx,self.ty
+
+        rcoord = N.vstack((rx,ry,N.ones_like(rx))).T
+        tcoord = N.vstack((tx,ty,N.ones_like(tx))).T
+
+        def build_transform_from_params(p):
+            theta,tx,ty = p
+            return N.array([[N.cos(theta),-N.sin(theta),tx],
+                            [N.sin(theta), N.cos(theta),ty],
+                            [0,            0,           1.]])
+
+        def model(p):
+            tf_arr = build_transform_from_params(p)
+            tc = N.dot(tcoord,tf_arr.T)
+            return N.sum((rcoord - tc)**2,axis=1)
+
+        pout,ier = S.optimize.leastsq(model,[0,0,0],maxfev=5000)
+        if ier != 1:
+            print "Warning: error status", ier
+        return (ier==1),build_transform_from_params(pout)
 
     def transform(self,M):
         raise NotImplementedError
@@ -92,7 +120,7 @@ class PointCorrespondence(object):
         return len(self.rx)
 
 def sparse(ref_feat_rows,ref_feat_cols,
-        target_feat_rows,target_feat_cols):
+        target_feat_rows,target_feat_cols,**kwargs):
     """Compatibility wrapper. Calculate the PointCorrespondence
     homography which maps reference features to target features.
 
@@ -101,7 +129,8 @@ def sparse(ref_feat_rows,ref_feat_cols,
     """
 
     p = PointCorrespondence(ref_feat_rows,ref_feat_cols,
-                            target_feat_rows,target_feat_cols)
+                            target_feat_rows,target_feat_cols,
+                            **kwargs)
 
     M = p.estimate()
     return M
@@ -286,7 +315,8 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
                           [1, -2, 1],
                           [0,  1, 0]]
 
-        vmsource = ndi.correlate(ref_img,vm_filter_mask)
+        #vmsource = ndi.correlate(ref_img,vm_filter_mask)
+        vmsource = ref_img - ndi.sobel(ref_img)
         vm = sr.ext.variance_map(vmsource,shape=window_shape/4)
         vm = vm/N.prod(window_shape/4)
         vm = _clearborder(vm,window_shape/2)
@@ -375,7 +405,8 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         P.axis('off')
         P.box('off')
         P.savefig('features_%d.eps' % fnum)
-        P.show()
+        #P.show()
+        P.close()
 
     accepted_frames = []
     tf_matrices = []
