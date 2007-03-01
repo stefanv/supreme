@@ -23,7 +23,7 @@ void variance_map(int rows, int columns,
             mean = 0;
             var = 0;
 
-	    /* Possible memory leak for windows of length % 2 == 0 -- run valgrind to check */
+            /* Possible memory leak for windows of length % 2 == 0 -- run valgrind to check */
             if ((r >= offset_rows) && (r < rows - offset_rows) &&
                 (c >= offset_columns) && (c < columns - offset_columns)) {
 
@@ -39,9 +39,9 @@ void variance_map(int rows, int columns,
                 for (rr = 0; rr < window_size_rows; rr++)
                     for (cc = 0; cc < window_size_columns; cc++) {
                         k = (r + rr - offset_rows)*columns + (c + cc - offset_columns);
-                        var += pow(input[k] - mean, 2);
+                        var += pow(input[k], 2);
                     }
-                var = var / N;
+                var = var / N - pow(mean, 2);
 
                 output[j] = var;
             } else {
