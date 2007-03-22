@@ -26,7 +26,7 @@ class test_sparse(NumpyTestCase):
         tx = C*xp - S*yp + 3
         ty = S*xp + C*yp + 7
 
-        tf_est = register.sparse(ty,tx,yp,xp)
+        valid,tf_est = register.sparse(ty,tx,yp,xp)
         assert_array_almost_equal(tf,tf_est)
 
 if __name__ == "__main__":
