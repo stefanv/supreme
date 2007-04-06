@@ -1,8 +1,11 @@
 """Read and write image files."""
 
+from __future__ import with_statement
+
 __all__ = ['ImageCollection','imread']
 
 from glob import glob
+import os.path
 
 import numpy as N
 from numpy.testing import set_local_path, restore_path
@@ -10,7 +13,43 @@ from scipy.misc.pilutil import imread
 
 set_local_path('../..')
 import supreme
+from supreme.lib import EXIF
 restore_path()
+
+class Image(N.ndarray):
+    """Image data with tags."""
+
+    tags = {'filename' : '',
+            'EXIF' : {},
+            'info' : {}}
+
+    def __new__(image_cls,arr,**kwargs):
+        """Set the image data and tags according to given parameters.
+
+        Input:
+        ------
+        image_cls : Image class specification
+            This is not normally specified by the user.
+        arr : ndarray
+            Image data.
+        **kwargs : Image tags as keywords
+            Specified in the form tag0 = value, tag1 = value.
+
+        """
+        x = N.array(arr).view(image_cls)
+        for tag,value in Image.tags.items():
+            setattr(x,tag,kwargs.get(tag,value))
+        return x
+
+    def __array_finalize__(self, obj):
+        """Copy object tags."""
+        for tag,value in Image.tags.items():
+            if hasattr(obj,tag):
+                setattr(self,tag,getattr(obj,tag))
+            else:
+                setattr(self,tag,value)
+        return
+
 
 class ImageCollection(object):
     """Load and manage a collection of images."""
@@ -68,7 +107,13 @@ class ImageCollection(object):
         """
         idx = n % len(self.data)
         if (_cached != n and self.conserve_memory) or (self.data[idx] is None):
-            self.data[idx] = imread(self.files[n])
+            image_data = imread(self.files[n])
+
+            with file(self.files[n]) as f:
+                exif = EXIF.process_file(f)
+
+            self.data[idx] = Image(image_data,filename=os.path.basename(self.files[n]),
+                                   EXIF=exif,info={})
 
         _cached.flat = n
 

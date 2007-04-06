@@ -22,6 +22,8 @@ class test_ImageCollection(NumpyTestCase):
 
     def check_images(self):
         assert_array_equal(self.c[0],self.images[0])
+        assert_equal(self.c[0].filename,'data0.png')
+
         assert_array_equal(self.c[2],self.images[2])
         assert_array_equal(self.c[1],self.images[1])
 
@@ -29,6 +31,16 @@ class test_ImageCollection(NumpyTestCase):
         for i,img in enumerate(self.c):
             assert_array_equal(img,self.c[i])
             assert_array_equal(img,self.images[i])
+
+    def check_tags(self):
+        ic = ImageCollection(os.path.join(self.data_path,'exif_tagged.jpg'))
+        img = ic[0]
+        assert_equal(str(img.EXIF['EXIF ExposureTime']),'1/60')
+        assert_equal(img.filename,'exif_tagged.jpg')
+
+        img.info['x'] = 3
+        img2 = (img + N.array([1,2,3]))
+        assert_equal(img2.info['x'],3)
 
 class test_ImageCollection_do_not_conserve_memory(test_ImageCollection):
     def setUp(self):
