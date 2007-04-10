@@ -54,7 +54,7 @@ class Image(N.ndarray):
 class ImageCollection(object):
     """Load and manage a collection of images."""
 
-    def __init__(self,file_pattern,conserve_memory=True):
+    def __init__(self,file_pattern,conserve_memory=True,grey=False):
         """Load image files.
 
         Note that files are always stored in alphabetical order.
@@ -66,6 +66,8 @@ class ImageCollection(object):
         conserve_memory : bool
             If True, never keep more than one in memory at a specific
             time.  Otherwise, images will be cached once they are loaded.
+        grey : bool
+            If True, convert the input images to grey-scale.
 
         Example:
         --------
@@ -87,6 +89,7 @@ class ImageCollection(object):
             memory_slots = len(self.files)
 
         self.conserve_memory = conserve_memory
+        self.grey = grey
         self.data = N.empty(memory_slots,dtype=object)
 
     def __getitem__(self,n,_cached=N.array(-1)):
@@ -107,7 +110,7 @@ class ImageCollection(object):
         """
         idx = n % len(self.data)
         if (_cached != n and self.conserve_memory) or (self.data[idx] is None):
-            image_data = imread(self.files[n])
+            image_data = imread(self.files[n],self.grey)
 
             with file(self.files[n]) as f:
                 exif = EXIF.process_file(f)

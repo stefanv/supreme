@@ -42,6 +42,11 @@ class test_ImageCollection(NumpyTestCase):
         img2 = (img + N.array([1,2,3]))
         assert_equal(img2.info['x'],3)
 
+    def check_grey(self):
+        ic = ImageCollection(self.data_glob,grey=True)
+        for img in ic:
+            assert_equal(img.ndim,2)
+
 class test_ImageCollection_do_not_conserve_memory(test_ImageCollection):
     def setUp(self):
         self.c = ImageCollection(self.data_glob,conserve_memory=False)
