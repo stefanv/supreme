@@ -50,6 +50,11 @@ class Image(N.ndarray):
                 setattr(self,tag,value)
         return
 
+    @property
+    def exposure(self):
+        """Return exposure time based on EXIF tag."""
+        exposure = self.EXIF['EXIF ExposureTime'].values[0]
+        return exposure.num / float(exposure.den)
 
 class ImageCollection(object):
     """Load and manage a collection of images."""

@@ -37,6 +37,7 @@ class test_ImageCollection(NumpyTestCase):
         img = ic[0]
         assert_equal(str(img.EXIF['EXIF ExposureTime']),'1/60')
         assert_equal(img.filename,'exif_tagged.jpg')
+        assert_almost_equal(img.exposure,1/60.)
 
         img.info['x'] = 3
         img2 = (img + N.array([1,2,3]))

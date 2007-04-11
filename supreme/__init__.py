@@ -11,6 +11,7 @@ import ext
 import feature
 import lib
 import misc
+import photometry
 
 test = NumpyTest('supreme').test
 

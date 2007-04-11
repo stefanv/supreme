@@ -1,4 +1,5 @@
-packages = ['geometry','feature','register','transform','ext','lib']
+packages = ['geometry','feature','register','transform',
+            'ext','lib','misc','photometry']
 ext_libs = ['lib/Nurbs-0.1','lib/Polygon-1.16']
 data_files = ['doc/*.txt']
 
@@ -13,7 +14,7 @@ def configuration(parent_package='',top_path=None):
     for f in data_files:
         config.add_data_files(f)
     return config
-    
+
 if __name__ == '__main__':
     from numpy.distutils.core import setup
     setup(configuration=configuration)
