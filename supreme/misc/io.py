@@ -36,7 +36,7 @@ class Image(N.ndarray):
             Specified in the form tag0 = value, tag1 = value.
 
         """
-        x = N.array(arr).view(image_cls)
+        x = N.asarray(arr).view(image_cls)
         for tag,value in Image.tags.items():
             setattr(x,tag,kwargs.get(tag,value))
         return x
@@ -44,10 +44,7 @@ class Image(N.ndarray):
     def __array_finalize__(self, obj):
         """Copy object tags."""
         for tag,value in Image.tags.items():
-            if hasattr(obj,tag):
-                setattr(self,tag,getattr(obj,tag))
-            else:
-                setattr(self,tag,value)
+            setattr(self,tag,getattr(obj,tag,value))
         return
 
     @property
