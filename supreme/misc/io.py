@@ -2,7 +2,7 @@
 
 from __future__ import with_statement
 
-__all__ = ['ImageCollection','imread']
+__all__ = ['Image','ImageCollection','imread']
 
 from glob import glob
 import os.path
@@ -46,6 +46,21 @@ class Image(N.ndarray):
         for tag,value in Image.tags.items():
             setattr(self,tag,getattr(obj,tag,value))
         return
+
+    def __reduce__(self):
+        object_state = list(N.ndarray.__reduce__(self))
+        subclass_state = {}
+        for tag in self.tags:
+            subclass_state[tag] = getattr(self,tag)
+        object_state[2] = (object_state[2],subclass_state)
+        return tuple(object_state)
+
+    def __setstate__(self,state):
+        nd_state,subclass_state = state
+        N.ndarray.__setstate__(self,nd_state)
+
+        for tag in subclass_state:
+            setattr(self,tag,subclass_state[tag])
 
     @property
     def exposure(self):

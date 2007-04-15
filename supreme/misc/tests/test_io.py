@@ -8,6 +8,18 @@ from supreme.misc import *
 from supreme.config import ftype,itype
 restore_path()
 
+class test_Image(NumpyTestCase):
+    def setUp(self):
+        self.image = Image(N.arange(100).reshape((10,10)))
+        self.image2 = Image(N.arange(10),filename='foo.jpg')
+        assert_equal(self.image2.filename,'foo.jpg')
+
+    def check_pickle(self):
+        self.image.filename = 'image.jpg'
+        import pickle as P
+        image = P.loads(P.dumps(self.image))
+        assert_equal(image.filename, 'image.jpg')
+
 class test_ImageCollection(NumpyTestCase):
     data_path = os.path.dirname(__file__)
     data_glob = os.path.join(data_path,'*.png')
