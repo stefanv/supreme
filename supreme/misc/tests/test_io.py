@@ -20,6 +20,10 @@ class test_Image(NumpyTestCase):
         image = P.loads(P.dumps(self.image))
         assert_equal(image.filename, 'image.jpg')
 
+    def check_image_of_image(self):
+        x = Image(Image(N.arange(1),filename='stored.jpg'))
+        assert_equal(x.filename, 'stored.jpg')
+
 class test_ImageCollection(NumpyTestCase):
     data_path = os.path.dirname(__file__)
     data_glob = os.path.join(data_path,'*.png')

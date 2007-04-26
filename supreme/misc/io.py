@@ -38,7 +38,7 @@ class Image(N.ndarray):
         """
         x = N.asarray(arr).view(image_cls)
         for tag,value in Image.tags.items():
-            setattr(x,tag,kwargs.get(tag,value))
+            setattr(x,tag,kwargs.get(tag,getattr(arr,tag,value)))
         return x
 
     def __array_finalize__(self, obj):
