@@ -1,0 +1,70 @@
+FAST feature detectors in C:
+============================
+
+References:
+-----------
+
+http://mi.eng.cam.ac.uk/~er258/work/fast.html
+
+@inproceedings{rosten_2005_tracking,
+    title       =    "Fusing points and lines for high performance tracking.",
+    author      =    "Edward Rosten and Tom Drummond",
+    year        =    "2005",
+    month       =    "October",
+    pages       =    "1508--1511",
+    volume      =    "2",
+    booktitle   =    "IEEE International Conference on Computer Vision",
+    notes       =    "Oral presentation",
+    doi         =    "10.1109/ICCV.2005.104",
+    url         =    "http://mi.eng.cam.ac.uk/~er258/work/rosten_2005_tracking.pdf"
+}
+
+@inproceedings{rosten_2006_machine,
+    title       =    "Machine learning for high-speed corner detection",
+    author      =    "Edward Rosten and Tom Drummond",
+    year        =    "2006",
+    month       =    "May",
+    pages       =    "430--443",
+    volume      =    "1",
+    doi         =    "10.1007/11744023_34",
+    booktitle   =    "European Conference on Computer Vision",
+    notes       =    "Poster presentation",
+    url         =    "http://mi.eng.cam.ac.uk/~er258/work/rosten_2006_machine.pdf"
+}
+
+Compiling:
+----------
+
+The files are valid C and C++ code, and have no special requirements for
+compiling, and they do not depend on any libraries. Just compile them along with
+the rest of your project. 
+
+With gcc, for extra speed, first compile the code with "-fprofile-arcs" as an
+option. Then, run the program and recompile with 
+"-fbranch-probabilities -freorder-functions -ftsp-ordering".
+This can make a significant improvement in speed.
+
+
+
+To use the functions, #include "fast.h"
+
+The corner detectors have the following prototype (where X is 9, 10, 11 or 12):
+
+xy* fast_corner_detect_X(const unsigned char * data, int xsize, int ysize, int threshold, int* numcorners)
+
+Where xy is the following simple struct typedef:
+
+typedef struct 
+{
+	int x, y;
+} xy;
+
+
+The image is passed in as a block of data and dimensions, and the list of
+corners is returned as an array of xy structs, and an integer (numcorners)
+with the number of corners returned.  The data can be deallocated with free().
+Nonmaximal suppression can be performed with the following function:
+
+xy*  fast_nonmax(const unsigned char* im, int xsize, int ysize, xy* corners, int numcorners, int threshold, int* num_nonmax)
+
+

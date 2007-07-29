@@ -13,4 +13,4 @@ Implementation Detail
 References
 ----------
 
-Stéfan van der Walt <stefan@mentat.za.net>
+Stéfan van der Walt <supreme at mentat.za.net>

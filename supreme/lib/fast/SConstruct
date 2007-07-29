@@ -1,0 +1,5 @@
+from glob import glob
+
+env = Environment()
+env.Replace(CCFLAGS=['-O2','-ggdb','-ansi','-pedantic'])
+env.SharedLibrary('fast_', glob('fast_*.c') + ['nonmax.c'])
