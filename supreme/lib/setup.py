@@ -1,7 +1,8 @@
 def configuration(parent_package='', top_path=None, package_name='lib'):
     from numpy.distutils.misc_util import Configuration
     config = Configuration(package_name,parent_package,top_path)
-    config.add_subpackage('klt')
+    for subpackage in ['klt','zope.interface','decorator']:
+        config.add_subpackage(subpackage)
     return config
 
 if __name__ == '__main__':
