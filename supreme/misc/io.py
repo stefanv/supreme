@@ -28,12 +28,12 @@ class Image(N.ndarray):
 
         Input:
         ------
-        image_cls : Image class specification
+        `image_cls` : Image class specification
             This is not normally specified by the user.
-        arr : ndarray
+        `arr` : ndarray
             Image data.
-        **kwargs : Image tags as keywords
-            Specified in the form tag0 = value, tag1 = value.
+        ``**kwargs`` : Image tags as keywords
+            Specified in the form ``tag0=value``, ``tag1=value``.
 
         """
         x = N.asarray(arr).view(image_cls)
@@ -79,7 +79,7 @@ class ImageCollection(object):
         Input:
         ------
         file_pattern : string
-            Path and pattern of files to load, e.g. 'data/*.jpg'.
+            Path and pattern of files to load, e.g. ``data/*.jpg``.
         conserve_memory : bool
             If True, never keep more than one in memory at a specific
             time.  Otherwise, images will be cached once they are loaded.

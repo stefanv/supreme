@@ -54,11 +54,11 @@ class PointCorrespondence(object):
 
             Input and output points are related by
 
-                x' = Hx
+                ``x' = Hx``
 
             Given errors in the measurement, H minimises
 
-                |x' - Hx'|
+                ``|x' - Hx'|``
 
         See Digital Image Warping by George Wolberg, p. 54.
 
