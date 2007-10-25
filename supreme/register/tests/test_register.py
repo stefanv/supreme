@@ -27,7 +27,7 @@ class test_sparse(ParametricTestCase):
                 ('direct','iterative','RANSAC'))
 
     def tst_sparse(self,ty,tx,yp,xp,tf,mode):
-        valid,tf_est = register.sparse(ty,tx,yp,xp,mode=mode)
+        tf_est,valid = register.sparse(ty,tx,yp,xp,mode=mode)
         assert_array_almost_equal(tf,tf_est)
 
 if __name__ == "__main__":

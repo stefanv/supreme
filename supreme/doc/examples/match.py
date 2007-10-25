@@ -39,7 +39,7 @@ for frame in features[1:]:
     xf,yf = frame['column'][valid],frame['row'][valid]
     xr,yr = ref['column'][valid_ref],ref['row'][valid_ref]
 
-    converged,M = sr.register.sparse(yr,xr,yf,xf,mode='iterative')
+    M,converged = sr.register.sparse(yr,xr,yf,xf,mode='RANSAC',confidence=0.9)
     valid_matrices.append(converged)
     tf_matrices.append(M)
     print M

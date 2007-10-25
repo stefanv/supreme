@@ -14,28 +14,50 @@ import sys
 set_local_path('../..')
 import supreme as sr
 from supreme.config import ftype,itype
-import supreme as sr
+from supreme.feature import RANSAC
+from supreme.misc.inject import interface
 restore_path()
 
-class PointCorrespondence(object):
-    """Estimate point correspondence homographies."""
+class Homography(object):
+    """Model of a homography for use with RANSAC.
 
-    def __init__(self, ref_feat_rows, ref_feat_cols,
-                 target_feat_rows, target_feat_cols,
-                 mode='direct'):
-        self.rx,self.ry,self.tx,self.ty = \
-                map(N.asarray,[ref_feat_cols,ref_feat_rows,
-                               target_feat_cols,target_feat_rows])
+    """
+    # Minimum number of points required to estimate.
+    @property
+    def ndp(self): return 4
 
-        assert len(self.rx) == len(self.ry) == len(self.tx) == len(self.ty), \
-               "Equal number of coordinates expected."
+    def __init__(self,H=N.eye(3)):
+        self.parameters = H
 
-        if mode == 'direct':
-            self.estimate = self._estimate_direct
-        else:
-            self.estimate = self._estimate_iterative
+    def set_parameters(self,H):
+        assert H.ndim == 2
+        assert H.shape == (3,3)
+        self._H = H
 
-    def _estimate_direct(self):
+    def get_parameters(self):
+        return self._H
+
+    parameters = property(fget=get_parameters,fset=set_parameters)
+
+    def __call__(self,data,H=None,confidence=0.8):
+        if H is None: H = self.parameters
+        ones = N.ones_like(data[:,0]).reshape(-1,1)
+        rcoord = N.hstack((data[:,:2],ones))
+        tcoord = N.hstack((data[:,2:],ones))
+
+        tc = N.dot(tcoord,H.T)
+        error = N.sqrt(N.sum((rcoord - tc)**2,axis=1))
+        return error, error < (1-confidence)*5
+
+    def estimate(self,data):
+        H,ignored = self.estimate_direct(data)
+        return H,True
+
+    def _data_from_array(self,data):
+        data = N.asarray(data)
+        return data[:,0], data[:,1], data[:,2], data[:,3]
+
+    def estimate_direct(self,data):
         """Estimate the homographic point correspondence.
 
         Output:
@@ -54,13 +76,15 @@ class PointCorrespondence(object):
 
                 ``|x' - Hx'|``
 
+        success : bool
+            Whether or not the calculation could be made.
+
         See Digital Image Warping by George Wolberg, p. 54.
 
         """
+        rx,ry,tx,ty = self._data_from_array(data)
 
-        rx,ry,tx,ty = self.rx,self.ry,self.tx,self.ty
-
-        nr = len(self)
+        nr = len(data)
 
         U = N.zeros((2*nr,8),dtype=ftype)
         # x-coordinates
@@ -81,43 +105,61 @@ class PointCorrespondence(object):
 
         M,res,rank,s = scipy.linalg.lstsq(U,B)
 
-        return True,N.append(M,1).reshape((3,3))
+        return N.append(M,1).reshape((3,3)),True
 
-    def _estimate_iterative(self):
-        rx,ry,tx,ty = self.rx,self.ry,self.tx,self.ty
-
-        rcoord = N.vstack((rx,ry,N.ones_like(rx))).T
-        tcoord = N.vstack((tx,ty,N.ones_like(tx))).T
-
-        def build_transform_from_params(p):
+    def _build_transform_from_params(self,p):
             theta,tx,ty,s = p
             return N.array([[s*N.cos(theta),-s*N.sin(theta),tx],
                             [s*N.sin(theta), s*N.cos(theta),ty],
                             [0,              0,             1.]])
 
-        def model(p):
-            tf_arr = build_transform_from_params(p)
-            tc = N.dot(tcoord,tf_arr.T)
-            return N.sum((rcoord - tc)**2,axis=1)
+    def estimate_iterative(self,data):
+        rx,ry,tx,ty = self._data_from_array(data)
 
-        pout,ignore,ignore,mesg,ier = S.optimize.leastsq(model,
+        rcoord = N.vstack((rx,ry,N.ones_like(rx))).T
+        tcoord = N.vstack((tx,ty,N.ones_like(tx))).T
+
+        def err_func(p):
+            err,inlier = self(data,
+                              H=self._build_transform_from_params(p))
+            return err
+
+        pout,ignore,ignore,mesg,ier = S.optimize.leastsq(err_func,
                                                          [0,0,0,1],
                                                          maxfev=5000,
                                                          full_output=True)
         if ier != 1 and ier != 2:
             print "Warning: error status", ier
             print mesg
-        return (ier==1),build_transform_from_params(pout)
+        return self._build_transform_from_params(pout),(ier==1)
 
-    def transform(self,M):
-        raise NotImplementedError
+interface(Homography,RANSAC.IModel)
 
-    def reject(self):
-        raise NotImplementedError
+class PointCorrespondence(object):
+    """Estimate point correspondence homographies."""
 
-    def __len__(self):
-        """The number of points."""
-        return len(self.rx)
+    def __init__(self, ref_feat_rows, ref_feat_cols,
+                 target_feat_rows, target_feat_cols,
+                 **args):
+
+        self.data = N.dstack([ref_feat_cols,ref_feat_rows,
+                              target_feat_cols,target_feat_rows]).squeeze()
+
+        self.mode = args.get('mode','direct').lower()
+        self.args = args
+
+    def estimate(self):
+        if self.mode == 'direct':
+            return Homography().estimate_direct(self.data)
+        elif self.mode == 'iterative':
+            return Homography().estimate_iterative(self.data)
+        else:
+            return self.RANSAC()
+
+    def RANSAC(self):
+        M = Homography()
+        R = RANSAC.RANSAC(M,2/3.)
+        return R(self.data,len(self.data)/2,self.args.get('confidence',None))
 
 def sparse(ref_feat_rows,ref_feat_cols,
         target_feat_rows,target_feat_cols,**kwargs):
@@ -135,18 +177,18 @@ def sparse(ref_feat_rows,ref_feat_cols,
     M = p.estimate()
     return M
 
-def _tf_difference(p,p_ref,reference,target):
-    """Calculate difference between reference and transformed target."""
-    tf_target = _build_tf(p)
-    tf_ref = _build_tf(p_ref)
-    im1 = sr.transform.matrix(reference,tf_ref)
-    im2 = sr.transform.matrix(target,tf_target)
-    diff = ((im1 - im2)**2)
-    # TODO: do polygon overlap check
-    return diff.sum()
-
 def refine(reference,target,p_ref,p_target):
     """Refine registration parameters iteratively."""
+
+    def _tf_difference(p,p_ref,reference,target):
+        """Calculate difference between reference and transformed target."""
+        tf_target = _build_tf(p)
+        tf_ref = _build_tf(p_ref)
+        im1 = sr.transform.matrix(reference,tf_ref)
+        im2 = sr.transform.matrix(target,tf_target)
+        diff = ((im1 - im2)**2)
+        # TODO: do polygon overlap check
+        return diff.sum()
 
     p = scipy.optimize.fmin_cg(_tf_difference,p_target,
                                args=(p_ref,reference,target))

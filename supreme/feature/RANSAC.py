@@ -91,8 +91,11 @@ class RANSAC(object):
                 lie exactly on the model prediction.
 
         """
-        for param in [data,inliers_required,confidence]:
+        for param in [data,inliers_required]:
             assert param is not None
+
+        if confidence is None:
+            confidence = 0.8 # sensible default value
 
         model = self.model
 
@@ -103,7 +106,7 @@ class RANSAC(object):
         for i in range(max_iter):
             rand_idx = N.floor(N.random.random(model.ndp)*len(data)).astype(int)
             model.parameters,res = model.estimate(data[rand_idx,...])
-            score,inliers = model(data,confidence)
+            score,inliers = model(data,confidence=confidence)
             if N.sum(inliers) >= inliers_required:
                 success = True
                 break

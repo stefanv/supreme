@@ -89,6 +89,7 @@ class test_RANSAC(NumpyTestCase):
         (rsc_m,rsc_c),res = RANSAC.RANSAC(model=line,p_inlier=0.66)\
                             (data=data,inliers_required=30,confidence=0.9)
 
+        # Determine parameters without RANSAC
         (m,c),res = line.estimate(data)
 
 ##         # Visualise test
