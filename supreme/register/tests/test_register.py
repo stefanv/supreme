@@ -6,9 +6,6 @@ from supreme import register
 from supreme.config import ftype,itype
 restore_path()
 
-class test_logpolar(NumpyTestCase):
-    pass
-
 class test_sparse(ParametricTestCase):
     def testip_rot90(self):
         n = 10
