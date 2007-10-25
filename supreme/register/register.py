@@ -10,9 +10,6 @@ import scipy.linalg
 from numpy.testing import set_local_path, restore_path
 
 import sys
-from itertools import izip
-import timeit
-import warnings
 
 set_local_path('../..')
 import supreme as sr
@@ -137,91 +134,6 @@ def sparse(ref_feat_rows,ref_feat_cols,
 
     M = p.estimate()
     return M
-
-def rectangle_inside(shape,percent=10):
-    """Return a path inside the border as defined by shape."""
-    shape = N.asarray(shape)
-    rtop = N.round_(shape*percent/100.)
-    rbottom = shape - rtop
-
-    cp = sr.geometry.coord_path
-    return cp.build(cp.rectangle(rtop,rbottom))
-
-def _rects(shape,divide_rows,divide_cols):
-    class Rect:
-        def __init__(self,top_r,top_c,height,width):
-            self.top_r = top_r
-            self.top_c = top_c
-            self.width = width
-            self.height = height
-
-        @property
-        def origin(self):
-            return (self.top_r,self.top_c)
-
-        @property
-        def shape(self):
-            return (int(self.height),int(self.width))
-
-        @property
-        def coords(self):
-            """x- and y-coordinates, rather than row/column"""
-            return (self.top_c,self.top_c,
-                    self.top_c+self.width,self.top_c+self.width),\
-                    (self.top_r,self.top_r+self.height,
-                     self.top_r+self.height,self.top_r)
-
-        def as_slice(self):
-            return [slice(self.top_r,self.top_r+self.height),
-                    slice(self.top_c,self.top_c+self.width)]
-
-        def __str__(self):
-            return "Rectangle: (%d,%d), height: %d, width: %d" % \
-                   (self.top_r,self.top_c,self.height,self.width)
-
-    rows,cols = shape
-    rows = N.linspace(0,rows,divide_rows+1).astype(int)
-    cols = N.linspace(0,cols,divide_cols+1).astype(int)
-
-    rects = []
-    for r0,r1 in zip(rows[:-1],rows[1:]):
-        for c0,c1 in zip(cols[:-1],cols[1:]):
-            rects.append(Rect(r0,c0,r1-r0,c1-c0))
-
-    return rects
-
-def _peaks(image,nr,minvar=0):
-    """Divide image into nr quadrants and return peak value positions."""
-    n = N.ceil(N.sqrt(nr))
-    quadrants = _rects(image.shape,n,n)
-    peaks = []
-    for q in quadrants:
-        q_image = image[q.as_slice()]
-        q_argmax = q_image.argmax()
-        q_maxpos = N.unravel_index(q_argmax,q.shape)
-        if q_image.flat[q_argmax] > minvar:
-            peaks.append(N.array(q_maxpos) + q.origin)
-    return peaks
-
-def _clearborder(image,border_shape):
-    rows,cols = image.shape
-    br,bc = border_shape
-    image[:br,:] = 0
-    image[rows-br:,:] = 0
-    image[:,:bc] = 0
-    image[:,cols-bc:] = 0
-    return image
-
-class ImageInfo(N.ndarray):
-    """Description wrapper around ndarray"""
-    def __new__(image_cls,arr,info={}):
-        x = N.array(arr).view(image_cls)
-        x.info = info
-        return x
-    def __array_finalize__(self, obj):
-        if hasattr(obj,'info'):
-            self.info = obj.info
-        return
 
 def _tf_difference(p,p_ref,reference,target):
     """Calculate difference between reference and transformed target."""
