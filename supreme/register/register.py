@@ -69,12 +69,14 @@ class PointCorrespondence(object):
         nr = len(self)
 
         U = N.zeros((2*nr,8),dtype=ftype)
+        # x-coordinates
         U[:nr,0] = tx
         U[:nr,1] = ty
         U[:nr,2] = 1.
         U[:nr,6] = -tx*rx
         U[:nr,7] = -ty*rx
 
+        # y-coordinates
         U[nr:,3] = tx
         U[nr:,4] = ty
         U[nr:,5] = 1.
@@ -94,19 +96,23 @@ class PointCorrespondence(object):
         tcoord = N.vstack((tx,ty,N.ones_like(tx))).T
 
         def build_transform_from_params(p):
-            theta,tx,ty = p
-            return N.array([[N.cos(theta),-N.sin(theta),tx],
-                            [N.sin(theta), N.cos(theta),ty],
-                            [0,            0,           1.]])
+            theta,tx,ty,s = p
+            return N.array([[s*N.cos(theta),-s*N.sin(theta),tx],
+                            [s*N.sin(theta), s*N.cos(theta),ty],
+                            [0,              0,             1.]])
 
         def model(p):
             tf_arr = build_transform_from_params(p)
             tc = N.dot(tcoord,tf_arr.T)
             return N.sum((rcoord - tc)**2,axis=1)
 
-        pout,ier = S.optimize.leastsq(model,[0,0,0],maxfev=5000)
-        if ier != 1:
+        pout,ignore,ignore,mesg,ier = S.optimize.leastsq(model,
+                                                         [0,0,0,1],
+                                                         maxfev=5000,
+                                                         full_output=True)
+        if ier != 1 and ier != 2:
             print "Warning: error status", ier
+            print mesg
         return (ier==1),build_transform_from_params(pout)
 
     def transform(self,M):
