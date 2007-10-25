@@ -17,14 +17,15 @@ def build_array(theta,tx,ty,s):
     A = N.array([[N.cos(theta),-N.sin(theta),tx],
                  [N.sin(theta),N.cos(theta),ty],
                  [0,0,1]])
-    A[:2,:] *= s
+    A[:2,:-1] *= s
     return A
 
-scale = 1.
+scale = 2.
 tf_matrices = [build_array(0,0,0,1./scale),
                build_array(-5/180.*N.pi,0,0,1./scale)]
 print "Transformation matrix:\n", tf_matrices
 oshape = N.array(fn0.shape)*int(scale)
+print oshape
 
 out = N.empty(oshape,float)
 print "Stacking..."
