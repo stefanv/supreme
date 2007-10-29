@@ -14,11 +14,11 @@ print "Reading images and features..."
 features = []
 images = []
 
-dataset = 'pathfinder'
-basename = 'i'
+dataset = 'toystory'
+basename = 'toystory'
 imagetype = 'png'
 featuretype = 'sift'
-T = 0.5
+T = 0.6
 image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))
 feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
 
@@ -39,7 +39,12 @@ for frame in features[1:]:
     xf,yf = frame['column'][valid],frame['row'][valid]
     xr,yr = ref['column'][valid_ref],ref['row'][valid_ref]
 
-    M,converged = sr.register.sparse(yr,xr,yf,xf,mode='RANSAC',confidence=0.9)
+    try:
+        M,converged = sr.register.sparse(yr,xr,yf,xf,mode='RANSAC',confidence=0.8)
+    except:
+        print "RANSAC did not converge.  Skipping frame."
+        continue
+
     valid_matrices.append(converged)
     tf_matrices.append(M)
     print M

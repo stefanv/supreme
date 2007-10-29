@@ -158,8 +158,10 @@ class PointCorrespondence(object):
 
     def RANSAC(self):
         M = Homography()
-        R = RANSAC.RANSAC(M,2/3.)
-        return R(self.data,len(self.data)/2,self.args.get('confidence',None))
+        R = RANSAC.RANSAC(M,p_inlier=0.1) # conservatively low
+        return R(self.data,
+                 inliers_required=len(self.data)/2,
+                 confidence=self.args.get('confidence',None))
 
 def sparse(ref_feat_rows,ref_feat_cols,
         target_feat_rows,target_feat_cols,**kwargs):
