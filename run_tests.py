@@ -1,2 +1,2 @@
-import nose
-nose.main()
+import supreme
+supreme.test()

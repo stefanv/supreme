@@ -16,14 +16,16 @@ import photometry
 import functools as _functools
 import os.path as _path
 
+basedir = _path.abspath(_path.join(__file__, '../'))
+args = ['', '--exe', '--with-doctest',
+'-w','%s' % basedir,
+'-e','supreme.lib.zope']
 try:
-    import nose
-    cfg = nose.config.Config()
-    cfg.includeExe = True
-    test = _functools.partial(nose.run, argv=['',_path.dirname(__file__)],
-                              config=cfg)
+    import nose as _nose
+    test = _functools.partial(_nose.run, 'supreme', argv=args)
 except:
-    raise UserWarning('Cannot load nose.  Test suite not available.')
+    print "Could not load nose.  Unit tests not available."
+
 
 def iterable(x):
     try:

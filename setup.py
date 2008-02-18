@@ -37,7 +37,7 @@ setup(
                 ],
                 
   package_data = {
-      '': ['*.txt', '*.png', '*.jpg'],
+      '': ['*.txt', '*.png', '*.jpg', '*.pgm'],
   },
   
   zip_safe = False,

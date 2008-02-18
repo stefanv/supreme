@@ -43,7 +43,6 @@ class INameError(IStandardError): pass
 class INotImplementedError(IRuntimeError): pass
 class IOSError(IEnvironmentError): pass
 class IOverflowError(IArithmeticError): pass
-class IOverflowWarning(IWarning): pass
 class IReferenceError(IStandardError): pass
 class IRuntimeWarning(IWarning): pass
 class IStopIteration(IException): pass
@@ -77,7 +76,6 @@ classImplements(NameError, INameError)
 classImplements(NotImplementedError, INotImplementedError)
 classImplements(OSError, IOSError)
 classImplements(OverflowError, IOverflowError)
-classImplements(OverflowWarning, IOverflowWarning)
 classImplements(ReferenceError, IReferenceError)
 classImplements(RuntimeError, IRuntimeError)
 classImplements(RuntimeWarning, IRuntimeWarning)

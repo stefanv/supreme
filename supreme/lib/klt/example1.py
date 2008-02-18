@@ -1,16 +1,14 @@
 import numpy as N
+from os.path import dirname
 
-from numpy.testing import set_local_path, restore_path
-set_local_path('../../..')
 from supreme.lib import klt
-restore_path()
 
 import scipy as S
 imread = S.misc.pilutil.imread
 imsave = S.misc.pilutil.imsave
 
-img1 = imread('img0.pgm')
-img2 = imread('img1.pgm')
+img1 = imread(dirname(__file__) + '/img0.pgm')
+img2 = imread(dirname(__file__) + '/img1.pgm')
 
 tc = klt.TrackingContext()
 print tc
