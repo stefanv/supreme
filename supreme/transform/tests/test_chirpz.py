@@ -1,12 +1,11 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme import transform
 import supreme.config as SC
-restore_path()
 
-class test_chirpz(NumpyTestCase):
+class TestChirpz(unittest.TestCase):
     def test_fft(self,level=1):
         sz = 20
         x = N.arange(sz)

@@ -1,13 +1,13 @@
 import numpy as N
-from numpy.testing import *
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 
-set_local_path('../../..')
 from supreme import ext
 from supreme.geometry import Polygon
 import supreme.config as SC
-restore_path()
 
-class test_libsupreme(NumpyTestCase):
+class TestLibsupreme(unittest.TestCase):
     def test_variance_map(self,level=1):
         x = N.arange(12).reshape((3,4))
 

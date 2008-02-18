@@ -1,12 +1,11 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme.lib import fast
 import supreme.config as SC
-restore_path()
 
-class test_libfast(NumpyTestCase):
+class TestLibfast(unittest.TestCase):
     def setUp(self):
         self.img0 = (N.random.random((80,50))*255)
         self.img1 = self.img0.astype(N.uint8)

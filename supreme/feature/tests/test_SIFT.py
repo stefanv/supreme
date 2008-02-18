@@ -1,14 +1,13 @@
 import numpy as N
-from numpy.testing import *
-
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from tempfile import TemporaryFile
 
-set_local_path('../../..')
 from supreme import feature
-restore_path()
 
-class test_SIFT(NumpyTestCase):
-    def check_read_SIFT(self):
+class TestSift(unittest.TestCase):
+    def test_read_SIFT(self):
         f = TemporaryFile()
         f.write('''2 128
 133.92 135.88 14.38 -2.732
@@ -36,7 +35,7 @@ class test_SIFT(NumpyTestCase):
         assert_equal(features['row'][0],133.92)
         assert_equal(features['column'][1],99.75)
 
-    def check_read_SURF(self):
+    def test_read_SURF(self):
         f = TemporaryFile()
         f.write('''65
 2

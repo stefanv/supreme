@@ -1,12 +1,11 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme import register
 from supreme.config import ftype,itype
-restore_path()
 
-class test_sparse(ParametricTestCase):
+class test_sparse(unittest.TestCase):
     def testip_rot90(self):
         n = 10
         xp = N.random.random(n)
@@ -23,10 +22,10 @@ class test_sparse(ParametricTestCase):
         tx = C*xp - S*yp + 3
         ty = S*xp + C*yp + 7
 
-        return ((self.tst_sparse,ty,tx,yp,xp,tf,mode) for mode in
-                ('direct','iterative','RANSAC'))
+        yield ((self.check_sparse,ty,tx,yp,xp,tf,mode) for mode in
+               ('direct','iterative','RANSAC'))
 
-    def tst_sparse(self,ty,tx,yp,xp,tf,mode):
+    def check_sparse(self,ty,tx,yp,xp,tf,mode):
         tf_est,valid = register.sparse(ty,tx,yp,xp,mode=mode)
         assert_array_almost_equal(tf,tf_est)
 

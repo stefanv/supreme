@@ -1,12 +1,11 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme.register import image
-restore_path()
 
-class test_image(NumpyTestCase):
-    def check_fft_correlate(self):
+class TestImage(unittest.TestCase):
+    def test_fft_correlate(self):
         x = N.random.random((15,15))
         z = image.fft_correlate(x,x)
         assert_equal(N.array(z.shape)/2,

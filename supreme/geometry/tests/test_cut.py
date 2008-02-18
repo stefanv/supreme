@@ -1,13 +1,12 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme.geometry import cut,coord_path
 from supreme.config import ftype,itype
-restore_path()
 
-class test_cut(NumpyTestCase):
-    def check_centre_cut(self):
+class TestCut(unittest.TestCase):
+    def test_centre_cut(self):
         p = coord_path.build(coord_path.line((1,1),(1,1)))
         image = N.arange(12).reshape((4,3))
         cp = cut.along_path(p,image,shape=(3,3))
@@ -16,7 +15,7 @@ class test_cut(NumpyTestCase):
         assert_equal(cut_img.shape,(3,3))
         assert_array_almost_equal(cut_img,[[0,1,2],[3,4,5],[6,7,8]])
 
-    def check_corner_cut(self):
+    def test_corner_cut(self):
         p = coord_path.build(coord_path.line((0,0),(1,0)))
         image = N.arange(12).reshape((4,3))
         cp = cut.along_path(p,image,shape=(3,3),centre=(0,0))
@@ -29,23 +28,23 @@ class test_cut(NumpyTestCase):
         assert_equal(cut_img.shape,(3,3))
         assert_array_almost_equal(cut_img,[[3,4,5],[6,7,8],[9,10,11]])
 
-    def check_outside(self):
+    def test_outside(self):
         p = coord_path.build(coord_path.line((4,4),(4,4)))
         image = N.arange(12).reshape((4,3))
         cp = cut.along_path(p,image,shape=(5,5),centre=(0,0))
         list(cp)
 
-    def check_completely_outside(self):
+    def test_completely_outside(self):
         p = (50,50)
         image = N.arange(12).reshape((4,3))
         cp = cut.along_path(p,image,shape=(5,5),centre=(0,0))
         list(cp)
 
-    def check_2D(self):
+    def test_2D(self):
         self.failUnlessRaises(ValueError,
                               cut.along_path(None,None,shape=(3,3,3)).next)
 
-    def check_colour_cut(self):
+    def test_colour_cut(self):
         p = coord_path.build(coord_path.line((0,0),(0,0)))
         image = N.arange(27).reshape((3,3,3))
         cp = cut.along_path(p,image,shape=(3,3),centre=(0,0))
@@ -53,7 +52,7 @@ class test_cut(NumpyTestCase):
         assert_equal(cut_img.shape,(3,3,3))
         assert_equal(cut_img[:],image[:])
 
-    def check_dtype(self):
+    def test_dtype(self):
         p = coord_path.build(coord_path.line((0,0),(0,0)))
         image = N.arange(12).reshape((4,3)).astype(N.uint8)
         cut_img = cut.along_path(p,image).next()

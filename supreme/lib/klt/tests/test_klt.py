@@ -1,12 +1,11 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme.lib import klt
 import supreme.config as SC
-restore_path()
 
-class test_libklt(NumpyTestCase):
+class TestLibklt(unittest.TestCase):
     def test_basic(self):
         img1 = N.zeros((128,128),dtype=N.uint8)
         img2 = N.zeros((128,128),dtype=N.uint8)

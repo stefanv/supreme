@@ -1,14 +1,13 @@
 import numpy as N
-from numpy.testing import *
-
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 import os
 
-set_local_path('../../..')
 import supreme
 from supreme.photometry import hdr
-restore_path()
 
-class test_hdr(NumpyTestCase):
+class TestHdr(unittest.TestCase):
     data_path = os.path.join(os.path.dirname(__file__),'../../misc/tests')
     data_glob = os.path.join(data_path,'exif_tagged*.jpg')
 

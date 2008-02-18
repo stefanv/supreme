@@ -1,10 +1,9 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme.feature import RANSAC
 from supreme.misc.inject import interface
-restore_path()
 
 class Line(object):
     """y = mx + c
@@ -73,7 +72,7 @@ class Line(object):
 
 interface(Line,RANSAC.IModel)
 
-class test_RANSAC(NumpyTestCase):
+class TestRansac(unittest.TestCase):
     def test_linefit(self):
         # Experiment parameters
         m,x = 5,3

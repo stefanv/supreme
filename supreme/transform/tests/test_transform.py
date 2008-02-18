@@ -1,14 +1,13 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme import transform
 from supreme.transform.transform import stackcopy, _lpcoords
 import supreme.config as SC
-restore_path()
 
-class test_transform(NumpyTestCase):
-    def check_logpolar(self,level=1):
+class TestTransform(unittest.TestCase):
+    def test_logpolar(self,level=1):
         x = N.zeros((3,3))
         z = transform.logpolar(x)
         assert_equal(z.shape,(359,3))
@@ -26,7 +25,7 @@ class test_transform(NumpyTestCase):
         x = N.zeros((3))
         self.failUnlessRaises(ValueError, transform.logpolar, x)
 
-    def check__lpcoords(self,level=1):
+    def test__lpcoords(self,level=1):
         z = N.empty((6,6,3))
         coords_x,coords_y = _lpcoords(z.shape,5,N.linspace(0,2*N.pi,10))
         assert_equal([10,5],coords_x.shape)

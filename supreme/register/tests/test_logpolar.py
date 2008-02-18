@@ -1,12 +1,11 @@
 import numpy as N
-from numpy.testing import *
-
-set_local_path('../../..')
+import unittest
+from nose.tools import *
+from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
 from supreme import register
 from supreme.config import ftype,itype
-restore_path()
 
-class TestLogpolar(NumpyTestCase):
+class TestLogpolar(unittest.TestCase):
     def test_basic(self):
         print "\nTODO: add tests for logpolar.  In the meantime,"
         print "      run supreme/doc/examples/register_LPT_auto.py"
