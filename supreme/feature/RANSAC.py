@@ -12,9 +12,7 @@ __all__ = ['IModel','RANSAC']
 import numpy as N
 from numpy.testing import set_local_path, restore_path
 
-set_local_path('../..')
-from supreme.lib.zope import interface as zi
-restore_path()
+from supreme.lib import interface as zi
 
 class IModel(zi.Interface):
     parameters = zi.Attribute("Model parameters")

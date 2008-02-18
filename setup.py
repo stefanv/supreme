@@ -2,42 +2,49 @@
 
 import os
 import sys
+from glob import glob
 
-from numpy.distutils.misc_util import Configuration
+from setuptools import setup, find_packages, Extension
 
-def configuration(parent_package='',top_path=None):
-    config = Configuration(None,parent_package,top_path)
+def packages_and_tests(packages):
+    out = []
+    for p in packages:
+        out.append(p)
+        
+        test_dir = p + '.tests'
+        if os.path.isdir(test_dir.replace('.','/')):
+            out.append(test_dir)
 
-    config.set_options(ignore_setup_xxx_py=True,
-                       assume_default_configuration=True,
-                       delegate_options_to_subpackages=True,
-                       quiet=True)
+    return out
 
-    config.add_subpackage('supreme')
-    return config
+setup(
+  name = 'supreme',
+  version = '0.0',
+  packages = packages_and_tests(find_packages()),
+  
+  ext_modules = [Extension('supreme/ext/libsupreme_', 
+                           glob('supreme/ext/*.c')),
 
-def setup_package():
-    from numpy.distutils.core import setup
+                 Extension('supreme/lib/klt/libklt_',
+                           ['supreme/lib/klt/' + f for f in
+                                 ['convolve.c', 'error.c', 'pnmio.c', \
+                                  'pyramid.c', 'selectGoodFeatures.c',\
+                                  'storeFeatures.c', 'trackFeatures.c', \
+                                  'klt.c', 'klt_util.c', 'writeFeatures.c']]),
 
-    old_path = os.getcwd()
-    local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    os.chdir(local_path)
-    sys.path.insert(0,local_path)
-
-    try:
-        setup(
-            name = 'supreme',
-            version = '0.0',
-            author = "Stefan van der Walt",
-            author_email = "<stefan.no-spam(at)mentat.za.net>",
-            description = "SUper REsolution MEthods",
-            url = "http://mentat.za.net",
-            license = "GPL",
-            configuration = configuration)
-    finally:
-        del sys.path[0]
-        os.chdir(old_path)
-    return
-            
-if __name__ == '__main__':
-    setup_package()
+                 Extension('supreme/lib/fast/libfast_',
+                           glob('supreme/lib/fast/*.c')),
+                ],
+                
+  package_data = {
+      '': ['*.txt', '*.png', '*.jpg'],
+  },
+  
+  zip_safe = False,
+  
+  author = "Stefan van der Walt",
+  author_email = "<stefan.no-spam(at)mentat.za.net>",
+  description = "SUper REsolution MEthods",
+  url = "http://mentat.za.net",
+  license = "GPL",
+)

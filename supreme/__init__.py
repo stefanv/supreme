@@ -1,15 +1,15 @@
 # Supreme module initialisation
 
 from numpy.testing import NumpyTest
-import scipy
 
 import config
+import lib
+import ext
+
 import geometry
 import transform
 import register
-import ext
 import feature
-import lib
 import misc
 import photometry
 

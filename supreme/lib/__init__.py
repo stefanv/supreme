@@ -1,4 +1,2 @@
-import klt
-import fast
-import zope
-import decorator
+from supreme.lib import klt, fast, decorator
+from supreme.lib.zope import interface
