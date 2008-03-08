@@ -63,6 +63,11 @@ class TestImageCollection(unittest.TestCase):
         for img in ic:
             assert_equal(img.ndim,2)
 
+    def test_repr(self):
+        im_path = os.path.join(self.data_path,'exif_tagged.jpg')
+        ic = ImageCollection(im_path)
+        assert_equal(str([im_path]),str(ic))
+
 class TestImageCollection_do_not_conserve_memory(ImageCollection):
     def setUp(self):
         self.c = ImageCollection(self.data_glob,conserve_memory=False)

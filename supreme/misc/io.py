@@ -132,7 +132,8 @@ class ImageCollection(object):
             with file(self.files[n]) as f:
                 exif = EXIF.process_file(f)
 
-            self.data[idx] = Image(image_data,filename=os.path.basename(self.files[n]),
+            self.data[idx] = Image(image_data,
+                                   filename=os.path.basename(self.files[n]),
                                    EXIF=exif,info={})
 
         _cached.flat = n
@@ -147,3 +148,6 @@ class ImageCollection(object):
     def __len__(self):
         """Number of images in collection."""
         return len(self.files)
+
+    def __str__(self):
+        return str(self.files)
