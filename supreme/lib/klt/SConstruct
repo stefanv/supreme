@@ -1,4 +1,5 @@
 env = Environment()
+env.ParseConfig('python-config --includes')
 env.Replace(CCFLAGS=['-O2','-ggdb','-ansi','-pedantic'])
 env.SharedLibrary('klt_', ['convolve.c', 'error.c', 'pnmio.c', \
                            'pyramid.c', 'selectGoodFeatures.c',\
