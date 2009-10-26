@@ -43,7 +43,7 @@ for poly in grid1:
 
 
 def plotgrid(ax, grid, mode='k-'):
-    P.axis('off')
+    plt.axis('off')
     for b in grid:
         ax.plot(b.x, b.y, mode)
 
@@ -55,7 +55,7 @@ def plot_overlap(n):
                                  p1.x.min(), p1.x.max(),
                                  p1.y.max(), p1.y.min()))
 
-    ax = P.subplot(121)
+    ax = plt.subplot(121)
     ax.add_patch(patches.Polygon(zip(p1.x,p1.y), facecolor=[0.7, 0.7, 0.9]))
     ax.add_patch(patches.Polygon(zip(p2.x,p2.y), facecolor=[0.9, 0.8, 0.9]))
     ax.add_patch(patches.Polygon(overlap, facecolor=[0.3,0.9,0.3]))
@@ -67,9 +67,9 @@ def plot_overlap(n):
     ax.set_yticks([])
     ax.axis([-2,12,-2,12])
 
-    f = P.subplot(122).get_frame()
+    f = plt.subplot(122).get_frame()
 #    print [f.get_x(),f.get_y(),f.get_width()/2,f.get_height()/2]
-#    P.axes()
+#    plt.axes()
 
     coords = poly_coords(Polygon([0,1,1,0],[0,0,1,1]))
     angles = np.linspace(-np.pi,np.pi,50)
@@ -84,16 +84,16 @@ def plot_overlap(n):
                 weights[i,j] = Polygon(x,y).area()
 
 
-    P.rcParams['figure.figsize'] = (6.67,3.335)
-    P.imshow(weights)
-    P.subplots_adjust(wspace=0.4)
-    P.xlabel("Offset")
-    P.ylabel("Angle")
-    P.xlim([0,50])
-    P.ylim([0,50])
-    P.xticks([0,25,50],('-1','0.25','1.5'))
-    P.yticks([0,25,50],('$\pi$','0','$-\pi$'))
-    P.savefig('gridoverlap.eps')
+    plt.rcParams['figure.figsize'] = (6.67,3.335)
+    plt.imshow(weights)
+    plt.subplots_adjust(wspace=0.4)
+    plt.xlabel("Offset")
+    plt.ylabel("Angle")
+    plt.xlim([0,50])
+    plt.ylim([0,50])
+    plt.xticks([0,25,50],('-1','0.25','1.5'))
+    plt.yticks([0,25,50],('$\pi$','0','$-\pi$'))
+    plt.savefig('gridoverlap.eps')
 
 plot_overlap(54)
-P.show()
+plt.show()
