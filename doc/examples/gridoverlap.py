@@ -9,6 +9,7 @@ from matplotlib import patches
 
 from supreme.geometry import Polygon
 from supreme import ext
+from supreme.config import mkdir
 
 grid1 = []
 for col in range(10):
@@ -93,7 +94,9 @@ def plot_overlap(n):
     plt.ylim([0,50])
     plt.xticks([0,25,50],('-1','0.25','1.5'))
     plt.yticks([0,25,50],('$\pi$','0','$-\pi$'))
-    plt.savefig('gridoverlap.eps')
+
+    mkdir('output')
+    plt.savefig('output/gridoverlap.eps')
 
 plot_overlap(54)
 plt.show()

@@ -6,10 +6,8 @@ from supreme.config import data_path
 from supreme.misc.io import ImageCollection
 
 import scipy as sp
-imread = sp.misc.pilutil.imread
-imsave = sp.misc.pilutil.imsave
 
-ic = ImageCollection(os.path.join(data_path,'toystory/toystory00*.png'),
+ic = ImageCollection(os.path.join(data_path, 'toystory/toystory00*.png'),
                      grey=True)
 
 xy0 = fast.corner_detect(ic[0],barrier=10)

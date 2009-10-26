@@ -21,3 +21,13 @@ for dp in ('../data', '../../supreme-data'):
         data_path = abs_dp
 
 lib_path = abs_path('./lib')
+
+def mkdir(d):
+    """Equivalent of mkdir -f
+
+    """
+    if _osp.isdir(d):
+        return
+
+    import os
+    os.mkdir(d)

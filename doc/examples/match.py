@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import supreme as sr
-from supreme.config import data_path
+from supreme.config import data_path, mkdir
 
 print "Reading images and features..."
 features = []
@@ -16,11 +16,14 @@ basename = 'toystory'
 imagetype = 'png'
 featuretype = 'sift'
 T = 0.6
-image_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,imagetype))))
-feature_files = sorted(glob.glob(os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
+image_files = sorted(glob.glob(
+    os.path.join(data_path, '%s/%s*.%s' % (dataset,basename,imagetype))))
+feature_files = sorted(glob.glob(
+    os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
 
 images = [sr.misc.imread(fn,flatten=True) for fn in image_files]
-features = [sr.feature.SIFT.fromfile(fn,mode=featuretype.upper()) for fn in feature_files]
+features = [sr.feature.SIFT.fromfile(fn, mode=featuretype.upper())
+            for fn in feature_files]
 
 for pair in zip(image_files,feature_files):
     print pair[0], '->', pair[1]
@@ -77,9 +80,11 @@ out2[out2 > 500] = 500
 
 import scipy as S
 imsave = S.misc.pilutil.imsave
-imsave('original.png',images[0])
-imsave('_linear.png',out1)
-imsave('_polygon.png',out2)
+mkdir('output')
+
+imsave('output/original.png', images[0])
+imsave('output/_linear.png', out1)
+imsave('output/_polygon.png', out2)
 
 plt.subplot(121)
 plt.imshow(out1,interpolation='nearest',cmap=plt.cm.gray)
