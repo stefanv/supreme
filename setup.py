@@ -4,7 +4,8 @@ import os
 import sys
 from glob import glob
 
-from setuptools import setup, find_packages, Extension
+import setuptools
+from numpy.distutils.core import setup, Extension
 
 def packages_and_tests(packages):
     """For each package, add the corresponding tests directory.
@@ -50,7 +51,7 @@ init%(module)s()
 setup(
   name = 'supreme',
   version = '0.0',
-  packages = packages_and_tests(find_packages()),
+  packages = packages_and_tests(setuptools.find_packages()),
 
   ext_modules = [CExtension('supreme/ext/libsupreme_',
                             glob('supreme/ext/*.c')),
