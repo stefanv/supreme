@@ -1,0 +1,8 @@
+.sconsign.dblite
+build
+dist
+*.pyc
+supreme.egg-info
+*.os
+*.so
+*_init.c
