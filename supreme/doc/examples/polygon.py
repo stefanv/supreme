@@ -1,17 +1,14 @@
 # Example originally contributed by Robert Hetland
 
-import numpy as N
-import pylab as P
-from numpy.testing import set_local_path, restore_path
+import numpy as np
+import matplotlib.pyplot as plt
 
 import sys
 
-set_local_path('../../..')
 import supreme
 from supreme.geometry import Polygon
-restore_path()
 
-grid_y, grid_x = N.mgrid[0:1:0.1,0:1:0.1].reshape(2,-1)
+grid_y, grid_x = np.mgrid[0:1:0.1,0:1:0.1].reshape(2,-1)
 
 # simple area test
 xp = [0.15,0.85,0.85,0.15]
@@ -34,17 +31,17 @@ print "Centroid: ", xc, yc
 print
 
 inside = pb.inside(grid_x,grid_y)
-P.plot(grid_x[inside], grid_y[inside], 'g.')
-P.plot(grid_x[~inside], grid_y[~inside],'r.')
-P.plot(pb.x,pb.y, '-k')
-P.plot([xc], [yc], 'co')
-P.show()
+plt.plot(grid_x[inside], grid_y[inside], 'g.')
+plt.plot(grid_x[~inside], grid_y[~inside],'r.')
+plt.plot(pb.x,pb.y, '-k')
+plt.plot([xc], [yc], 'co')
+plt.show()
 
 # many points in a semicircle, to test speed
-grid_x,grid_y = N.mgrid[0:1:.01,-1:1:.01].reshape(2,-1)
+grid_x,grid_y = np.mgrid[0:1:.01,-1:1:.01].reshape(2,-1)
 
-xp = N.sin(N.arange(0,N.pi,0.01))
-yp = N.cos(N.arange(0,N.pi,0.01))
+xp = np.sin(np.arange(0,np.pi,0.01))
+yp = np.cos(np.arange(0,np.pi,0.01))
 pc = Polygon(xp,yp)
 xc, yc = pc.centroid()
 
@@ -56,8 +53,8 @@ sys.stdout.flush()
 inside = pc.inside(grid_x,grid_y)
 print "done."
 
-P.plot(grid_x[inside], grid_y[inside], 'g.')
-P.plot(grid_x[~inside], grid_y[~inside], 'r.')
-P.plot(pc.x, pc.y, '-k')
-P.plot([xc], [yc], 'co')
-P.show()
+plt.plot(grid_x[inside], grid_y[inside], 'g.')
+plt.plot(grid_x[~inside], grid_y[~inside], 'r.')
+plt.plot(pc.x, pc.y, '-k')
+plt.plot([xc], [yc], 'co')
+plt.show()

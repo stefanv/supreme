@@ -1,33 +1,32 @@
-import numpy as N
-import unittest
-from nose.tools import *
-from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
-from supreme import register
-from supreme.config import ftype,itype
+from numpy.testing import *
+import numpy as np
 
-class test_sparse(unittest.TestCase):
+from supreme import register
+
+class test_sparse:
     def testip_rot90(self):
         n = 10
-        xp = N.random.random(n)
-        yp = N.random.random(n)
+        xp = np.random.random(n)
+        yp = np.random.random(n)
 
-        theta = 15./180*N.pi
-        C = N.cos(theta)
-        S = N.sin(theta)
+        theta = 15./180*np.pi
+        C = np.cos(theta)
+        S = np.sin(theta)
 
-        tf = N.array([[C,-S,3],
+        tf = np.array([[C,-S,3],
                       [S,C,7],
                       [0,0,1.]])
 
         tx = C*xp - S*yp + 3
         ty = S*xp + C*yp + 7
 
-        yield ((self.check_sparse,ty,tx,yp,xp,tf,mode) for mode in
-               ('direct','iterative','RANSAC'))
+        for mode in ('direct', 'iterative', 'RANSAC'):
+            yield (self.check_sparse, ty, tx, yp, xp, tf, mode)
 
-    def check_sparse(self,ty,tx,yp,xp,tf,mode):
-        tf_est,valid = register.sparse(ty,tx,yp,xp,mode=mode)
-        assert_array_almost_equal(tf,tf_est)
+    def check_sparse(self, ty, tx, yp, xp, tf, mode):
+        tf_est,valid = register.sparse(ty, tx, yp, xp, mode=mode)
+        assert_array_almost_equal(tf, tf_est)
 
 if __name__ == "__main__":
-    NumpyTest().run()
+    run_module_suite()
+

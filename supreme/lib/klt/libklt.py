@@ -2,13 +2,9 @@ import numpy as N
 from ctypes import c_int, c_uint8, c_float, c_double, c_char, \
                    Structure, POINTER, pointer, c_void_p, c_char_p
 
-from numpy.testing import set_local_path, restore_path
-set_local_path('../../..')
-import supreme.config as SC
 from supreme.ext import array_1d_double, array_2d_double, array_1d_int, \
                         array_2d_int, array_1d_uchar, array_2d_uchar, \
                         atype
-restore_path()
 
 _lib = N.ctypeslib.load_library('libklt_',__file__)
 

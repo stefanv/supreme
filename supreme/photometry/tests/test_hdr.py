@@ -1,13 +1,11 @@
-import numpy as N
-import unittest
-from nose.tools import *
-from numpy.testing import assert_array_equal, assert_array_almost_equal, assert_equal
-import os
+import os.path
+
+from numpy.testing import *
 
 import supreme
 from supreme.photometry import hdr
 
-class TestHdr(unittest.TestCase):
+class TestHdr:
     data_path = os.path.join(os.path.dirname(__file__),'../../misc/tests')
     data_glob = os.path.join(data_path,'exif_tagged*.jpg')
 
@@ -18,4 +16,5 @@ class TestHdr(unittest.TestCase):
         out = hdr.HDRMapperNaive(dr)(ic)
 
 if __name__ == "__main__":
-    NumpyTest().run()
+    run_module_suite()
+

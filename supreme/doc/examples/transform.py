@@ -2,22 +2,20 @@
 Demonstrate log polar transform.
 """
 
-import pylab as P
+import matplotlib.pyplot as plt
 import os
 
-from numpy.testing import set_local_path, restore_path
-set_local_path('../../..')
 import supreme
-restore_path()
 
 images = ['misc/nova_grey.png', 'misc/nova.png', 'misc/nova_alpha.png']
 im_descr = {'misc/nova_grey.png': 'Grey-level input',
            'misc/nova.png': 'Colour input',
-           'misc/nova_alpha.png': 'Alpha layered input'} 
+           'misc/nova_alpha.png': 'Alpha layered input'}
+
 for im in images:
     img1 = supreme.misc.imread(os.path.join(supreme.config.data_path,im))
     print "Input image shape: ", img1.shape
-                                   
+
     import timeit
     tic = timeit.time.time()
     img2 = supreme.transform.logpolar(img1)
@@ -32,15 +30,15 @@ for im in images:
         img2[...,1] = img2[...,1] & img2[...,3]
         img2 = img2[...,0:3]
 
-    P.figure()
-    P.subplot(121)
-    P.title(im_descr[im])
-    P.imshow(img1,cmap=P.cm.gray)
-    P.subplot(122)
+    plt.figure()
+    plt.subplot(121)
+    plt.title(im_descr[im])
+    plt.imshow(img1,cmap=plt.cm.gray)
+    plt.subplot(122)
     angles,d = img2.shape[:2]
-    P.imshow(img2,origin='upper',extent=(1,d,angles,1),cmap=P.cm.gray)
-    P.title('Log polar transform')
-    P.xlabel('Log distance')
-    P.ylabel(r'Angle')
-    P.show()
-    P.close()
+    plt.imshow(img2,origin='upper',extent=(1,d,angles,1),cmap=plt.cm.gray)
+    plt.title('Log polar transform')
+    plt.xlabel('Log distance')
+    plt.ylabel(r'Angle')
+    plt.show()
+    plt.close()

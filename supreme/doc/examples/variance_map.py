@@ -2,26 +2,21 @@
 
 import os.path
 
-from numpy.testing import set_local_path, restore_path
-import numpy as N
-import pylab as P
-import scipy as S
+import matplotlib.pyplot as plt
 
-set_local_path('../../..')
 import supreme
 from supreme.config import data_path
 from supreme.ext import variance_map
-restore_path()
 
 fn = 'toystory/toystory001.png'
 x = supreme.misc.imread(os.path.join(data_path,fn),flatten=True)
 
-P.subplot(121)
-P.imshow(x,cmap=P.cm.gray)
-P.xlabel('Input image')
-P.subplot(122)
+plt.subplot(121)
+plt.imshow(x,cmap=plt.cm.gray)
+plt.xlabel('Input image')
+plt.subplot(122)
 vm = variance_map(x,shape=(20,20))
 vm /= vm.max()
-P.imshow(vm)
-P.xlabel('Variance map')
-P.show()
+plt.imshow(vm)
+plt.xlabel('Variance map')
+plt.show()

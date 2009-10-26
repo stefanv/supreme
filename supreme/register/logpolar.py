@@ -1,23 +1,19 @@
 __all__ = ['logpolar']
 
-from numpy.testing import set_local_path, restore_path
-
-set_local_path('../..')
 import supreme as sr
 from supreme.config import ftype,itype
 from supreme.misc import Image
 import supreme as sr
-restore_path()
 
-import numpy as N
-import scipy as S
+import numpy as np
+import scipy as sp
 from itertools import izip
 from scipy import ndimage as ndi
 
 import timeit
 
-fft2 = S.fftpack.fft2
-ifft2 = S.fftpack.ifft2
+fft2 = sp.fftpack.fft2
+ifft2 = sp.fftpack.ifft2
 
 def _clearborder(image,border_shape):
     rows,cols = image.shape
@@ -30,21 +26,21 @@ def _clearborder(image,border_shape):
 
 def _peaks(image,nr,minvar=0):
     """Divide image into nr quadrants and return peak value positions."""
-    n = N.ceil(N.sqrt(nr))
+    n = np.ceil(np.sqrt(nr))
     quadrants = _rects(image.shape,n,n)
     peaks = []
     for q in quadrants:
         q_image = image[q.as_slice()]
         q_argmax = q_image.argmax()
-        q_maxpos = N.unravel_index(q_argmax,q.shape)
+        q_maxpos = np.unravel_index(q_argmax,q.shape)
         if q_image.flat[q_argmax] > minvar:
-            peaks.append(N.array(q_maxpos) + q.origin)
+            peaks.append(np.array(q_maxpos) + q.origin)
     return peaks
 
 def rectangle_inside(shape,percent=10):
     """Return a path inside the border as defined by shape."""
-    shape = N.asarray(shape)
-    rtop = N.round_(shape*percent/100.)
+    shape = np.asarray(shape)
+    rtop = np.round_(shape*percent/100.)
     rbottom = shape - rtop
 
     cp = sr.geometry.coord_path
@@ -83,8 +79,8 @@ def _rects(shape,divide_rows,divide_cols):
                    (self.top_r,self.top_c,self.height,self.width)
 
     rows,cols = shape
-    rows = N.linspace(0,rows,divide_rows+1).astype(int)
-    cols = N.linspace(0,cols,divide_cols+1).astype(int)
+    rows = np.linspace(0,rows,divide_rows+1).astype(int)
+    cols = np.linspace(0,cols,divide_cols+1).astype(int)
 
     rects = []
     for r0,r1 in zip(rows[:-1],rows[1:]):
@@ -113,15 +109,15 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         assert ref_img.shape == img.shape
 
     if window_shape is None:
-        window_shape = N.array(img.shape,dtype=int)/5 + 1
+        window_shape = np.array(img.shape,dtype=int)/5 + 1
         window_shape[window_shape < 21] = 21
     else:
-        window_shape = N.asarray(window_shape,dtype=int)
+        window_shape = np.asarray(window_shape,dtype=int)
 
     # Pre-calculate coordinates for log-polar transforms
-    angle_samples = N.linspace(0,2*N.pi,angles)
+    angle_samples = np.linspace(0,2*np.pi,angles)
     w = max(window_shape[:2])
-    cr,cc = sr.transform.transform._lpcoords(N.append(window_shape,1),
+    cr,cc = sr.transform.transform._lpcoords(np.append(window_shape,1),
                                              w,angles=angle_samples)
 
     def lpt_on_path(image,path,shape):
@@ -144,14 +140,14 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
 
             for rf in reference_frames:
                 corr = abs(ifft2(X*rf['fft']))
-                corr /= (N.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
+                corr /= (np.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
                 corr_max_arg = corr.argmax()
                 corr_max = corr.flat[corr_max_arg]
                 corr_vals.append(corr_max)
 
                 if corr_max > max_corr_sofar:
                     print corr_max
-                    rotation,scale = N.unravel_index(corr_max_arg,fft_shape)
+                    rotation,scale = np.unravel_index(corr_max_arg,fft_shape)
                     rotation = angle_samples[rotation]
                     scale -= fft_shape[1]/2
                     max_corr_sofar = corr_max
@@ -191,7 +187,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         #vmsource = ndi.correlate(ref_img,vm_filter_mask)
         vmsource = ref_img - ndi.sobel(ref_img)
         vm = sr.ext.variance_map(vmsource,shape=window_shape/4)
-        vm = vm/N.prod(window_shape/4)
+        vm = vm/np.prod(window_shape/4)
         vm = _clearborder(vm,window_shape/2)
         return vm
 
@@ -250,20 +246,20 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
 #        pos = list(bmf['source'].info['position'])
 #        scipy.optimize.fmin_cg(_lpt_peak,bmf['source'].info['position'],
 #                               args=(frame,bmf,window_shape,fft_shape))
-        path = (N.mgrid[-4:5,-4:5].T + bmf['source'].info['position']).reshape((-1,2))
+        path = (np.mgrid[-4:5,-4:5].T + bmf['source'].info['position']).reshape((-1,2))
         lpt_corr([bmf['source'].info['reference']],frame,bmf,path,window_shape,fft_shape)
 
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
         print "Frame #%d" % fnum
-        print "Rotation:", info['rotation']/N.pi*180
+        print "Rotation:", info['rotation']/np.pi*180
         print "Scale:", info['scale']
         print "Quality:", info['quality']
 
         # experiment: show matches
         import pylab as P
         ref = f['source'].info['reference']
-        panel = N.hstack((ref_img,f['frame']))
+        panel = np.hstack((ref_img,f['frame']))
         ref_pos = ref['source'].info['position'].copy()
         target_pos = f['source'].info['position'].copy()
         target_pos[0] = ref_img.shape[0] - target_pos[0]
@@ -291,14 +287,14 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
             continue
 
         theta = -info['rotation']
-        M = N.array([[N.cos(theta),-N.sin(theta),0],
-                     [N.sin(theta),N.cos(theta),0],
+        M = np.array([[np.cos(theta),-np.sin(theta),0],
+                     [np.sin(theta),np.cos(theta),0],
                      [0,0,1]])
 
-        ref_p = N.append(info['reference']['source'].info['position'][::-1],1)
-        p = N.append(info['position'][::-1],1)
+        ref_p = np.append(info['reference']['source'].info['position'][::-1],1)
+        p = np.append(info['position'][::-1],1)
 
-        delta = ref_p - N.dot(p,M.T)
+        delta = ref_p - np.dot(p,M.T)
         M[:2,2] += delta[:2]
         tf_matrices.append(M)
 
@@ -317,12 +313,12 @@ def _tf_difference(M_target,M_ref,target,reference):
     return diff.sum()
 
 def _build_tf(p):
-    if N.sum(N.isnan(p) + N.isinf(p)) != 0:
-        return N.eye(3)
+    if np.sum(np.isnan(p) + np.isinf(p)) != 0:
+        return np.eye(3)
     else:
         theta,a,b,tx,ty = p
-        C = N.cos(theta)
-        S = N.sin(theta)
-        return N.array([[a*C, -a*S, tx],
+        C = np.cos(theta)
+        S = np.sin(theta)
+        return np.array([[a*C, -a*S, tx],
                         [a*b*S, a*C, ty],
                         [0,0,1.]])

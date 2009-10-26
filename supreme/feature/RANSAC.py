@@ -9,8 +9,7 @@ Communications of the ACM, 1981
 
 __all__ = ['IModel','RANSAC']
 
-import numpy as N
-from numpy.testing import set_local_path, restore_path
+import numpy as np
 
 from supreme.lib import interface as zi
 
@@ -97,15 +96,15 @@ class RANSAC(object):
 
         model = self.model
 
-        max_iter = 3*N.ceil(self.p_inlier ** (-model.ndp)).astype(int)
+        max_iter = 3*np.ceil(self.p_inlier ** (-model.ndp)).astype(int)
         #print "Maximum number of RANSAC iterations:", max_iter
 
         success = False
         for i in range(max_iter):
-            rand_idx = N.floor(N.random.random(model.ndp)*len(data)).astype(int)
+            rand_idx = np.floor(np.random.random(model.ndp)*len(data)).astype(int)
             model.parameters,res = model.estimate(data[rand_idx,...])
             score,inliers = model(data,confidence=confidence)
-            if N.sum(inliers) >= inliers_required:
+            if np.sum(inliers) >= inliers_required:
                 success = True
                 break
         if success:

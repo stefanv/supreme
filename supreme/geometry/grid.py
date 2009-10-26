@@ -2,13 +2,11 @@
 
 __all__ = ['Grid']
 
-import numpy as N
+import numpy as np
 from numpy.testing import *
 
-set_local_path('../..')
 import supreme as SR
 import supreme.config as SC
-restore_path()
 
 class Grid(object):
     """Regular grid."""
@@ -25,7 +23,7 @@ class Grid(object):
             meshgrid.  If cols and rows are scalar, a rectangular grid
             is generated with
 
-               rows == N.arange(rows), cols == N.arange(cols)
+               rows == np.arange(rows), cols == np.arange(cols)
 
         Output:
         -------
@@ -42,24 +40,24 @@ class Grid(object):
 
         TODO: ^ Better description of the above.
         """
-        if N.isscalar(cols) or N.isscalar(rows):
-            cols,rows = map(N.arange,[cols,rows])
-        cols,rows = map(N.array,[cols,rows])
+        if np.isscalar(cols) or np.isscalar(rows):
+            cols,rows = map(np.arange,[cols,rows])
+        cols,rows = map(np.array,[cols,rows])
         assert cols.ndim == rows.ndim, "Must provide same number of cols and rows coordinates as 1D arrarowss"
-        
+
         if cols.ndim == 1:
             shape = (len(cols),len(rows))
-            cols,rows = N.meshgrid(cols,rows)
+            cols,rows = np.meshgrid(cols,rows)
 
         shape = cols.shape
-        _grid = N.empty(shape=shape,dtype=[('cols',SC.ftype),
+        _grid = np.empty(shape=shape,dtype=[('cols',SC.ftype),
                                            ('rows',SC.ftype),
                                            ('z',SC.ftype)])
 
         _grid['cols'],_grid['rows'] = cols,rows
         _grid['z'] = 1
 
-        self._grid = _grid.view(N.recarray)
+        self._grid = _grid.view(np.recarray)
 
     def __getitem__(self, *args, **kwargs):
         return self._grid.__getitem__(*args, **kwargs)
@@ -76,5 +74,5 @@ class Grid(object):
         coords()[1,0]
 
         """
-        
+
         return self._grid.view((SC.ftype, 3))

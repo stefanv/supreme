@@ -2,21 +2,17 @@
 
 __all__ = ['PointCorrespondence','refine','sparse']
 
-import numpy as N
-import scipy as S
+import numpy as np
+import scipy as sp
 import scipy.optimize
 import scipy.linalg
 
-from numpy.testing import set_local_path, restore_path
-
 import sys
 
-set_local_path('../..')
 import supreme as sr
-from supreme.config import ftype,itype
+from supreme.config import ftype
 from supreme.feature import RANSAC
 from supreme.misc.inject import interface
-restore_path()
 
 class Homography(object):
     """Model of a homography for use with RANSAC.
@@ -26,7 +22,7 @@ class Homography(object):
     @property
     def ndp(self): return 4
 
-    def __init__(self,H=N.eye(3)):
+    def __init__(self,H=np.eye(3)):
         self.parameters = H
 
     def set_parameters(self,H):
@@ -41,12 +37,12 @@ class Homography(object):
 
     def __call__(self,data,H=None,confidence=0.8):
         if H is None: H = self.parameters
-        ones = N.ones_like(data[:,0]).reshape(-1,1)
-        rcoord = N.hstack((data[:,:2],ones))
-        tcoord = N.hstack((data[:,2:],ones))
+        ones = np.ones_like(data[:,0]).reshape(-1,1)
+        rcoord = np.hstack((data[:,:2],ones))
+        tcoord = np.hstack((data[:,2:],ones))
 
-        tc = N.dot(tcoord,H.T)
-        error = N.sqrt(N.sum((rcoord - tc)**2,axis=1))
+        tc = np.dot(tcoord,H.T)
+        error = np.sqrt(np.sum((rcoord - tc)**2,axis=1))
         return error, error < (1-confidence)*5
 
     def estimate(self,data):
@@ -54,7 +50,7 @@ class Homography(object):
         return H,True
 
     def _data_from_array(self,data):
-        data = N.asarray(data)
+        data = np.asarray(data)
         return data[:,0], data[:,1], data[:,2], data[:,3]
 
     def estimate_direct(self,data):
@@ -86,7 +82,7 @@ class Homography(object):
 
         nr = len(data)
 
-        U = N.zeros((2*nr,8),dtype=ftype)
+        U = np.zeros((2*nr,8),dtype=ftype)
         # x-coordinates
         U[:nr,0] = tx
         U[:nr,1] = ty
@@ -101,33 +97,33 @@ class Homography(object):
         U[nr:,6] = -tx*ry
         U[nr:,7] = -ty*ry
 
-        B = N.concatenate((rx,ry))[:,N.newaxis]
+        B = np.concatenate((rx,ry))[:,np.newaxis]
 
         M,res,rank,s = scipy.linalg.lstsq(U,B)
 
-        return N.append(M,1).reshape((3,3)),True
+        return np.append(M,1).reshape((3,3)),True
 
     def _build_transform_from_params(self,p):
             theta,tx,ty,s = p
-            return N.array([[s*N.cos(theta),-s*N.sin(theta),tx],
-                            [s*N.sin(theta), s*N.cos(theta),ty],
+            return np.array([[s*np.cos(theta),-s*np.sin(theta),tx],
+                            [s*np.sin(theta), s*np.cos(theta),ty],
                             [0,              0,             1.]])
 
     def estimate_iterative(self,data):
         rx,ry,tx,ty = self._data_from_array(data)
 
-        rcoord = N.vstack((rx,ry,N.ones_like(rx))).T
-        tcoord = N.vstack((tx,ty,N.ones_like(tx))).T
+        rcoord = np.vstack((rx,ry,np.ones_like(rx))).T
+        tcoord = np.vstack((tx,ty,np.ones_like(tx))).T
 
         def err_func(p):
             err,inlier = self(data,
                               H=self._build_transform_from_params(p))
             return err
 
-        pout,ignore,ignore,mesg,ier = S.optimize.leastsq(err_func,
-                                                         [0,0,0,1],
-                                                         maxfev=5000,
-                                                         full_output=True)
+        pout,ignore,ignore,mesg,ier = sp.optimize.leastsq(err_func,
+                                                          [0,0,0,1],
+                                                          maxfev=5000,
+                                                          full_output=True)
         if ier != 1 and ier != 2:
             print "Warning: error status", ier
             print mesg
@@ -142,8 +138,8 @@ class PointCorrespondence(object):
                  target_feat_rows, target_feat_cols,
                  **args):
 
-        self.data = N.dstack([ref_feat_cols,ref_feat_rows,
-                              target_feat_cols,target_feat_rows]).squeeze()
+        self.data = np.dstack([ref_feat_cols,ref_feat_rows,
+                               target_feat_cols,target_feat_rows]).squeeze()
 
         self.mode = args.get('mode','direct').lower()
         self.args = args

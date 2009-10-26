@@ -7,16 +7,13 @@ __all__ = ['Image','ImageCollection','imread']
 from glob import glob
 import os.path
 
-import numpy as N
-from numpy.testing import set_local_path, restore_path
+import numpy as np
 from scipy.misc.pilutil import imread
 
-set_local_path('../..')
 import supreme
 from supreme.lib import EXIF
-restore_path()
 
-class Image(N.ndarray):
+class Image(np.ndarray):
     """Image data with tags."""
 
     tags = {'filename' : '',
@@ -36,7 +33,7 @@ class Image(N.ndarray):
             Specified in the form ``tag0=value``, ``tag1=value``.
 
         """
-        x = N.asarray(arr).view(image_cls)
+        x = np.asarray(arr).view(image_cls)
         for tag,value in Image.tags.items():
             setattr(x,tag,kwargs.get(tag,getattr(arr,tag,value)))
         return x
@@ -48,7 +45,7 @@ class Image(N.ndarray):
         return
 
     def __reduce__(self):
-        object_state = list(N.ndarray.__reduce__(self))
+        object_state = list(np.ndarray.__reduce__(self))
         subclass_state = {}
         for tag in self.tags:
             subclass_state[tag] = getattr(self,tag)
@@ -57,7 +54,7 @@ class Image(N.ndarray):
 
     def __setstate__(self,state):
         nd_state,subclass_state = state
-        N.ndarray.__setstate__(self,nd_state)
+        np.ndarray.__setstate__(self,nd_state)
 
         for tag in subclass_state:
             setattr(self,tag,subclass_state[tag])
@@ -107,9 +104,9 @@ class ImageCollection(object):
 
         self.conserve_memory = conserve_memory
         self.grey = grey
-        self.data = N.empty(memory_slots,dtype=object)
+        self.data = np.empty(memory_slots,dtype=object)
 
-    def __getitem__(self,n,_cached=N.array(-1)):
+    def __getitem__(self,n,_cached=np.array(-1)):
         """Return image n in the queue.
 
         Loading is done on demand.

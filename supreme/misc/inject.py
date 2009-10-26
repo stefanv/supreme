@@ -3,12 +3,9 @@
 __all__ = ['interface','inject']
 
 import inspect
-from numpy.testing import set_local_path, restore_path
 
-set_local_path('../..')
 import supreme.lib.zope.interface as zi
 import supreme.lib.zope.interface.verify
-restore_path()
 
 def interface(cls,interface):
     """Set and verify class interface."""

@@ -1,16 +1,13 @@
 import os
-import numpy as N
+import numpy as np
 
-from numpy.testing import set_local_path, restore_path
-set_local_path('../../..')
 from supreme.lib import fast
 from supreme.config import data_path
 from supreme.misc.io import ImageCollection
-restore_path()
 
-import scipy as S
-imread = S.misc.pilutil.imread
-imsave = S.misc.pilutil.imsave
+import scipy as sp
+imread = sp.misc.pilutil.imread
+imsave = sp.misc.pilutil.imsave
 
 ic = ImageCollection(os.path.join(data_path,'toystory/toystory00*.png'),
                      grey=True)
@@ -20,7 +17,7 @@ xy1 = fast.corner_detect(ic[1])
 
 def mark_feature(img,xy):
     shape = list(img.shape) + [3]
-    rgb = N.zeros(shape,N.uint8)
+    rgb = np.zeros(shape,np.uint8)
     for band in range(3):
         rgb[:,:,band].flat = img
     for x,y in xy:

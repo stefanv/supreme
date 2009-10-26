@@ -1,14 +1,11 @@
 import os.path
 import glob
 
-from numpy.testing import set_local_path, restore_path
-import numpy as N
-import pylab as P
+import numpy as np
+import matplotlib.pyplot as plt
 
-set_local_path('../../..')
 import supreme as sr
 from supreme.config import data_path
-restore_path()
 
 print "Reading images and features..."
 features = []
@@ -30,7 +27,7 @@ for pair in zip(image_files,feature_files):
 
 print "Matching features..."
 ref = features[0]
-tf_matrices = [N.eye(3)]
+tf_matrices = [np.eye(3)]
 valid_matrices = [True]
 for frame in features[1:]:
     match,dist,valid = sr.feature.match(frame['data'],ref['data'],threshold=T)
@@ -58,7 +55,7 @@ tf_matrices = [t for t,v in zip(tf_matrices,valid_matrices) if v]
 scale = 5.
 for M in tf_matrices:
     M[:2,:] *= scale
-oshape = N.ceil(N.array(images[0].shape)*scale).astype(int)
+oshape = np.ceil(np.array(images[0].shape)*scale).astype(int)
 
 for img in images:
     img -= img.min()
@@ -71,10 +68,10 @@ out1 = sr.register.stack.with_transform(images,tf_matrices,oshape=oshape)
 
 
 print "Stacking using polygon overlap..."
-out2 = N.zeros(oshape,float)
+out2 = np.zeros(oshape,float)
 for i,(img,M) in enumerate(zip(images,tf_matrices)):
     print "Stacking frame %d" % i
-    out2 += sr.ext.interp_transf_polygon(img,N.linalg.inv(M),oshape)
+    out2 += sr.ext.interp_transf_polygon(img,np.linalg.inv(M),oshape)
 out2 /= len(images)
 out2[out2 > 500] = 500
 
@@ -84,8 +81,8 @@ imsave('original.png',images[0])
 imsave('_linear.png',out1)
 imsave('_polygon.png',out2)
 
-P.subplot(121)
-P.imshow(out1,interpolation='nearest',cmap=P.cm.gray)
-P.subplot(122)
-P.imshow(out2,interpolation='nearest',cmap=P.cm.gray)
-P.show()
+plt.subplot(121)
+plt.imshow(out1,interpolation='nearest',cmap=plt.cm.gray)
+plt.subplot(122)
+plt.imshow(out2,interpolation='nearest',cmap=plt.cm.gray)
+plt.show()

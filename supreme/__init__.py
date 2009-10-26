@@ -1,7 +1,5 @@
 # Supreme module initialisation
 
-from numpy.testing import NumpyTest
-
 import config
 import lib
 import ext

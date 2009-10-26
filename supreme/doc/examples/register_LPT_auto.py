@@ -1,20 +1,17 @@
 """Register a collection of images, using the log polar transform."""
 
-from numpy.testing import set_local_path, restore_path
-import numpy as N
-import pylab as P
-import scipy as S
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy as sp
 
 import os.path
 import glob
 
-set_local_path('../../..')
 import supreme
-from supreme.config import data_path,ftype
+from supreme.config import data_path
 from supreme import register
 import supreme as SR
 import supreme.misc
-restore_path()
 
 def getframes(path):
     return [supreme.misc.imread(fn,flatten=True) for fn in
@@ -41,7 +38,7 @@ accepted_frames,tf_matrices = register.logpolar(frames[0],frames[1:],
                                                 variance_threshold=0.7,
                                                 angles=120,peak_thresh=5)#,window_shape=(71,71))
 
-tf_matrices = [N.eye(3)] + list(tf_matrices)
+tf_matrices = [np.eye(3)] + list(tf_matrices)
 usedframes = [frames[0]] + list(frames[i+1] for i in accepted_frames)
 
 #print "Iteratively refining frames (this may take a while)..."
@@ -59,19 +56,19 @@ for u in usedframes:
 out = register.stack.with_transform(usedframes, tf_matrices)
 
 # Astronomy
-#out = register.stack.with_transform(usedframes, tf_matrices, weights=N.ones(len(usedframes)))
+#out = register.stack.with_transform(usedframes, tf_matrices, weights=np.ones(len(usedframes)))
 #T = 400
 #out[out > T] = T
 
 interp = 'nearest'
-#P.subplot(121)
-#P.imshow(images[0],cmap=P.cm.gray,interpolation=interp)
-#P.subplot(223)
-#P.imshow(images[1],cmap=P.cm.gray,interpolation=interp)
-#P.subplot(122)
-P.imshow(out,cmap=P.cm.gray,interpolation=interp)
-P.xticks([])
-P.yticks([])
-P.show()
+#plt.subplot(121)
+#plt.imshow(images[0],cmap=plt.cm.gray,interpolation=interp)
+#plt.subplot(223)
+#plt.imshow(images[1],cmap=plt.cm.gray,interpolation=interp)
+#plt.subplot(122)
+plt.imshow(out,cmap=plt.cm.gray,interpolation=interp)
+plt.xticks([])
+plt.yticks([])
+plt.show()
 
-S.misc.pilutil.imsave('/tmp/data.eps',out)
+sp.misc.pilutil.imsave('/tmp/data.eps',out)

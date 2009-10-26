@@ -1,15 +1,12 @@
 __all__ = ['nonmax','corner_detect']
 
-import numpy as N
+import numpy as np
 from ctypes import c_int, c_uint8, Structure, POINTER, pointer
 
-from numpy.testing import set_local_path, restore_path
-set_local_path('../../..')
 import supreme.config as SC
 from supreme.ext import array_2d_uchar, atype
-restore_path()
 
-_lib = N.ctypeslib.load_library('libfast_',__file__)
+_lib = np.ctypeslib.load_library('libfast_',__file__)
 
 class XY(Structure):
     _fields_ = [
@@ -55,13 +52,13 @@ def corner_detect(image, barrier=10, size=12):
     """
     if size not in range(9,13):
         raise ValueError("Size must be between 9 and 12.")
-    image, = atype(image,N.uint8)
+    image, = atype(image,np.uint8)
     barrier = c_int(barrier)
     height,width = image.shape
     corners = c_int()
     f = getattr(_lib,"fast_corner_detect_%s" % size)
     xy = f(image,width,height,barrier,pointer(corners))
-    out = N.empty(corners.value,dtype=[('x',c_int),('y',c_int)])
+    out = np.empty(corners.value,dtype=[('x',c_int),('y',c_int)])
     for i in range(corners.value):
         val = xy[i]
         out[i] = val.x, val.y

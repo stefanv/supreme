@@ -1,20 +1,18 @@
-"""C extensions implemented using ctypes to enhance speed critical algorithms."""
+"""C extensions implemented using ctypes to enhance
+speed critical algorithms."""
 
 import sys
-import numpy as N
+import numpy as np
 try:
     from ctypes import c_int, c_uint8, c_double, c_char, Structure, POINTER
 except:
     print "Requires ctypes > 1.0.1"
     sys.exit(-1)
 
-from numpy.testing import set_local_path, restore_path
-set_local_path('../..')
 import supreme.config as SC
-restore_path()
 
 try:
-    _lib = N.ctypeslib.load_library('libsupreme_',__file__)
+    _lib = np.ctypeslib.load_library('libsupreme_',__file__)
 except:
     print \
 """Failed to load libsupreme_.so.  The library can be compiled by running
@@ -28,12 +26,12 @@ scons
 from the package root directory."""
     sys.exit(-1)
 
-array_1d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=1,flags='CONTIGUOUS')
-array_2d_double = N.ctypeslib.ndpointer(dtype=N.double,ndim=2,flags='CONTIGUOUS')
-array_1d_int = N.ctypeslib.ndpointer(dtype=N.intc,ndim=1,flags='CONTIGUOUS')
-array_2d_int = N.ctypeslib.ndpointer(dtype=N.intc,ndim=2,flags='CONTIGUOUS')
-array_1d_uchar = N.ctypeslib.ndpointer(dtype=N.uint8,ndim=1,flags='CONTIGUOUS')
-array_2d_uchar = N.ctypeslib.ndpointer(dtype=N.uint8,ndim=2,flags='CONTIGUOUS')
+array_1d_double = np.ctypeslib.ndpointer(dtype=np.double,ndim=1,flags='CONTIGUOUS')
+array_2d_double = np.ctypeslib.ndpointer(dtype=np.double,ndim=2,flags='CONTIGUOUS')
+array_1d_int = np.ctypeslib.ndpointer(dtype=np.intc,ndim=1,flags='CONTIGUOUS')
+array_2d_int = np.ctypeslib.ndpointer(dtype=np.intc,ndim=2,flags='CONTIGUOUS')
+array_1d_uchar = np.ctypeslib.ndpointer(dtype=np.uint8,ndim=1,flags='CONTIGUOUS')
+array_2d_uchar = np.ctypeslib.ndpointer(dtype=np.uint8,ndim=2,flags='CONTIGUOUS')
 
 # Define libsupreme API
 
@@ -103,7 +101,7 @@ def atype(arrays, types):
 
     out = ()
     for A,T in za:
-        out += N.ascontiguousarray(A,T),
+        out += np.ascontiguousarray(A,T),
 
     return out
 
@@ -114,13 +112,13 @@ def npnpoly(x_vertices, y_vertices, x_points, y_points):
 
     """
     xi,yi,x,y = atype([x_vertices,y_vertices,
-                        x_points,y_points],[N.double]*4)
+                        x_points,y_points],[np.double]*4)
 
     if xi[0] != xi[-1] or yi[0] != yi[-1]:
-        xi = N.append(xi,x[0])
-        yi = N.append(yi,y[0])
+        xi = np.append(xi,x[0])
+        yi = np.append(yi,y[0])
 
-    out = N.empty(len(x),dtype=N.uint8)
+    out = np.empty(len(x),dtype=np.uint8)
 
     _lib.npnpoly(len(xi), xi, yi,
                  len(x), x, y,
@@ -137,11 +135,11 @@ def variance_map(image, shape=(3,3)):
     the variance of all the pixels in the window is stored.
 
     """
-    image, = atype(image,N.uint8)
+    image, = atype(image,np.uint8)
     assert image.ndim == 2, "Image must be 2-dimensional"
     window_size_rows, window_size_columns = shape
     rows, columns = image.shape
-    output = N.zeros(image.shape,SC.ftype)
+    output = np.zeros(image.shape,SC.ftype)
     _lib.variance_map(rows, columns, image, output,
                       window_size_rows, window_size_columns)
     return output
@@ -179,7 +177,7 @@ def poly_clip(x, y, xleft, xright, ytop, ybottom):
     are returned.
 
     """
-    x,y = atype([x,y],[N.double,N.double])
+    x,y = atype([x,y],[np.double,np.double])
 
     assert len(x) == len(y), "Equal number of x and y coordinates required"
     assert ytop > ybottom
@@ -187,13 +185,13 @@ def poly_clip(x, y, xleft, xright, ytop, ybottom):
 
     # close polygon if necessary
     if x[0] != x[-1] or y[0] != y[-1]:
-        x = N.append(x,x[0])
-        y = N.append(y,y[0])
+        x = np.append(x,x[0])
+        y = np.append(y,y[0])
 
-    xleft,xright,ytop,ybottom = map(N.double,[xleft,xright,ytop,ybottom])
+    xleft,xright,ytop,ybottom = map(np.double,[xleft,xright,ytop,ybottom])
 
-    workx = N.empty(2*len(x)-1,dtype=N.double)
-    worky = N.empty_like(workx)
+    workx = np.empty(2*len(x)-1,dtype=np.double)
+    worky = np.empty_like(workx)
     M = _lib.poly_clip(len(x),x,y,xleft,xright,ytop,ybottom,workx,worky)
     workx[M] = workx[0]
     worky[M] = worky[0]
@@ -221,7 +219,7 @@ def correlate(A,B,
 
     """
 
-    A,B = atype([A,B],[N.double,N.double])
+    A,B = atype([A,B],[np.double,np.double])
     assert A.ndim == 2 and B.ndim == 2, "Input arrays must be two dimensional"
 
     A_r,A_c = A.shape
@@ -236,7 +234,7 @@ def correlate(A,B,
     modes = {'zero': 0,
              'mirror': 1}
 
-    output = N.empty((rows,columns),dtype=N.double)
+    output = np.empty((rows,columns),dtype=np.double)
     _lib.correlate(A_r, A_c, A,
                    B_r, B_c, B,
                    rows, columns,
@@ -281,16 +279,16 @@ def interp_bilinear(grey_image,
         The interpolated image.
 
     """
-    grey_image, = atype(grey_image,N.uint8)
+    grey_image, = atype(grey_image,np.uint8)
     transform_coords_r,transform_coords_c = atype([transform_coords_r,transform_coords_c],
-                                                   [N.double,N.double])
+                                                   [np.double,np.double])
     assert grey_image.ndim == 2, "Input image must be 2-dimensional"
     assert transform_coords_r.ndim == 2 and transform_coords_c.ndim == 2, \
            "Transform coordinates must be 2-dimensional"
     if output is None:
-        output = N.empty(transform_coords_r.shape,dtype=N.uint8)
+        output = np.empty(transform_coords_r.shape,dtype=np.uint8)
     else:
-        output, = atype(output,N.uint8)
+        output, = atype(output,np.uint8)
         output.shape = transform_coords_r.shape
 
     rows,columns = grey_image.shape
@@ -303,12 +301,12 @@ def interp_bilinear(grey_image,
     return output
 
 def interp_transf_polygon(grey_image,transform,oshape=None):
-    grey_image,transform = atype([grey_image,transform],[N.uint8,N.double])
+    grey_image,transform = atype([grey_image,transform],[np.uint8,np.double])
     ishape = grey_image.shape
     if oshape is None:
         oshape = ishape
 
-    out = N.empty(oshape,dtype=SC.ftype)
+    out = np.empty(oshape,dtype=SC.ftype)
     _lib.interp_transf_polygon(ishape[0],ishape[1],grey_image,
                                oshape[0],oshape[1],out,
                                transform)
