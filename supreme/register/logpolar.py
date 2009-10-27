@@ -6,14 +6,14 @@ from supreme.misc import Image
 import supreme as sr
 
 import numpy as np
-import scipy as sp
+import scipy.fftpack as fftpack
 from itertools import izip
 from scipy import ndimage as ndi
 
 import timeit
 
-fft2 = sp.fftpack.fft2
-ifft2 = sp.fftpack.ifft2
+fft2 = fftpack.fft2
+ifft2 = fftpack.ifft2
 
 def _clearborder(image,border_shape):
     rows,cols = image.shape
