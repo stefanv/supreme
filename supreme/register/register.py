@@ -12,7 +12,6 @@ import sys
 import supreme as sr
 from supreme.config import ftype
 from supreme.feature import RANSAC
-from supreme.misc.inject import interface
 
 class Homography(object):
     """Model of a homography for use with RANSAC.
@@ -129,7 +128,6 @@ class Homography(object):
             print mesg
         return self._build_transform_from_params(pout),(ier==1)
 
-interface(Homography,RANSAC.IModel)
 
 class PointCorrespondence(object):
     """Estimate point correspondence homographies."""

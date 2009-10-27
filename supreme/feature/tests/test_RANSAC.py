@@ -2,14 +2,13 @@ from numpy.testing import *
 import numpy as np
 
 from supreme.feature import RANSAC
-from supreme.misc.inject import interface
 
 class Line(object):
     """y = mx + c
 
-    :SeeAlso:
-
-        - supreme.feature.RANSAC
+    See Also
+    --------
+    supreme.feature.RANSAC
 
     """
     @property
@@ -31,29 +30,31 @@ class Line(object):
     def __call__(self, data, confidence=0.8):
         m, c = self.parameters
         err = np.array(len(data), dtype=float)
-        err = np.abs(data[:,1] - m*data[:,0] - c)
-        return err, err <= (1-confidence) * m
+        err = np.abs(data[:, 1] - m * data[:, 0] - c)
+        return err, err <= (1 - confidence) * m
 
     def generate(self, (x_min, x_max), inliers, outliers,
                  noise, noise_bias=0):
         """Generate points around the line.
 
-        :Parameters:
-            (x_min,x_max) : tuple of floats
-                Range of generated points.
-            inliers : int
-                Number of inlying points.
-            outliers : int
-                Number of outlying points.
-            noise : float
-                Maximum deviation of outlier noise.
-            noise_bias : float between -0.5 and 0.5
-                0 is on the line, anything else biases the noise
-                above or below.
+        Parameters
+        ----------
+        (x_min,x_max) : tuple of floats
+            Range of generated points.
+        inliers : int
+            Number of inlying points.
+        outliers : int
+            Number of outlying points.
+        noise : float
+            Maximum deviation of outlier noise.
+        noise_bias : float between -0.5 and 0.5
+            0 is on the line, anything else biases the noise
+            above or below.
 
-        :Returns:
-            data : Mx2 array of float
-                Points around the line.
+        Returns
+        -------
+        data : Mx2 array of float
+            Points around the line.
 
         """
         m, c = self.parameters
@@ -72,12 +73,11 @@ class Line(object):
         x, res, rank, s = np.linalg.lstsq(a, b)
         return x, res
 
-interface(Line, RANSAC.IModel)
 
 class TestRansac:
     def test_linefit(self):
         # Experiment parameters
-        m,x = 5, 3
+        m, x = 5, 3
         inliers = 80
         outliers = 40
 
@@ -106,9 +106,8 @@ class TestRansac:
 ##         P.show()
 ##         P.close()
 
-        assert_array_almost_equal((rsc_m,rsc_c),line.parameters,decimal=1,
+        assert_array_almost_equal((rsc_m,rsc_c), line.parameters, decimal=1,
              err_msg='Note: this is a statistical test and may fail sometimes')
 
 if __name__ == "__main__":
     run_module_suite()
-
