@@ -6,3 +6,5 @@ supreme.egg-info
 *.os
 *.so
 *_init.c
+doc/examples/output
+
