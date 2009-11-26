@@ -31,3 +31,8 @@ def mkdir(d):
 
     import os
     os.mkdir(d)
+
+def get_log(name):
+    import logging, sys
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    return logging.getLogger(name)
