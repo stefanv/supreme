@@ -21,10 +21,10 @@ class Homography(object):
     @property
     def ndp(self): return 4
 
-    def __init__(self,H=np.eye(3)):
+    def __init__(self, H=np.eye(3)):
         self.parameters = H
 
-    def set_parameters(self,H):
+    def set_parameters(self, H):
         assert H.ndim == 2
         assert H.shape == (3,3)
         self._H = H
@@ -32,21 +32,25 @@ class Homography(object):
     def get_parameters(self):
         return self._H
 
-    parameters = property(fget=get_parameters,fset=set_parameters)
+    parameters = property(fget=get_parameters, fset=set_parameters)
 
-    def __call__(self,data,H=None,confidence=0.8):
-        if H is None: H = self.parameters
-        ones = np.ones_like(data[:,0]).reshape(-1,1)
-        rcoord = np.hstack((data[:,:2],ones))
-        tcoord = np.hstack((data[:,2:],ones))
+    def __call__(self, data, H=None, confidence=0.8):
+        if H is None:
+            H = self.parameters
 
-        tc = np.dot(tcoord,H.T)
-        error = np.sqrt(np.sum((rcoord - tc)**2,axis=1))
-        return error, error < (1-confidence)*5
+        ones = np.ones_like(data[:, 0]).reshape(-1, 1)
+        rcoord = np.hstack((data[:, :2], ones))
+        tcoord = np.hstack((data[:, 2:], ones))
 
-    def estimate(self,data):
-        H,ignored = self.estimate_direct(data)
-        return H,True
+        tc = np.dot(tcoord, H.T)
+        error = np.sqrt(np.sum((rcoord - tc)**2, axis=1))
+
+        # Should customise 50 pixel threshold
+        return error, error < (1 - confidence) * 50
+
+    def estimate(self, data):
+        H, ignored = self.estimate_direct(data)
+        return H, True
 
     def _data_from_array(self,data):
         data = np.asarray(data)
@@ -139,7 +143,7 @@ class PointCorrespondence(object):
         self.data = np.dstack([ref_feat_cols,ref_feat_rows,
                                target_feat_cols,target_feat_rows]).squeeze()
 
-        self.mode = args.get('mode','direct').lower()
+        self.mode = args.get('mode', 'direct').lower()
         self.args = args
 
     def estimate(self):
@@ -152,17 +156,32 @@ class PointCorrespondence(object):
 
     def RANSAC(self):
         M = Homography()
-        R = RANSAC.RANSAC(M,p_inlier=0.1) # conservatively low
+        R = RANSAC.RANSAC(M, p_inlier=0.1) # conservatively low
         return R(self.data,
                  inliers_required=len(self.data)/2,
-                 confidence=self.args.get('confidence',None))
+                 confidence=self.args.get('confidence', None))
 
-def sparse(ref_feat_rows,ref_feat_cols,
-        target_feat_rows,target_feat_cols,**kwargs):
+def sparse(ref_feat_rows, ref_feat_cols,
+           target_feat_rows, target_feat_cols, **kwargs):
     """Compatibility wrapper. Calculate the PointCorrespondence
     homography which maps reference features to target features.
 
     See also: PointCorrespondence
+
+    Parameters
+    ----------
+    ref_feat_rows, ref_feat_cols : array of floats
+        Coordinates in the reference image.
+    target_feat_rows, target_feat_cols : array of floats
+        Coordinates in the target image.
+    mode : {'direct', 'iterative', 'RANSAC'}, optional
+        Method used to estimate the correspondences.  See also
+        ``PointCorrespondence``.
+
+    Other Parameters
+    ----------------
+    confidence : float
+        Passed to RANSAC.
 
     """
 
@@ -173,10 +192,10 @@ def sparse(ref_feat_rows,ref_feat_cols,
     M = p.estimate()
     return M
 
-def refine(reference,target,p_ref,p_target):
+def refine(reference, target, p_ref, p_target):
     """Refine registration parameters iteratively."""
 
-    def _tf_difference(p,p_ref,reference,target):
+    def _tf_difference(p, p_ref, reference,target):
         """Calculate difference between reference and transformed target."""
         tf_target = _build_tf(p)
         tf_ref = _build_tf(p_ref)
