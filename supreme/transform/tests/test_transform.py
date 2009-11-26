@@ -8,15 +8,15 @@ class TestTransform:
     def test_logpolar(self, level=1):
         x = np.zeros((3, 3))
         z = transform.logpolar(x)
-        assert_equal(z.shape, (359, 3))
+        assert_equal(z.shape, (24, 3))
 
         x = np.zeros((3, 3, 3))
         z = transform.logpolar(x)
-        assert_equal(z.shape,(359, 3, 3))
+        assert_equal(z.shape, (24, 3, 3))
 
         x = np.zeros((3, 3, 4))
         z = transform.logpolar(x)
-        assert_equal(z.shape, (359, 3, 4))
+        assert_equal(z.shape, (24, 3, 4))
         z = transform.logpolar(x, angles=np.linspace(0, 2*np.pi, 400))
         assert_equal(z.shape, (400, 3, 4))
 

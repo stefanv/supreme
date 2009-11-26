@@ -16,10 +16,10 @@ def stackcopy(a,b):
     else:
         a[:] = b
 
-def _lpcoords(ishape,w,angles=None):
+def _lpcoords(ishape, w, angles=None):
     """Calculate the reverse coordinates for the log-polar transform.
 
-    Return array is of shape (len(angles),w)
+    Return array is of shape (len(angles), w)
 
     """
 
@@ -33,7 +33,7 @@ def _lpcoords(ishape,w,angles=None):
     log_base = N.log(d)/w
 
     if angles is None:
-        angles =  -N.linspace(0,2*N.pi,359+1)[:-1]
+        angles =  -N.linspace(0, 2*N.pi, 8*w + 1)[:-1]
     theta = N.empty((len(angles),w),dtype=SC.ftype)
     # Use broadcasting to replicate angles
     theta.transpose()[:] = angles
@@ -46,16 +46,19 @@ def _lpcoords(ishape,w,angles=None):
 
     return r*N.sin(theta) + centre[0], r*N.cos(theta) + centre[1]
 
-def logpolar(image,angles=None,mode='M',cval=0,output=None,
-             _coords_r=None,_coords_c=None):
+def logpolar(image, angles=None, R=None, mode='M', cval=0, output=None,
+             _coords_r=None, _coords_c=None):
     """Perform the log polar transform on an image.
 
     Input:
     ------
     image : MxNxC array
         An MxN image with C colour bands.
+    R : int
+        Number of samples in the radial direction.
     angles : 1D array of floats
-        Angles at which to evaluate. Defaults to 0..2*Pi in 359 steps.
+        Angles at which to evaluate. Defaults to 0..2*Pi in 8*R steps.
+        See [1] below for motivation.
     mode : string
         How values outside borders are handled. 'C' for constant, 'M'
         for mirror and 'W' for wrap.
@@ -67,6 +70,12 @@ def logpolar(image,angles=None,mode='M',cval=0,output=None,
     _coords_r, _coords_c : 2D array
         Pre-calculated coords, as given by _lpcoords.
 
+    References
+    ----------
+    .. [1] Matungka, Zheng and Ewing, "Image Registration Using Adaptive
+           Polar Transform". IEEE Transactions on Image Processing, Vol. 18,
+           No. 10, October 2009.
+
     """
 
     if image.ndim < 2 or image.ndim > 3:
@@ -74,10 +83,11 @@ def logpolar(image,angles=None,mode='M',cval=0,output=None,
 
     image = N.atleast_3d(image)
 
-    w = max(image.shape[:2])
+    if R is None:
+        R = max(image.shape[:2])
 
     if _coords_r is None or _coords_c is None:
-        _coords_r, _coords_c = _lpcoords(image.shape,w,angles)
+        _coords_r, _coords_c = _lpcoords(image.shape, R, angles)
 
     bands = image.shape[2]
     if output is None:
