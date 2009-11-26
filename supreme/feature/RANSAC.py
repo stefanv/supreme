@@ -9,6 +9,9 @@ Communications of the ACM, 1981
 
 __all__ = ['IModel','RANSAC']
 
+from supreme.config import get_log
+log = get_log(__name__)
+
 import numpy as np
 
 class IModel:
@@ -111,7 +114,7 @@ class RANSAC(object):
         model = self.model
 
         max_iter = 3 * np.ceil(self.p_inlier ** (-model.ndp)).astype(int)
-        #print "Maximum number of RANSAC iterations:", max_iter
+        log.debug("Maximum number of RANSAC iterations: %i" % max_iter)
 
         success = False
         for i in range(max_iter):
@@ -122,11 +125,12 @@ class RANSAC(object):
             if np.sum(inliers) >= inliers_required:
                 success = True
                 break
+
         if success:
-            pass
-            #print "RANSAC successfully converged after %s iterations." % i
+            log.info("RANSAC successfully converged after %s iterations." % i)
         else:
-            raise Exception("RANSAC failed to converge.")
+            log.error("RANSAC failed to converge.")
+            raise RuntimeError("RANSAC failed to converge.")
 
         inliers[rand_idx] = True
         data = data[inliers,...]
