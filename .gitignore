@@ -7,4 +7,4 @@ supreme.egg-info
 *.so
 *_init.c
 doc/examples/output
-
+*~

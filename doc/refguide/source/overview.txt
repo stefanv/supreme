@@ -1,0 +1,9 @@
+Super Resolution Methods
+========================
+
+A library for facilitating reproducible experiments in
+super-resolution imaging.
+
+Contact
+-------
+Stefan van der Walt <stefan at sun.ac.za>
