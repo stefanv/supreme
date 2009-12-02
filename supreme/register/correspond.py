@@ -1,7 +1,7 @@
 import numpy as np
 
-from supreme.config import get_log
-log = get_log(__name__)
+import supreme.config
+log = supreme.config.get_log(__name__)
 
 def _safe_coord(i, j, img, win_size):
     """Return the coordinates of a window only if

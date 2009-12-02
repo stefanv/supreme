@@ -4,7 +4,7 @@ import numpy as _np
 import os.path as _osp
 import sys as _sys
 
-__all__ = ['abs_path', 'ftype', 'itype', 'data_path', 'lib_path']
+__all__ = ['abs_path', 'ftype', 'itype', 'data_path', 'lib_path', 'get_log']
 
 ftype = _np.float64
 itype = _np.int32

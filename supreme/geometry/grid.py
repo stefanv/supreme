@@ -3,7 +3,6 @@
 __all__ = ['Grid']
 
 import numpy as np
-from numpy.testing import *
 
 import supreme as SR
 import supreme.config as SC
@@ -43,7 +42,8 @@ class Grid(object):
         if np.isscalar(cols) or np.isscalar(rows):
             cols,rows = map(np.arange,[cols,rows])
         cols,rows = map(np.array,[cols,rows])
-        assert cols.ndim == rows.ndim, "Must provide same number of cols and rows coordinates as 1D arrarowss"
+        assert cols.ndim == rows.ndim, "Must provide same number of cols and " \
+                                       "rows coordinates as 1D arrarowss"
 
         if cols.ndim == 1:
             shape = (len(cols),len(rows))

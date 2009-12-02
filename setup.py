@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+VERSION = '0.1'
+
 import os
 import sys
 from glob import glob
@@ -50,7 +52,7 @@ init%(module)s()
 
 setup(
   name = 'supreme',
-  version = '0.0',
+  version = VERSION,
   packages = packages_and_tests(setuptools.find_packages()),
 
   ext_modules = [CExtension('supreme/ext/libsupreme_',

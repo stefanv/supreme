@@ -1,9 +1,11 @@
 """Cut blocks from images along a given coord_path."""
 
+__all__ = ['along_path']
+
 import numpy as np
 import warnings
 
-from supreme.config import ftype,itype
+from supreme.config import ftype, itype
 
 def along_path(path,image,shape=(3,3),centre=None):
     """Cut blocks of shape from image along the specified path.

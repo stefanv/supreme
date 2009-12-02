@@ -8,3 +8,6 @@ supreme.egg-info
 *_init.c
 doc/examples/output
 *~
+doc/refguide/source/api/*
+doc/refguide/build
+

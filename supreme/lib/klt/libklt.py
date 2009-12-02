@@ -1,10 +1,12 @@
+__all__ = ['Feature', 'FeatureHistory', 'FeatureList', 'FeatureTable',
+           'FloatImage', 'Structure', 'TrackingContext',
+           'replace_lost_features', 'select_good_features', 'track_features']
+
 import numpy as N
 from ctypes import c_int, c_uint8, c_float, c_double, c_char, \
                    Structure, POINTER, pointer, c_void_p, c_char_p
 
-from supreme.ext import array_1d_double, array_2d_double, array_1d_int, \
-                        array_2d_int, array_1d_uchar, array_2d_uchar, \
-                        atype
+from supreme.ext.ctype_arrays import *
 
 _lib = N.ctypeslib.load_library('libklt_',__file__)
 

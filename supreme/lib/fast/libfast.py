@@ -4,7 +4,7 @@ import numpy as np
 from ctypes import c_int, c_uint8, Structure, POINTER, pointer
 
 import supreme.config as SC
-from supreme.ext import array_2d_uchar, atype
+from supreme.ext.ctype_arrays import array_2d_uchar, atype
 
 _lib = np.ctypeslib.load_library('libfast_',__file__)
 

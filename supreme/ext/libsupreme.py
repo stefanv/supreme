@@ -1,6 +1,8 @@
 """C extensions implemented using ctypes to enhance
 speed critical algorithms."""
 
+__all__ = []
+
 import sys
 import numpy as np
 try:
@@ -26,12 +28,7 @@ scons
 from the package root directory."""
     sys.exit(-1)
 
-array_1d_double = np.ctypeslib.ndpointer(dtype=np.double,ndim=1,flags='CONTIGUOUS')
-array_2d_double = np.ctypeslib.ndpointer(dtype=np.double,ndim=2,flags='CONTIGUOUS')
-array_1d_int = np.ctypeslib.ndpointer(dtype=np.intc,ndim=1,flags='CONTIGUOUS')
-array_2d_int = np.ctypeslib.ndpointer(dtype=np.intc,ndim=2,flags='CONTIGUOUS')
-array_1d_uchar = np.ctypeslib.ndpointer(dtype=np.uint8,ndim=1,flags='CONTIGUOUS')
-array_2d_uchar = np.ctypeslib.ndpointer(dtype=np.uint8,ndim=2,flags='CONTIGUOUS')
+from ctype_arrays import *
 
 # Define libsupreme API
 
@@ -81,29 +78,11 @@ def register_api(lib,api):
         func = getattr(lib, f)
         func.restype = restype
         func.argtypes = argtypes
+        __all__.extend([f])
 
 register_api(_lib,libsupreme_api)
 
 # Python wrappers for libsupreme functions
-
-def atype(arrays, types):
-    """Return contiguous arrays of given types.
-
-    arrays - list of input arrays
-    types - list of corresponding types
-
-    """
-    out = ()
-    try:
-        za = zip(arrays,types)
-    except:
-        za = [(arrays,types)]
-
-    out = ()
-    for A,T in za:
-        out += np.ascontiguousarray(A,T),
-
-    return out
 
 def npnpoly(x_vertices, y_vertices, x_points, y_points):
     """Calculate whether points are in a given polygon.
@@ -311,4 +290,3 @@ def interp_transf_polygon(grey_image,transform,oshape=None):
                                oshape[0],oshape[1],out,
                                transform)
     return out
-
