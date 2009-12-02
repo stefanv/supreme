@@ -45,7 +45,7 @@ class Homography(object):
         tc = np.dot(tcoord, H.T)
         error = np.sqrt(np.sum((rcoord - tc)**2, axis=1))
 
-        # Should customise 50 pixel threshold
+        # TODO: Should customise this pixel threshold
         return error, error < (1 - confidence) * 50
 
     def estimate(self, data):
@@ -158,7 +158,8 @@ class PointCorrespondence(object):
         M = Homography()
         R = RANSAC.RANSAC(M, p_inlier=0.1) # conservatively low
         return R(self.data,
-                 inliers_required=len(self.data)/2,
+                 inliers_required=self.args.get('inliers_required',
+                                                len(self.data)/2),
                  confidence=self.args.get('confidence', None))
 
 def sparse(ref_feat_rows, ref_feat_cols,
@@ -182,6 +183,8 @@ def sparse(ref_feat_rows, ref_feat_cols,
     ----------------
     confidence : float
         Passed to RANSAC.
+    inliers_required : int
+        Number of inliers required for convergence.
 
     """
 
