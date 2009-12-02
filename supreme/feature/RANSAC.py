@@ -121,13 +121,16 @@ class RANSAC(object):
             rand_idx = np.floor(
                 np.random.random(model.ndp) * len(data)).astype(int)
             model.parameters,res = model.estimate(data[rand_idx, ...])
-            score,inliers = model(data, confidence=confidence)
-            if np.sum(inliers) >= inliers_required:
+            score, inliers = model(data, confidence=confidence)
+            inliers_found = np.sum(inliers)
+            if inliers_found >= inliers_required:
                 success = True
                 break
 
         if success:
-            log.info("RANSAC successfully converged after %s iterations." % i)
+            log.info("RANSAC successfully converged after %s iterations "
+                     "with %s inliers (%s required)." % (i, inliers_found,
+                                                         inliers_required))
         else:
             log.error("RANSAC failed to converge.")
             raise RuntimeError("RANSAC failed to converge.")
