@@ -1,0 +1,1 @@
+rsync -av --progress --delete ./build/html/ stefan@mentat.za.net:html/supreme/doc/
