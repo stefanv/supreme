@@ -10,8 +10,8 @@ import scipy as sp
 ic = ImageCollection(os.path.join(data_path, 'toystory/toystory00*.png'),
                      grey=True)
 
-xy0 = fast.corner_detect(ic[0],barrier=10)
-xy1 = fast.corner_detect(ic[1])
+xy0 = fast.corner_detect(ic[0], barrier=30)
+xy1 = fast.corner_detect(ic[1], barrier=30)
 
 def mark_feature(img,xy):
     shape = list(img.shape) + [3]
