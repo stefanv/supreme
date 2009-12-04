@@ -7,6 +7,7 @@ import sys
 from glob import glob
 
 import setuptools
+import numpy as np
 from numpy.distutils.core import setup, Extension
 
 def packages_and_tests(packages):
@@ -50,6 +51,12 @@ init%(module)s()
         files.append(initfile)
     return Extension(name,files,**kwargs)
 
+dpt_extensions = [Extension('supreme/lib/dpt/' + dpt_mod,
+                            ['supreme/lib/dpt/' + dpt_mod + '.c'],
+                            include_dirs=[np.get_include()],) for dpt_mod in
+                  ('int_array', 'connected_region',
+                   'connected_region_handler', 'ccomp', 'base')]
+
 setup(
   name = 'supreme',
   version = VERSION,
@@ -67,7 +74,7 @@ setup(
 
                  CExtension('supreme/lib/fast/libfast_',
                             glob('supreme/lib/fast/*.c')),
-                ],
+                ] + dpt_extensions,
 
   package_data = {
       '': ['*.txt', '*.png', '*.jpg', '*.pgm'],
