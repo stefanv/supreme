@@ -2,6 +2,7 @@
 build
 dist
 *.pyc
+*.pyd
 supreme.egg-info
 *.os
 *.so
