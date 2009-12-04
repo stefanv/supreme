@@ -82,15 +82,12 @@ class TestCoordPath:
 
     def test_spline(self):
         try:
-            import Nurbs
-        except:
-            return
-        try:
             spl = coord_path.spline(((0, 0), (3, 5)))
+            spl.next()
         except ValueError:
             pass
         else:
-            raise Exception("ValueError expected (%s)" % spl.next)
+            raise Exception("ValueError expected, got (%s)" % spl.next())
 
         spl = coord_path.spline(((0, 0), (3, 5), (1, 1)))
         coords = [c for c in spl]

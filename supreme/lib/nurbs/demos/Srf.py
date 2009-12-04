@@ -1,9 +1,9 @@
 # Demonstration of a surface
 
 import numpy
-from Nurbs import Srf, Crv
+from nurbs import Srf, Crv
 
-cntrl = numpy.zeros((4,4,4), numpy.Float)
+cntrl = numpy.zeros((4,4,4), float)
 for u in range(4):
     for v in range(4):
         cntrl[0][u][v] = 2.*(u - 1.5)

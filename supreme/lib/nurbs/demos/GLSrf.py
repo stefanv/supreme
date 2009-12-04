@@ -1,5 +1,5 @@
-from Nurbs import Crv
-import numpy
+from nurbs import Srf, Crv
+import Numeric
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -55,36 +55,37 @@ def main():
 	glutReshapeFunc(on_reshape)
 	
 	nurb = gluNewNurbsRenderer()
-	
+	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 50.)
+	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL)
+
 	glMatrixMode(GL_MODELVIEW)
 	
 	glNewList(1, GL_COMPILE)
 	
-	cntrl = [[-5., -7.5, 2.5, 0, -2.5, 7.5, 5.0],
-                 [2.5, 5.0, 5.0, .0, -5.0, -5.0, 2.5]]
-	knots = [0., 0., 0., .2, .4, .6, .8, 1., 1., 1.]
-	crv = Crv.Crv(cntrl, knots)
+	glMaterialfv(GL_FRONT, GL_SPECULAR, ( 1.0, 1.0, 1.0, 1.0 ))
+	glMaterialfv(GL_FRONT, GL_SHININESS, 100.0)
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, ( 0.7, 0.0, 0.1, 1.0 ))
+	glEnable(GL_LIGHTING)
+	glEnable(GL_LIGHT0)
+	glEnable(GL_DEPTH_TEST)
+	glEnable(GL_AUTO_NORMAL)
+	glEnable(GL_NORMALIZE)
 	
-	glPointSize(10.)
-	glDisable(GL_LIGHTING)
-	glColor3f(1., 1., 1.)
+	pnts = [[0., 3., 4.5, 6.5, 8., 10.],
+		[0., 0., 0., 0., 0., 0.],
+		[2., 2., 7., 4., 6., 4.]]   
+	crv1 = Crv.Crv(pnts, [0., 0., 0., 1./3., 0.5, 2./3., 1., 1., 1.])
 
-	glBegin(GL_POINTS)
-	for i in range(crv.cntrl.shape[1]):
-		w = crv.cntrl[-1,i]
-		glVertex3f(crv.cntrl[0, i]/w, crv.cntrl[1, i]/w, crv.cntrl[2, i]/w)
-	glEnd()
+	pnts= [[0., 3., 5., 8., 10.],
+	       [10., 10., 10., 10., 10.],
+	       [3., 6., 3., 6., 10.]]
+	crv2 = Crv.Crv(pnts, [0., 0., 0., 1./3., 2./3., 1., 1., 1.])
+
+	srf = Srf.Ruled(crv1, crv2)
 	
-	glBegin(GL_LINE_STRIP)
-	for i in range(crv.cntrl.shape[1]):
-		w = crv.cntrl[-1,i]
-		glVertex3f(crv.cntrl[0, i]/w, crv.cntrl[1, i]/w, crv.cntrl[2, i]/w)
-	glEnd()
-	
-	glColor3f(1., 1., 0.)
-	gluBeginCurve(nurb)
-	gluNurbsCurve(nurb, crv.uknots, numpy.transpose(crv.cntrl), GL_MAP1_VERTEX_4)
-	gluEndCurve(nurb)
+	gluBeginSurface(nurb)
+	gluNurbsSurface(nurb, srf.uknots, srf.vknots, Numeric.transpose(srf.cntrl, (1,2,0)), GL_MAP2_VERTEX_4)
+	gluEndSurface(nurb)
 
 	glEndList()
 

@@ -252,7 +252,7 @@ static PyObject * _Bas_bspeval(PyObject *self, PyObject *args)
 	nu = u->dimensions[0];
 	dim[0] = mc;
 	dim[1] = nu;
-	pnt = (PyArrayObject *) PyArray_FromDims(2, dim, PyArray_DOUBLE);
+	pnt = (PyArrayObject *) PyArray_SimpleNew(2, dim, PyArray_DOUBLE);
 	ctrlmat = vec2mat(ctrl->data, mc, nc);
 	pntmat = vec2mat(pnt->data, mc, nu);
 	_bspeval(d, ctrlmat, mc, nc, (double *)k->data, k->dimensions[0], (double *)u->data, nu, pntmat);
@@ -429,7 +429,7 @@ static PyObject * _Bas_bspdeval(PyObject *self, PyObject *args)
 	nc = ctrl->dimensions[1];
 	dim[0] = mc;
 	dim[1] = n + 1;
-	pnt = (PyArrayObject *) PyArray_FromDims(2, dim, PyArray_DOUBLE);
+	pnt = (PyArrayObject *) PyArray_SimpleNew(2, dim, PyArray_DOUBLE);
 	ctrlmat = vec2mat(ctrl->data, mc, nc);
 	pntmat = vec2mat(pnt->data, mc, n + 1);
 	_bspdeval(d, ctrlmat, mc, nc, (double *)k->data, k->dimensions[0], u, n, pntmat);
@@ -537,11 +537,11 @@ static PyObject * _Bas_bspkntins(PyObject *self, PyObject *args)
 	nu = u->dimensions[0];
 	dim[0] = mc;
 	dim[1] = nc + nu;
-	ic = (PyArrayObject *) PyArray_FromDims(2, dim, PyArray_DOUBLE);
+	ic = (PyArrayObject *) PyArray_SimpleNew(2, dim, PyArray_DOUBLE);
 	ctrlmat = vec2mat(ctrl->data, mc, nc);
 	icmat = vec2mat(ic->data, mc, nc + nu);
 	dim[0] = nk + nu;
-	ik = (PyArrayObject *) PyArray_FromDims(1, dim, PyArray_DOUBLE);
+	ik = (PyArrayObject *) PyArray_SimpleNew(1, dim, PyArray_DOUBLE);
 	_bspkntins(d, ctrlmat, mc, nc, (double *)k->data, nk, (double *)u->data, nu, icmat, (double *)ik->data);
 	free(icmat);
 	free(ctrlmat);
@@ -792,11 +792,11 @@ static PyObject * _Bas_bspdegelev(PyObject *self, PyObject *args)
 	nk = k->dimensions[0];
 	dim[0] = mc;
 	dim[1] = nc*(t + 1);
-	ic = (PyArrayObject *) PyArray_FromDims(2, dim, PyArray_DOUBLE);
+	ic = (PyArrayObject *) PyArray_SimpleNew(2, dim, PyArray_DOUBLE);
 	ctrlmat = vec2mat(ctrl->data, mc, nc);
 	icmat = vec2mat(ic->data, mc, nc*(t + 1));
 	dim[0] = (t + 1)*nk;
-	ik = (PyArrayObject *) PyArray_FromDims(1, dim, PyArray_DOUBLE);
+	ik = (PyArrayObject *) PyArray_SimpleNew(1, dim, PyArray_DOUBLE);
 	_bspdegelev(d, ctrlmat, mc, nc, (double *)k->data, nk, t, &nh, icmat, (double *)ik->data);
 	free(icmat);
 	free(ctrlmat);
@@ -925,7 +925,7 @@ static PyObject * _Bas_bspbezdecom(PyObject *self, PyObject *args)
 	}
 	dim[0] = mc;
 	dim[1] = nc+c;
-	ic = (PyArrayObject *) PyArray_FromDims(2, dim, PyArray_DOUBLE);
+	ic = (PyArrayObject *) PyArray_SimpleNew(2, dim, PyArray_DOUBLE);
 	ctrlmat = vec2mat(ctrl->data, mc, nc);
 	icmat = vec2mat(ic->data, mc, nc+c);
 	_bspbezdecom(d, ctrlmat, mc, nc, (double *)k->data, nk, icmat);

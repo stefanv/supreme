@@ -2,7 +2,7 @@
 # by first scaling, then rotating and finally translating.
 
 import numpy
-from Nurbs import Crv
+from nurbs import Crv
 from Nurbs.Util import translate, scale, rotx, roty, deg2rad
 
 xx = scale([1., 2.])

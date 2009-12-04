@@ -1,6 +1,6 @@
 # Demonstration of kntins function
 
-from Nurbs import Crv
+from nurbs import Crv
 
 cntrl = [[.5, 1.5, 4.5, 3., 7.5, 6., 8.5],
         [3., 5.5, 5.5, 1.5, 1.5, 4., 4.5]]

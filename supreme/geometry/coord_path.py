@@ -87,7 +87,7 @@ def spline(pts):
     the provided list of points.  At least 3 points must be specified.
     """
 
-    from Nurbs.Crv import Crv
+    from supreme.lib.nurbs.Crv import Crv
 
     if len(pts) < 3:
         raise ValueError("At least 3 data points needed.")

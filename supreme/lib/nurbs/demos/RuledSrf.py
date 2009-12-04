@@ -1,6 +1,6 @@
 # Demonstration of a Ruled surface
 
-from Nurbs import Srf, Crv
+from nurbs import Srf, Crv
 
 pnts = [[0., 3., 4.5, 6.5, 8., 10.],
         [0., 0., 0., 0., 0., 0.],

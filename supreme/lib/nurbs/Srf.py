@@ -281,9 +281,10 @@ class Srf:
 	n = number of subdivisions. iso = number of iso line to plot in each dir.
 	TODO: plot ctrl poins and knots."""
         try:
-            import dislin
+            import matplotlib.pyplot as plt
+            from mpl_toolkits.mplot3d import Axes3D
         except ImportError, value:
-            print 'dislin plotting library not available'
+            print 'Matplotlib plotting library not available'
             return
 
         maxminx = numerix.sort(numerix.ravel(self.cntrl[0,:,:])/numerix.ravel(self.cntrl[3,:,:]))
@@ -306,19 +307,19 @@ class Srf:
         if minz == maxz:
             minz -= 1.
             maxz += 1.
-                
-        dislin.metafl('cons')
-        dislin.disini()
-        dislin.hwfont()
-        dislin.pagera()
-        dislin.name('X-axis', 'X')
-        dislin.name('Y-axis', 'Y')
-        dislin.name('Z-axis', 'Z')
-        dislin.graf3d(minx, maxx, 0 , abs((maxx-minx)/4.),
-                      miny, maxy, 0 , abs((maxy-miny)/4.),
-                      minz, maxz, 0 , abs((maxz-minz)/4.))
-            
-        dislin.color('yellow')
+
+        fig = plt.figure()
+        ax = Axes3D(fig)
+
+        ax.set_xlabel('X-axis')
+        ax.set_ylabel('Y-axis')
+        ax.set_zlabel('Z-axis')
+
+#        dislin.graf3d(minx, maxx, 0 , abs((maxx-minx)/4.),
+#                      miny, maxy, 0 , abs((maxy-miny)/4.),
+#                      minz, maxz, 0 , abs((maxz-minz)/4.))
+
+#        dislin.color('yellow')
         pnts0 = self.pnt3D([numerix.arange(n + 1, typecode = numerix.Float)/n,
                             numerix.zeros(n + 1,numerix.Float)])
         pnts1 = self.pnt3D([numerix.arange(n + 1, typecode = numerix.Float)/n,
@@ -327,22 +328,22 @@ class Srf:
                             numerix.arange(n + 1, typecode = numerix.Float)/n])
         pnts3 = self.pnt3D([numerix.ones(n + 1,numerix.Float),
                             numerix.arange(n + 1, typecode = numerix.Float)/n])
-        dislin.curv3d(pnts0[0,:], pnts0[1,:], pnts0[2,:], n+1)
-        dislin.curv3d(pnts1[0,:], pnts1[1,:], pnts1[2,:], n+1)
-        dislin.curv3d(pnts2[0,:], pnts2[1,:], pnts2[2,:], n+1)
-        dislin.curv3d(pnts3[0,:], pnts3[1,:], pnts3[2,:], n+1)
-            
-        dislin.color('red')
+
+        ax.plot(pnts0[0,:], pnts0[1,:], pnts0[2,:], 'y')
+        ax.plot(pnts1[0,:], pnts1[1,:], pnts1[2,:], 'y')
+        ax.plot(pnts2[0,:], pnts2[1,:], pnts2[2,:], 'y')
+        ax.plot(pnts3[0,:], pnts3[1,:], pnts3[2,:], 'y')
+
         step = 1./iso
         for uv in numerix.arange(step, 1., step):
             pnts = self.pnt3D([numerix.arange(n + 1, typecode = numerix.Float)/n,
                                numerix.zeros(n + 1,numerix.Float) + uv])
-            dislin.curv3d(pnts[0,:], pnts[1,:], pnts[2,:], n+1)
+            ax.plot(pnts[0,:], pnts[1,:], pnts[2,:], 'r')
             pnts = self.pnt3D([numerix.zeros(n + 1,numerix.Float) + uv,
                                numerix.arange(n + 1, typecode = numerix.Float)/n])
-            dislin.curv3d(pnts[0,:], pnts[1,:], pnts[2,:], n+1)
-            
-        dislin.disfin()
+            ax.plot(pnts[0,:], pnts[1,:], pnts[2,:], 'r')
+
+        plt.show()
 
     def __call__(self, *args):
         return self.pnt3D(args[0])

@@ -1,6 +1,6 @@
 # Demonstration of a Circle curve
 
-from Nurbs import Crv
+from nurbs import Crv
 
 
 crv = Crv.Circle(5., [1., 2.])
