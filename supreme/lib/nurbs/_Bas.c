@@ -232,7 +232,8 @@ static void _bspeval(int d, double **ctrl, int mc, int nc, double *k, int nk, do
 
 static PyObject * _Bas_bspeval(PyObject *self, PyObject *args)
 {
-	int d, mc, nc, nu, dim[2];
+	int d, mc, nc, nu;
+        npy_intp* dim[2];
 	double **ctrlmat, **pntmat;
 	PyObject *input_ctrl, *input_k, *input_u;
 	PyArrayObject *ctrl, *k, *u, *pnt;
@@ -255,7 +256,7 @@ static PyObject * _Bas_bspeval(PyObject *self, PyObject *args)
 	pnt = (PyArrayObject *) PyArray_SimpleNew(2, dim, PyArray_DOUBLE);
 	ctrlmat = vec2mat(ctrl->data, mc, nc);
 	pntmat = vec2mat(pnt->data, mc, nu);
-	_bspeval(d, ctrlmat, mc, nc, (double *)k->data, k->dimensions[0], (double *)u->data, nu, pntmat);
+	_bspeval(d, ctrlmat, mc, nc, (double *)k->data, (int)k->dimensions[0], (double *)u->data, nu, pntmat);
 	free(pntmat);
 	free(ctrlmat);
 	Py_DECREF(ctrl);
@@ -413,7 +414,8 @@ static void _bspdeval(int d, double **c, int mc, int nc, double *k, int nk,
 
 static PyObject * _Bas_bspdeval(PyObject *self, PyObject *args)
 {
-	int d, mc, nc, n, dim[2];
+        int d, mc, nc, n;
+        npy_intp* dim[2];
 	double u, **ctrlmat, **pntmat;
 	PyObject *input_ctrl, *input_k;
 	PyArrayObject *ctrl, *k, *pnt;
@@ -516,7 +518,8 @@ static void _bspkntins(int d, double **ctrl, int mc, int nc, double *k, int nk,
 
 static PyObject * _Bas_bspkntins(PyObject *self, PyObject *args)
 {
-	int d, mc, nc, nk, nu, dim[2];
+        int d, mc, nc, nk, nu;
+        npy_intp* dim[2];
 	double **ctrlmat, **icmat;
 	PyObject *input_ctrl, *input_k, *input_u;
 	PyArrayObject *ctrl, *k, *u, *ic, *ik;
@@ -775,7 +778,8 @@ static void _bspdegelev(int d, double **ctrl, int mc, int nc, double *k, int nk,
 
 static PyObject * _Bas_bspdegelev(PyObject *self, PyObject *args)
 {
-	int d, mc, nc, nk, t, nh, dim[2];
+        int d, mc, nc, nk, t, nh;
+        npy_intp* dim[2];
 	double **ctrlmat, **icmat;
 	PyObject *input_ctrl, *input_k;
 	PyArrayObject *ctrl, *k, *ic, *ik;
@@ -892,7 +896,8 @@ static void _bspbezdecom(int d, double **ctrl, int mc, int nc, double *k, int nk
 
 static PyObject * _Bas_bspbezdecom(PyObject *self, PyObject *args)
 {
-	int i, b, c, d, mc, nc, nk, m,  dim[2];
+        int i, b, c, d, mc, nc, nk, m;
+        npy_intp* dim[2];
 	double **ctrlmat, **icmat, *ks;
 	PyObject *input_ctrl, *input_k;
 	PyArrayObject *ctrl, *k, *ic;
