@@ -1,9 +1,9 @@
 __all__ = ['logpolar']
 
 import supreme as sr
+import supreme.geometry
 from supreme.config import ftype,itype
-from supreme.misc import Image
-import supreme as sr
+from supreme.io import Image
 
 import numpy as np
 import scipy.fftpack as fftpack
