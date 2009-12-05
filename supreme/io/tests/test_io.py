@@ -3,7 +3,7 @@ import os.path
 from numpy.testing import *
 import numpy as np
 
-from supreme.misc import *
+from supreme.io import *
 
 class TestImage:
     def setUp(self):
