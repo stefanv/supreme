@@ -11,8 +11,6 @@ import feature
 import misc
 import photometry
 
-import os.path as _path
-
 def iterable(x):
     try:
         iter(x)

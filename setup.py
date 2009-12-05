@@ -36,8 +36,6 @@ if __name__ == '__main__':
             '': ['*.txt', '*.png', '*.jpg', '*.pgm'],
         },
 
-        zip_safe = False,
-
         author = "Stefan van der Walt",
         author_email = "<stefan.no-spam(at)mentat.za.net>",
         description = "SUper REsolution MEthods",
