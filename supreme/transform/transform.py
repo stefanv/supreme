@@ -33,7 +33,7 @@ def _lpcoords(ishape, w, angles=None):
     log_base = N.log(d)/w
 
     if angles is None:
-        angles =  -N.linspace(0, 2*N.pi, 8*w + 1)[:-1]
+        angles =  -N.linspace(0, 2*N.pi, 4*w + 1)[:-1]
     theta = N.empty((len(angles),w),dtype=SC.ftype)
     # Use broadcasting to replicate angles
     theta.transpose()[:] = angles
@@ -58,8 +58,8 @@ def logpolar(image, angles=None, Rs=None, mode='M', cval=0, output=None,
     Rs : int
         Number of samples in the radial direction.
     angles : 1D array of floats
-        Angles at which to evaluate. Defaults to 0..2*Pi in 8*Rs steps.
-        See [1] below for motivation.
+        Angles at which to evaluate. Defaults to 0..2*Pi in 4*Rs steps
+        ([1] below suggests 8*Rs, but that causes too much oversampling).
     mode : string
         How values outside borders are handled. 'C' for constant, 'M'
         for mirror and 'W' for wrap.

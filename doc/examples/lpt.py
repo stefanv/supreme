@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import os
 
 import supreme
+import supreme.io
+import supreme.transform
 
 images = ['misc/nova_grey.png', 'misc/nova.png', 'misc/nova_alpha.png']
 im_descr = {'misc/nova_grey.png': 'Grey-level input',
@@ -13,7 +15,7 @@ im_descr = {'misc/nova_grey.png': 'Grey-level input',
            'misc/nova_alpha.png': 'Alpha layered input'}
 
 for im in images:
-    img1 = supreme.misc.imread(os.path.join(supreme.config.data_path,im))
+    img1 = supreme.io.imread(os.path.join(supreme.config.data_path,im))
     print "Input image shape: ", img1.shape
 
     import timeit
