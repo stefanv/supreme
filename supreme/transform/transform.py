@@ -29,7 +29,7 @@ def _lpcoords(ishape, w, angles=None):
     oshape = ishape.copy()
     centre = (ishape[:2]-1)/2.
 
-    d = N.hypot(*(ishape[:2]-centre))
+    d = N.hypot(*(ishape[:2]-centre)) # maximum radius
     log_base = N.log(d)/w
 
     if angles is None:
@@ -44,26 +44,41 @@ def _lpcoords(ishape, w, angles=None):
 
     r = N.exp(L*log_base)
 
-    return r*N.sin(theta) + centre[0], r*N.cos(theta) + centre[1]
+    return r*N.sin(theta) + centre[0], r*N.cos(theta) + centre[1], \
+           angles, log_base
 
-def logpolar(image, angles=None, R=None, mode='M', cval=0, output=None,
-             _coords_r=None, _coords_c=None):
+def logpolar(image, angles=None, Rs=None, mode='M', cval=0, output=None,
+             _coords_r=None, _coords_c=None, extra_info=False):
     """Perform the log polar transform on an image.
 
     Input:
     ------
     image : MxNxC array
         An MxN image with C colour bands.
-    R : int
+    Rs : int
         Number of samples in the radial direction.
     angles : 1D array of floats
-        Angles at which to evaluate. Defaults to 0..2*Pi in 8*R steps.
+        Angles at which to evaluate. Defaults to 0..2*Pi in 8*Rs steps.
         See [1] below for motivation.
     mode : string
         How values outside borders are handled. 'C' for constant, 'M'
         for mirror and 'W' for wrap.
     cval : int or float
         Used in conjunction with mode 'C', the value outside the border.
+    extra_info : bool
+        Whether to return the angles and log base in addition
+        to the transform.  False by default.
+
+    Returns
+    -------
+    lpt : ndarray of uint8
+        Log polar transform of the input image.
+    angles : ndarray of float
+        Angles used.  Only returned if `extra_info` is set
+        to True.
+    log_base : int
+        Log base used.  Only returned if `extra_info` is set
+        to True.
 
     Optimisation parameters:
     ------------------------
@@ -77,17 +92,17 @@ def logpolar(image, angles=None, R=None, mode='M', cval=0, output=None,
            No. 10, October 2009.
 
     """
-
     if image.ndim < 2 or image.ndim > 3:
         raise ValueError("Input image must be 2 or 3 dimensional.")
 
     image = N.atleast_3d(image)
 
-    if R is None:
-        R = max(image.shape[:2])
+    if Rs is None:
+        Rs = max(image.shape[:2])
 
     if _coords_r is None or _coords_c is None:
-        _coords_r, _coords_c = _lpcoords(image.shape, R, angles)
+        _coords_r, _coords_c, angles, log_base = \
+                   _lpcoords(image.shape, Rs, angles)
 
     bands = image.shape[2]
     if output is None:
@@ -99,7 +114,12 @@ def logpolar(image, angles=None, R=None, mode='M', cval=0, output=None,
                                            _coords_r,_coords_c,mode=mode,
                                            cval=cval,output=output[...,band])
 
-    return output.squeeze()
+    output = output.squeeze()
+
+    if extra_info:
+        return output, angles, log_base
+    else:
+        return output
 
 def matrix(image,matrix,output_shape=None,order=1,mode='constant',
            cval=0.):
