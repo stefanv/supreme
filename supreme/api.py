@@ -8,7 +8,7 @@ import geometry
 import transform
 import register
 import feature
-import misc
+import io
 import photometry
 
 def iterable(x):
