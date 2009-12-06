@@ -117,8 +117,9 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
     # Pre-calculate coordinates for log-polar transforms
     angle_samples = np.linspace(0,2*np.pi,angles)
     w = max(window_shape[:2])
-    cr,cc = sr.transform.transform._lpcoords(np.append(window_shape,1),
-                                             w,angles=angle_samples)
+    cr, cc, angle_samples, log_base = \
+                          sr.transform.transform._lpcoords(
+        np.append(window_shape, 1), w, angles=angle_samples)
 
     def lpt_on_path(image,path,shape):
         """Calculate log polar transforms along a given path."""
@@ -218,7 +219,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
     # Calculate Fourier transforms of reference log-polar transforms.
     fft_shape = (angles,w*2-1)
     for frame in reference_frames:
-        frame['fft'] = fft2(frame['lpt'][::-1,::-1],fft_shape)
+        frame['fft'] = fft2(frame['lpt'][::-1,::-1], fft_shape)
 
     best_matched_frame = [{} for i in xrange(len(img_list))]
     for fnum,frame in enumerate(img_list):

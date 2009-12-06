@@ -11,10 +11,10 @@ import supreme
 from supreme.config import data_path
 from supreme import register
 import supreme as SR
-import supreme.misc
+import supreme.io
 
 def getframes(path):
-    return [supreme.misc.imread(fn,flatten=True) for fn in
+    return [supreme.io.imread(fn,flatten=True) for fn in
             sorted(glob.glob(os.path.join(data_path,path)))]
 
 images = getframes('toystory/*.png')[:3]
@@ -27,16 +27,14 @@ images = getframes('toystory/*.png')[:3]
 #images = getframes('sec/*scaled*.jpg')
 #images = getframes('hanno/*crop*.png')
 
-# frames that work well: 1,2,(4),(8),(9),11,
-#frames = [images[i] for i in [0,1,2,11]] # don't say a word, it's late
-#frames = [images[1],images[0]] + images[2:]
-
 print "Input image size: ", images[0].shape
 
 frames = images
-accepted_frames,tf_matrices = register.logpolar(frames[0],frames[1:],
-                                                variance_threshold=0.7,
-                                                angles=120,peak_thresh=5)#,window_shape=(71,71))
+accepted_frames,tf_matrices = \
+                          register.logpolar(frames[0],frames[1:],
+                                            variance_threshold=0.7,
+                                            angles=120,
+                                            peak_thresh=5)#,window_shape=(71,71))
 
 tf_matrices = [np.eye(3)] + list(tf_matrices)
 usedframes = [frames[0]] + list(frames[i+1] for i in accepted_frames)
