@@ -9,10 +9,10 @@ from math import sin,cos
 import supreme
 from supreme.config import data_path
 from supreme import register
-import supreme.misc
+import supreme.io
 
 images = ['NASA/hubble_crop.jpg','NASA/hubble_crop_rot5.jpg']
-images = [supreme.misc.imread(os.path.join(data_path,fn),flatten=True) for fn in images]
+images = [supreme.io.imread(os.path.join(data_path,fn),flatten=True) for fn in images]
 
 theta = 5/180.*np.pi
 tf_matrices = [np.array([[1,0,0],

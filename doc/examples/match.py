@@ -4,7 +4,7 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
-import supreme as sr
+import supreme.api as sr
 from supreme.config import data_path, mkdir
 
 print "Reading images and features..."
@@ -21,7 +21,7 @@ image_files = sorted(glob.glob(
 feature_files = sorted(glob.glob(
     os.path.join(data_path,'%s/%s*.%s' % (dataset,basename,featuretype))))
 
-images = [sr.misc.imread(fn,flatten=True) for fn in image_files]
+images = [sr.io.imread(fn,flatten=True) for fn in image_files]
 features = [sr.feature.SIFT.fromfile(fn, mode=featuretype.upper())
             for fn in feature_files]
 

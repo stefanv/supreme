@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os.path
 
 import supreme
-import supreme.misc
+import supreme.io
 from supreme.geometry import coord_path as cp
 from supreme.config import data_path
 
@@ -18,7 +18,7 @@ def add_line(img,c0,c1,col=[1.,0,0]):
     p = cp.build(cp.line(c0,c1))
     add_path(img,p,col)
 
-img = supreme.misc.imread(os.path.join(data_path, 'toystory/toystory000.png'))
+img = supreme.io.imread(os.path.join(data_path, 'toystory/toystory000.png'))
 shape = np.array(img.shape[:2])-1
 height,width = shape
 centre = shape/2.

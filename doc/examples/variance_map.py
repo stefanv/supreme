@@ -5,11 +5,12 @@ import os.path
 import matplotlib.pyplot as plt
 
 import supreme
+import supreme.io
 from supreme.config import data_path
 from supreme.ext import variance_map
 
 fn = 'toystory/toystory001.png'
-x = supreme.misc.imread(os.path.join(data_path,fn),flatten=True)
+x = supreme.io.imread(os.path.join(data_path,fn),flatten=True)
 
 plt.subplot(121)
 plt.imshow(x,cmap=plt.cm.gray)

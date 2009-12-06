@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 
 import os.path
 
-import supreme
+import supreme.api as supreme
 from supreme.config import data_path,ftype
 from supreme.photometry import hdr
 
-ic = supreme.misc.io.ImageCollection(os.path.join(data_path,
-                                                  'hdr00/*_scaled.jpg'),
-                                     grey=False)
+ic = supreme.io.ImageCollection(os.path.join(data_path,
+                                             'hdr00/*_scaled.jpg'),
+                                    grey=False)
 
 ps = hdr.PhotometrySampler(ic)
 dr = hdr.DeviceResponse(ps)
