@@ -5,7 +5,7 @@ Stack warped images.
 import numpy as np
 from scipy import ndimage as ndi
 
-import supreme.config as SC
+import supreme.config as sc
 from supreme import transform
 
 __all__ = ['with_transform']
@@ -16,15 +16,15 @@ def corners(dims):
 
     dims = np.array(dims)
     L = len(dims)
-    corners = np.empty((2**L,L),dtype=dims.dtype)
-    zeros = dims.copy()*0
+    corners = np.empty((2**L, L), dtype=dims.dtype)
+    zeros = dims.copy() * 0
     for i in range(2**L):
         bin = list(np.binary_repr(i).zfill(L))
         mask = np.array(bin).astype(np.bool8)
-        corners[i] = np.where(mask,dims-1,zeros)
+        corners[i] = np.where(mask, dims-1, zeros)
     return corners
 
-def with_transform(images,matrices,weights=None,order=1,mode='constant',
+def with_transform(images, matrices, weights=None, order=1, mode='constant',
                    oshape=None):
     """Stack images after performing coordinate transformations.
 
@@ -44,10 +44,11 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant',
     """
     nr_images = len(images)
     if weights is None:
-        weights = np.ones(nr_images,dtype=SC.ftype)/nr_images
+        weights = np.ones(nr_images, dtype=sc.ftype) / nr_images
 
     if not (len(images) == len(matrices) == len(weights)):
-        raise ValueError("Number of images, transformation matrices and weights should match.")
+        raise ValueError("Number of images, transformation matrices and "
+                         "weights should match.")
 
     images = [np.atleast_2d(i) for i in images]
     affine_matrices = [np.atleast_2d(m) for m in matrices]
@@ -55,13 +56,14 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant',
     reshape = (oshape is None)
     if reshape:
         all_tf_cnrs = np.empty((0,3))
-        for img,tf_matrix in zip(images,matrices):
-            rows,cols = img.shape[:2]
-            cnrs = corners((cols,rows))
+        for img, tf_matrix in zip(images, matrices):
+            rows, cols = img.shape[:2]
+            cnrs = corners((cols, rows))
             # Turn into homogenous coordinates by adding a column of ones
-            cnrs = np.hstack((cnrs,np.ones((len(cnrs),1)))).astype(SC.ftype)
+            cnrs = np.hstack((cnrs, np.ones((len(cnrs), 1)))).astype(sc.ftype)
             # Transform coordinates and add to list
-            all_tf_cnrs = np.vstack((all_tf_cnrs,np.dot(cnrs,tf_matrix.transpose())))
+            all_tf_cnrs = np.vstack((all_tf_cnrs,
+                                     np.dot(cnrs, tf_matrix.transpose())))
 
         # Calculate bounding box [(x0,y0),(x1,y1)]
         bbox_top_left = np.floor(all_tf_cnrs.min(axis=0))[:2]
@@ -69,15 +71,15 @@ def with_transform(images,matrices,weights=None,order=1,mode='constant',
 
         oshape = np.array(images[0].shape)
         oshape[:2][::-1] = np.absolute(bbox_bottom_right -
-                                      bbox_top_left).astype(int)+1
+                                       bbox_top_left).astype(int)+1
 
-    out = np.zeros(oshape,dtype=SC.ftype)
-    for img,tf_matrix,weight in zip(images,affine_matrices,weights):
+    out = np.zeros(oshape, dtype=sc.ftype)
+    for img, tf_matrix, weight in zip(images, affine_matrices, weights):
         if reshape:
             tf_matrix = tf_matrix.copy()
             tf_matrix[:2,2] -= bbox_top_left
-        out += weight * transform.matrix(img,tf_matrix,
-                                         output_shape=oshape,order=order,
+        out += weight * transform.matrix(img, tf_matrix,
+                                         output_shape=oshape, order=order,
                                          mode=mode)
 
     return out
