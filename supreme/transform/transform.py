@@ -3,7 +3,7 @@
 import numpy as N
 from scipy.ndimage import interpolation as ndii
 
-__all__ = ['logpolar','matrix']
+__all__ = ['logpolar','matrix', 'homography']
 
 import supreme
 import supreme.config as SC
@@ -183,3 +183,5 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
                                   mode=mode,order=order,cval=cval)
 
     return mapped.squeeze()
+
+homography = matrix
