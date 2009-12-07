@@ -26,7 +26,7 @@ cpdef np.ndarray sat(np.ndarray X):
 
     .. math::
 
-       S[m, n] = \sum_{i <= m} \sum{j <= n} X[i, j]
+       S[m, n] = \sum_{i \leq m} \sum_{j \leq n} X[i, j]
 
     Parameters
     ----------
