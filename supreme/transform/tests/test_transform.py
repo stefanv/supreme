@@ -8,15 +8,15 @@ class TestTransform:
     def test_logpolar(self, level=1):
         x = np.zeros((3, 3))
         z = transform.logpolar(x)
-        assert_equal(z.shape, (24, 3))
+        assert_equal(z.shape, (12, 3))
 
         x = np.zeros((3, 3, 3))
         z = transform.logpolar(x)
-        assert_equal(z.shape, (24, 3, 3))
+        assert_equal(z.shape, (12, 3, 3))
 
         x = np.zeros((3, 3, 4))
         z = transform.logpolar(x)
-        assert_equal(z.shape, (24, 3, 4))
+        assert_equal(z.shape, (12, 3, 4))
         z = transform.logpolar(x, angles=np.linspace(0, 2*np.pi, 400))
         assert_equal(z.shape, (400, 3, 4))
 
@@ -27,12 +27,15 @@ class TestTransform:
 
     def test__lpcoords(self,level=1):
         z = np.empty((6, 6, 3))
-        coords_x,coords_y = _lpcoords(z.shape, 5, np.linspace(0,2 * np.pi, 10))
+        coords_x,coords_y,angles,log_base = \
+                          _lpcoords(z.shape, 5, np.linspace(0,2 * np.pi, 10))
         assert_equal([10, 5], coords_x.shape)
         assert_equal(coords_x.shape, coords_y.shape)
+        assert_equal(len(angles), 10)
 
         z = np.empty((6, 6, 1))
-        coords_x,coords_y = _lpcoords(z.shape, 5, np.linspace(0, 2*np.pi, 10))
+        coords_x,coords_y,_,_ = \
+                              _lpcoords(z.shape, 5, np.linspace(0, 2*np.pi, 10))
         assert_equal([10, 5], coords_x.shape)
         assert_equal(coords_x.shape, coords_y.shape)
 
