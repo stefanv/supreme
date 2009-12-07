@@ -294,12 +294,10 @@ def decompose(np.ndarray[np.int_t, ndim=2] img):
     levels = max_cols * max_rows + 1
     percentage_done = 0
 
-    print "[> 0%% %s ]" % (" "*50),
     sys.stdout.flush()
     for area in range(levels):
         percentage = area*100/levels
         if percentage != percentage_done:
-            print "\r[=%s> %d%%" % ("=" * (percentage/2), percentage),
             sys.stdout.flush()
             percentage_done = percentage
 
@@ -331,7 +329,6 @@ def decompose(np.ndarray[np.int_t, ndim=2] img):
 
 
     stdlib.free(workspace)
-    print
     return pulses
 
 def reconstruct(dict regions, tuple shape, int min_area=-1, int max_area=-1):
