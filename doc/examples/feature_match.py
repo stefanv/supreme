@@ -17,6 +17,8 @@ from supreme.register.correspond import correspond
 # ----------------------------------------------------------------------
 
 ic = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'), grey=True)
+img0 = ic[0]
+img1 = ic[1]
 
 features = 200
 window = 0
@@ -48,11 +50,11 @@ if feature_method == 'dpt':
     import supreme.lib.dpt.connected_region_handler as crh
     from supreme.feature.dpt import features as dpt_feat
 
-    pulses = dpt.decompose(ic[0].astype(np.int))
-    pulses_mod = dpt.decompose(ic[1].astype(np.int))
+    pulses = dpt.decompose(img0.astype(np.int))
+    pulses_mod = dpt.decompose(img1.astype(np.int))
 
-    weight, area = dpt_feat(pulses, ic[0].shape, win_size=window)
-    weight_mod, area_mod = dpt_feat(pulses_mod, ic[1].shape, win_size=window)
+    weight, area = dpt_feat(pulses, img0.shape, win_size=window)
+    weight_mod, area_mod = dpt_feat(pulses_mod, img1.shape, win_size=window)
 
     feat_coord, feat_area = get_brightest_pulses(weight, area, N=features)
     feat_mod_coord, feat_mod_area = get_brightest_pulses(weight_mod, area_mod,
@@ -60,9 +62,10 @@ if feature_method == 'dpt':
 elif feature_method == 'fast':
     from supreme.lib import fast
 
-    feat_coord = fast.corner_detect(ic[0], barrier=20)[:features]
+    perm = np.random.permutation
+    feat_coord = perm(fast.corner_detect(img0, barrier=20))[:features]
     feat_coord = [(i,j) for (j,i) in feat_coord]
-    feat_mod_coord = fast.corner_detect(ic[1], barrier=20)[:features]
+    feat_mod_coord = perm(fast.corner_detect(img1, barrier=20))[:features]
 
     feat_area = np.ones(len(feat_coord))
     feat_mod_coord = [(i,j) for (j,i) in feat_mod_coord]
@@ -74,13 +77,13 @@ import matplotlib.pyplot as plt
 
 plt.subplot(121)
 plt.hold(True)
-plt.imshow(ic[0], cmap=plt.cm.gray, interpolation='nearest')
+plt.imshow(img0, cmap=plt.cm.gray, interpolation='nearest')
 for (i, j), a in zip(feat_coord, feat_area):
     plt.plot(j, i, 'o', markersize=a)
 
 plt.subplot(122)
 plt.hold(True)
-plt.imshow(ic[1], cmap=plt.cm.gray, interpolation='nearest')
+plt.imshow(img1, cmap=plt.cm.gray, interpolation='nearest')
 for (i, j), a in zip(feat_mod_coord, feat_mod_area):
     plt.plot(j, i, 'o', markersize=a)
 plt.show()
@@ -91,8 +94,8 @@ print win_size
 win_size = np.clip(win_size, 11, 31)
 
 print "win_size=%.2f" % win_size
-correspondences = correspond(feat_coord, ic[0].astype(np.uint8),
-                             feat_mod_coord, ic[1].astype(np.uint8),
+correspondences = correspond(feat_coord, img0.astype(np.uint8),
+                             feat_mod_coord, img1.astype(np.uint8),
                              win_size=win_size)
 
 if stack:
@@ -103,21 +106,21 @@ if stack:
                                            confidence=0.9)
 #                                           inliers_required=features/4)
     plt.subplot(2, 1, 2)
-    stack = supreme.register.stack.with_transform((ic[0], ic[1]),
+    stack = supreme.register.stack.with_transform((img0, img1),
                                                   (np.eye(3), M))
     plt.imshow(stack, cmap=plt.cm.gray, interpolation='nearest')
 
 
 plt.subplot(2, 1, 1)
-r0, c0 = ic[0].shape
-r1, c1 = ic[1].shape
+r0, c0 = img0.shape
+r1, c1 = img1.shape
 oshape = (max(r0, r1), c0 + c1)
-side_by_side = np.zeros(oshape, dtype=ic[0].dtype)
-side_by_side[0:r0, 0:c0] = ic[0]
-side_by_side[0:r1, c0:c0 + c1] = ic[1]
+side_by_side = np.zeros(oshape, dtype=img0.dtype)
+side_by_side[0:r0, 0:c0] = img0
+side_by_side[0:r1, c0:c0 + c1] = img1
 plt.imshow(side_by_side, cmap=plt.cm.gray, interpolation='nearest')
 for ((i,j), (m, n)) in correspondences:
-    plt.plot([j, n + ic[0].shape[1]], [i, m], '-o')
+    plt.plot([j, n + img0.shape[1]], [i, m], '-o')
 plt.axis('image')
 
 
