@@ -1,4 +1,4 @@
-__all__ = ['logpolar']
+__all__ = ['logpolar', 'patch_match']
 
 import supreme as sr
 import supreme.geometry
@@ -18,6 +18,57 @@ import timeit
 
 fft2 = fftpack.fft2
 ifft2 = fftpack.ifft2
+
+def patch_match(a, b, angles=360, Rs=None, plot_corr=False):
+    """Align two patches, using the log polar transform.
+
+    Parameters
+    ----------
+    a : ndarray of uint8
+        Reference image.
+    b : ndarray of uint8
+        Target image.
+    angles : int
+        Number of angles to use in log-polar transform.
+    Rs : int
+        Number of radial samples used in the log-polar transform.
+    plot_corr : bool, optional
+        Whether to plot the phase correlation coefficients.
+
+    """
+    from image import phase_corr
+    import supreme.transform as tr
+
+    angles = np.linspace(0, np.pi * 2, angles)
+    if Rs is None:
+        Rs = max(a.shape[:2])
+    A, angles, log_base = tr.logpolar(a, angles=angles, Rs=Rs, extra_info=True)
+    B = tr.logpolar(b, angles=angles, Rs=Rs)
+
+    cv = phase_corr(B, A)
+    m, n = np.unravel_index(np.argmax(cv), cv.shape)
+
+    if n > Rs/2:
+        n = n - Rs # correlation matched, but from the other side
+
+    if plot_corr:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import axes3d
+
+        fig = plt.figure()
+
+        cv_cut = cv[max(0, m - 30):min(cv.shape[1], m + 30),
+                    max(0, n - 30):min(cv.shape[0], n + 30)]
+
+        coords = sr.geometry.Grid(*cv_cut.shape)
+
+        ax3d = axes3d.Axes3D(fig)
+        ax3d.plot_wireframe(coords['cols'], coords['rows'], cv_cut)
+        ax3d.set_title('Phase correlation around peak\n$\\log(100 + x)$')
+        plt.show()
+
+    return cv[m, n], angles[m], np.exp(n * log_base)
+
 
 def _clearborder(image,border_shape):
     rows,cols = image.shape
@@ -127,6 +178,10 @@ def _lpt_corr(reference_frames,
 
             if corr_max_arg != 0 and corr_max > max_corr_sofar:
                 rotation, scale = np.unravel_index(corr_max_arg, fft_shape)
+                if scale > X.shape[1]/2:
+                    scale = scale - X.shape[1]/2 # correlation matched,
+                                                 # but from the other side
+
                 rotation = angles[rotation]
                 scale = np.exp(scale * log_base)
 
