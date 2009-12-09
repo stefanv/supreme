@@ -35,6 +35,15 @@ def patch_match(a, b, angles=360, Rs=None, plot_corr=False):
     plot_corr : bool, optional
         Whether to plot the phase correlation coefficients.
 
+    Returns
+    -------
+    c : float
+        Peak correlation value.
+    theta : float
+        Estimated rotation angle from `a` to `b`.
+    scale : float
+        Estimated scaling from `a` to `b`.
+
     """
     from image import phase_corr
     import supreme.transform as tr
