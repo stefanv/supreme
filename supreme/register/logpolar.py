@@ -2,6 +2,10 @@ __all__ = ['logpolar']
 
 import supreme as sr
 import supreme.geometry
+import supreme.config
+
+_log = supreme.config.get_log(__name__)
+
 from supreme.config import ftype,itype
 from supreme.io import Image
 
@@ -89,8 +93,59 @@ def _rects(shape,divide_rows,divide_cols):
 
     return rects
 
-def logpolar(ref_img,img_list,window_shape=None,angles=180,
-             variance_threshold=0.75,peak_thresh=5):
+def _lpt_on_path(image,path,shape, **lp_args):
+    """Calculate log polar transforms along a given path."""
+    path = list(path)
+    cutouts = sr.geometry.cut.along_path(path,image,shape=shape)
+    for pos,cut in izip(path,cutouts):
+        lpt = sr.transform.logpolar(cut, **lp_args)
+        yield (pos,cut,lpt - lpt.mean())
+
+def _lpt_corr(reference_frames,
+              frame, descr, path, window_shape, fft_shape,
+              angles, log_base,
+              **lpt_args):
+    try:
+        max_corr_sofar = descr['source'].info['variance']
+    except:
+        max_corr_sofar = 0
+    corr_vals = []
+    for pos,cut,lpt in _lpt_on_path(frame,path,window_shape,
+                                    **lpt_args):
+        # prepare correlation FFT
+        X = fft2(lpt)
+
+        for rf in reference_frames:
+            # Phase correlation
+            corr = rf['fft'] * X.conj()
+            corr /= np.abs(corr)
+            corr = np.abs(ifft2(corr))
+
+            corr_max_arg = corr.argmax()
+            corr_max = corr.flat[corr_max_arg]
+            corr_vals.append(corr_max)
+
+            if corr_max_arg != 0 and corr_max > max_corr_sofar:
+                rotation, scale = np.unravel_index(corr_max_arg, fft_shape)
+                rotation = angles[rotation]
+                scale = np.exp(scale * log_base)
+
+                max_corr_sofar = corr_max
+
+                descr.update({'source': Image(cut,
+                                              info={'variance': max_corr_sofar,
+                                                    'position': pos,
+                                                    'rotation': rotation,
+                                                    'scale': scale,
+                                                    'reference': rf}),
+                            'lpt': lpt,
+                            'fft': X,
+                            'frame': frame})
+    return corr_vals
+
+
+def logpolar(ref_img,img_list,window_shape=None,angles=181,
+             variance_threshold=0.09,peak_thresh=5):
     """Register the given images using log polar transforms.
 
     Output:
@@ -115,65 +170,15 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         window_shape = np.asarray(window_shape,dtype=int)
 
     # Pre-calculate coordinates for log-polar transforms
-    angle_samples = np.linspace(0,2*np.pi,angles)
+    angle_samples = np.linspace(0, 2*np.pi, angles)
     w = max(window_shape[:2])
     cr, cc, angle_samples, log_base = \
                           sr.transform.transform._lpcoords(
         np.append(window_shape, 1), w, angles=angle_samples)
 
-    def lpt_on_path(image,path,shape):
-        """Calculate log polar transforms along a given path."""
-        path = list(path)
-        cutouts = sr.geometry.cut.along_path(path,image,shape=shape)
-        for pos,cut in izip(path,cutouts):
-            lpt = sr.transform.logpolar(cut,_coords_r=cr,_coords_c=cc,mode='W')
-            yield (pos,cut,lpt - lpt.mean())
-
-    def lpt_corr(reference_frames,frame,descr,path,window_shape,fft_shape):
-        try:
-            max_corr_sofar = descr['source'].info['variance']
-        except:
-            max_corr_sofar = 0
-        corr_vals = []
-        for pos,cut,lpt in lpt_on_path(frame,path,window_shape):
-            # prepare correlation FFT
-            X = fft2(lpt,fft_shape)
-
-            for rf in reference_frames:
-                corr = abs(ifft2(X*rf['fft']))
-                corr /= (np.sqrt((lpt**2).sum()*(rf['lpt']**2).sum()))
-                corr_max_arg = corr.argmax()
-                corr_max = corr.flat[corr_max_arg]
-                corr_vals.append(corr_max)
-
-                if corr_max > max_corr_sofar:
-                    print corr_max
-                    rotation,scale = np.unravel_index(corr_max_arg,fft_shape)
-                    rotation = angle_samples[rotation]
-                    scale -= fft_shape[1]/2
-                    max_corr_sofar = corr_max
-                    if max_corr_sofar < 0.6:
-                        quality = 'rejected'
-                    elif max_corr_sofar < 0.7:
-                        quality = 'bad'
-                    elif max_corr_sofar < 0.8:
-                        quality = 'good'
-                    elif max_corr_sofar < 0.85:
-                        quality = 'stable'
-                    else:
-                        quality = 'trusted'
-
-                    descr.update({'source': Image(cut,
-                                                  info={'variance': max_corr_sofar,
-                                                        'position': pos,
-                                                        'rotation': rotation,
-                                                        'scale': scale,
-                                                        'reference': rf,
-                                                        'quality': quality}),
-                                'lpt': lpt,
-                                'fft': X,
-                                'frame': frame})
-        return corr_vals
+    lpt_args = {'_coords_r': cr,
+                '_coords_c': cc,
+                'mode': 'W'}
 
     # Divide reference frame into 4 quadrants and calculate log-polar
     # transforms at points of maximum variance.
@@ -187,23 +192,23 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
 
         #vmsource = ndi.correlate(ref_img,vm_filter_mask)
         vmsource = ref_img - ndi.sobel(ref_img)
-        vm = sr.ext.variance_map(vmsource,shape=window_shape/4)
+        vm = sr.ext.variance_map(vmsource,shape=window_shape/8)
         vm = vm/np.prod(window_shape/4)
         vm = _clearborder(vm,window_shape/2)
         return vm
 
     vm = _prepare_varmap(ref_img)
 
-    import pylab as P
-    P.subplot(121)
-    P.imshow(ref_img,cmap=P.cm.gray)
-    P.axis('off')
-    P.subplot(122)
-    P.imshow(vm)
-    P.rcParams['figure.figsize'] = (6.67,3.335)
-    P.axis('off')
-    P.savefig('varmap.eps')
-    P.show()
+    ## import pylab as P
+    ## P.subplot(121)
+    ## P.imshow(ref_img,cmap=P.cm.gray)
+    ## P.axis('off')
+    ## P.subplot(122)
+    ## P.imshow(vm)
+    ## P.rcParams['figure.figsize'] = (6.67,3.335)
+    ## P.axis('off')
+    ## P.savefig('varmap.eps')
+    ## P.show()
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
@@ -211,54 +216,52 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
     ref_pos = _peaks(vm,12,peak_thresh)
     assert len(ref_pos) > 0, "Could not find suitable reference position."
     ref_var = [vm[tuple(p)] for p in ref_pos]
-    for pos,original,lpt in lpt_on_path(ref_img,ref_pos,window_shape):
+    for pos,original,lpt in _lpt_on_path(ref_img,ref_pos,window_shape,**lpt_args):
         reference_frames.append({'source':Image(original,info={'position':pos,
                                                                'maxcor':0}),
                                  'lpt': lpt})
 
     # Calculate Fourier transforms of reference log-polar transforms.
-    fft_shape = (angles,w*2-1)
+    fft_shape = (angles,w)
     for frame in reference_frames:
-        frame['fft'] = fft2(frame['lpt'][::-1,::-1], fft_shape)
+        frame['fft'] = fft2(frame['lpt'])
 
     best_matched_frame = [{} for i in xrange(len(img_list))]
+    _log.info("Performing log polar transforms and correlations...")
     for fnum,frame in enumerate(img_list):
-        print "Matching frame ", fnum
+        _log.info("Matching frame %d..." % fnum)
         tic = timeit.time.time()
         bmf = best_matched_frame[fnum]
 
         vm = _prepare_varmap(frame)
 
-        print "Performing log polar transforms and correlations..."
         path = _peaks(vm,40,0.95*min(ref_var))
-        lpt_corr(reference_frames,frame,bmf,path,window_shape,fft_shape)
+        _lpt_corr(reference_frames,frame,bmf,path,window_shape,fft_shape,
+                  angle_samples, log_base, **lpt_args)
 
         toc = timeit.time.time()
-        print "Peak correlation was", best_matched_frame[fnum]['source'].info['variance']
-        print "Registration completed in %.2f seconds.\n" % (toc-tic)
+        _log.info("Frame registration completed in %.2f seconds." % (toc-tic))
 
     def _lpt_peak(pos,frame,bmf,window_shape,fft_shape):
-        corr = lpt_corr([bmf['source'].info['reference']],frame,bmf,[pos],window_shape,fft_shape)
+        corr = _lpt_corr([bmf['source'].info['reference']],frame,bmf,[pos],window_shape,fft_shape,angle_samples,log_base, **lpt_args)
         return corr[0]
 
     for fnum,frame in enumerate(img_list):
-        print "Refining frame %d..." % fnum
+        _log.info("Refining frame %d..." % fnum)
         bmf = best_matched_frame[fnum]
-#        pos = list(bmf['source'].info['position'])
+        pos = list(bmf['source'].info['position'])
+#        import scipy.optimize
 #        scipy.optimize.fmin_cg(_lpt_peak,bmf['source'].info['position'],
 #                               args=(frame,bmf,window_shape,fft_shape))
         path = (np.mgrid[-4:5,-4:5].T + bmf['source'].info['position']).reshape((-1,2))
-        lpt_corr([bmf['source'].info['reference']],frame,bmf,path,window_shape,fft_shape)
+        _lpt_corr([bmf['source'].info['reference']],frame,bmf,path,window_shape,fft_shape,angle_samples, log_base, **lpt_args)
 
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
-        print "Frame #%d" % fnum
-        print "Rotation:", info['rotation']/np.pi*180
-        print "Scale:", info['scale']
-        print "Quality:", info['quality']
+        _log.info("[%d] Rotation: %.2f" % (fnum, info['rotation']/np.pi*180))
+        _log.info("[%d] Scale: %.2f" % (fnum, info['scale']))
 
         # experiment: show matches
-        import pylab as P
         ref = f['source'].info['reference']
         panel = np.hstack((ref_img,f['frame']))
         ref_pos = ref['source'].info['position'].copy()
@@ -266,38 +269,48 @@ def logpolar(ref_img,img_list,window_shape=None,angles=180,
         target_pos[0] = ref_img.shape[0] - target_pos[0]
         ref_pos[0] = ref_img.shape[0] - ref_pos[0]
         target_pos += [0,ref_img.shape[1]]
-        P.imshow(panel,interpolation='nearest',cmap=P.cm.gray)
-        P.plot([ref_pos[1],target_pos[1]],[ref_pos[0],target_pos[0]],'r-o')
-        for rf in reference_frames:
-            ref_pos = rf['source'].info['position']
-            P.plot([ref_pos[1]],[ref_img.shape[0] - ref_pos[0]],'-wo')
-        P.rcParams['figure.figsize'] = (3.24,3.24)
-        P.axis('off')
-        P.box('off')
-        P.savefig('features_%d.eps' % fnum)
-        #P.show()
-        P.close()
+
+        ## import pylab as P
+        ## P.imshow(panel,interpolation='nearest',cmap=P.cm.gray)
+        ## P.plot([ref_pos[1],target_pos[1]],[ref_pos[0],target_pos[0]],'r-o')
+        ## for rf in reference_frames:
+        ##     ref_pos = rf['source'].info['position']
+        ##     P.plot([ref_pos[1]],[ref_img.shape[0] - ref_pos[0]],'-wo')
+        ## P.rcParams['figure.figsize'] = (3.24,3.24)
+        ## P.axis('off')
+        ## P.box('off')
+        ## P.savefig('features_%d.eps' % fnum)
+        ## P.show()
+        ## P.close()
 
     accepted_frames = []
     tf_matrices = []
-    for fnum,f in enumerate(best_matched_frame):
+    for fnum, f in enumerate(best_matched_frame):
         info = f['source'].info
-        if info['variance'] >= variance_threshold:
+        theta = info['rotation']
+        s = info['scale']
+
+        if info['variance'] >= variance_threshold and \
+           (s < 1.5 and s > 0.8) and (theta > -np.pi/2 and theta < np.pi/2):
             accepted_frames.append(fnum)
         else:
             continue
 
-        theta = -info['rotation']
-        M = np.array([[np.cos(theta),-np.sin(theta),0],
-                     [np.sin(theta),np.cos(theta),0],
-                     [0,0,1]])
+        M = np.array([[s*np.cos(theta), -s*np.sin(theta),0],
+                     [s*np.sin(theta), s*np.cos(theta),0],
+                     [0, 0, 1]])
 
         ref_p = np.append(info['reference']['source'].info['position'][::-1],1)
-        p = np.append(info['position'][::-1],1)
+        xt, yt = info['position'][::-1]
+        M_shift = np.array([[1, 0, -xt],
+                            [0, 1, -yt],
+                            [0, 0,  1]])
 
-        delta = ref_p - np.dot(p,M.T)
-        M[:2,2] += delta[:2]
+        M = np.dot(np.linalg.inv(M_shift), np.dot(M, M_shift))
+
         tf_matrices.append(M)
+
+    _log.info('%s frames returned' % len(accepted_frames))
 
     return accepted_frames,tf_matrices
 
@@ -307,8 +320,8 @@ def _tf_difference(M_target,M_ref,target,reference):
     M_target[8] = 1
     M_ref[[6,7]] = 0
     M_ref[8] = 1
-    im1 = sr.transform.matrix(reference,M_ref.reshape((3,3)))
-    im2 = sr.transform.matrix(target,M_target.reshape((3,3)))
+    im1 = sr.transform.matrix(reference, M_ref.reshape((3,3)))
+    im2 = sr.transform.matrix(target, M_target.reshape((3,3)))
     diff = ((im1 - im2)**2)[20:-20,20:-20]
     # TODO: do polygon overlap check
     return diff.sum()
@@ -320,6 +333,6 @@ def _build_tf(p):
         theta,a,b,tx,ty = p
         C = np.cos(theta)
         S = np.sin(theta)
-        return np.array([[a*C, -a*S, tx],
-                        [a*b*S, a*C, ty],
-                        [0,0,1.]])
+        return np.array([[a*C,  -a*S, tx],
+                         [a*b*S, a*C, ty],
+                         [0,     0,   1.]])
