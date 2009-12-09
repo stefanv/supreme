@@ -171,7 +171,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=181,
 
     # Pre-calculate coordinates for log-polar transforms
     angle_samples = np.linspace(0, 2*np.pi, angles)
-    w = max(window_shape[:2])
+    w = max(window_shape[:2])/2
     cr, cc, angle_samples, log_base = \
                           sr.transform.transform._lpcoords(
         np.append(window_shape, 1), w, angles=angle_samples)

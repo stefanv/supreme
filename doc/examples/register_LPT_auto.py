@@ -17,7 +17,7 @@ def getframes(path):
     return [supreme.io.imread(fn,flatten=True) for fn in
             sorted(glob.glob(os.path.join(data_path,path)))]
 
-images = getframes('toystory/*.png')[:3]
+images = getframes('toystory/*.png')[:5]
 #images = getframes('test/flower*.jpg')
 #images = getframes('test/olie*.jpg')
 #images = getframes('reflectometer/*.png')
@@ -27,14 +27,14 @@ images = getframes('toystory/*.png')[:3]
 #images = getframes('sec/*scaled*.jpg')
 #images = getframes('hanno/*crop*.png')
 
-print "Input image size: ", images[0].shape
+print "Input image size:", images[0].shape
 
 frames = images
 accepted_frames,tf_matrices = \
                           register.logpolar(frames[0],frames[1:],
-                                            variance_threshold=0.7,
-                                            angles=120,
-                                            peak_thresh=5)#,window_shape=(71,71))
+                                            variance_threshold=0.1,
+                                            angles=180,
+                                            peak_thresh=5, window_shape=(131,131))
 
 tf_matrices = [np.eye(3)] + list(tf_matrices)
 usedframes = [frames[0]] + list(frames[i+1] for i in accepted_frames)
@@ -53,20 +53,10 @@ for u in usedframes:
     u -= u.min()
 out = register.stack.with_transform(usedframes, tf_matrices)
 
-# Astronomy
-#out = register.stack.with_transform(usedframes, tf_matrices, weights=np.ones(len(usedframes)))
-#T = 400
-#out[out > T] = T
-
 interp = 'nearest'
-#plt.subplot(121)
-#plt.imshow(images[0],cmap=plt.cm.gray,interpolation=interp)
-#plt.subplot(223)
-#plt.imshow(images[1],cmap=plt.cm.gray,interpolation=interp)
-#plt.subplot(122)
 plt.imshow(out,cmap=plt.cm.gray,interpolation=interp)
 plt.xticks([])
 plt.yticks([])
 plt.show()
 
-sp.misc.pilutil.imsave('/tmp/data.eps',out)
+#sp.misc.pilutil.imsave('/tmp/data.eps',out)
