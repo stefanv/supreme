@@ -73,13 +73,23 @@ def with_transform(images, matrices, weights=None, order=1, mode='constant',
         oshape[:2][::-1] = np.absolute(bbox_bottom_right -
                                        bbox_top_left).astype(int)+1
 
-    out = np.zeros(oshape, dtype=sc.ftype)
+    sources = []
     for img, tf_matrix, weight in zip(images, affine_matrices, weights):
         if reshape:
             tf_matrix = tf_matrix.copy()
             tf_matrix[:2,2] -= bbox_top_left
-        out += weight * transform.matrix(img, tf_matrix,
-                                         output_shape=oshape, order=order,
-                                         mode=mode)
+
+        sources.append(transform.matrix(img, tf_matrix,
+                                        output_shape=oshape, order=order,
+                                        mode=mode))
+
+    out = np.zeros(oshape, dtype=sc.ftype)
+    total_weights = np.zeros(oshape, dtype=float)
+    for s, w in zip(sources, weights):
+        out += w * s
+        total_weights[s != 0] += w
+
+    mask = (total_weights != 0)
+    out[mask] = out[mask] / total_weights[mask]
 
     return out
