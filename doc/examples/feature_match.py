@@ -17,13 +17,15 @@ from supreme.register.correspond import correspond
 # ----------------------------------------------------------------------
 
 ic = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'), grey=True)
-img0 = ic[0]
-img1 = ic[1]
+img0 = ic[1]
+img1 = ic[7]
 
-features = 300
 window = 0
+show_features = False # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
 feature_method = 'dpt' # 'fast'
+dpt_feature_nr = 400
+fast_barrier = 40
 registration_method = 'RANSAC' # or iterative
 win_size = None
 
@@ -51,22 +53,26 @@ if feature_method == 'dpt':
     import supreme.lib.dpt.connected_region_handler as crh
     from supreme.feature.dpt import features as dpt_feat
 
+    print "Decomposing discrete pulse transform..."
     pulses = dpt.decompose(img0.astype(np.int))
     pulses_mod = dpt.decompose(img1.astype(np.int))
 
     weight, area = dpt_feat(pulses, img0.shape, win_size=window)
     weight_mod, area_mod = dpt_feat(pulses_mod, img1.shape, win_size=window)
 
-    feat_coord, feat_area = get_brightest_pulses(weight, area, N=features)
+    feat_coord, feat_area = get_brightest_pulses(weight, area, N=dpt_feature_nr)
     feat_mod_coord, feat_mod_area = get_brightest_pulses(weight_mod, area_mod,
-                                                         N=features*1)
+                                                         N=dpt_feature_nr)
 elif feature_method == 'fast':
     from supreme.lib import fast
 
     perm = np.random.permutation
-    feat_coord = perm(fast.corner_detect(img0, barrier=20))[:features]
+    feat_coord = perm(fast.corner_detect(img0,
+                                         barrier=fast_barrier))
+    print "FAST found %d features." % len(feat_coord)
     feat_coord = [(i,j) for (j,i) in feat_coord]
-    feat_mod_coord = perm(fast.corner_detect(img1, barrier=20))[:features]
+    feat_mod_coord = perm(fast.corner_detect(img1,
+                                             barrier=fast_barrier))
 
     feat_area = np.ones(len(feat_coord)) * 2
     feat_mod_coord = [(i,j) for (j,i) in feat_mod_coord]
@@ -76,23 +82,25 @@ else:
 
 import matplotlib.pyplot as plt
 
-plt.subplot(121)
-plt.hold(True)
-plt.imshow(img0, cmap=plt.cm.gray, interpolation='nearest')
-for (i, j), a in zip(feat_coord, feat_area):
-    plt.plot(j, i, 'o', markersize=a)
+if show_features:
+    plt.subplot(121)
+    plt.hold(True)
+    plt.imshow(img0, cmap=plt.cm.gray, interpolation='nearest')
+    for (i, j), a in zip(feat_coord, feat_area):
+        plt.plot(j, i, 'o', markersize=a)
 
-plt.subplot(122)
-plt.hold(True)
-plt.imshow(img1, cmap=plt.cm.gray, interpolation='nearest')
-for (i, j), a in zip(feat_mod_coord, feat_mod_area):
-    plt.plot(j, i, 'o', markersize=a)
-plt.show()
+    plt.subplot(122)
+    plt.hold(True)
+    plt.imshow(img1, cmap=plt.cm.gray, interpolation='nearest')
+    for (i, j), a in zip(feat_mod_coord, feat_mod_area):
+        plt.plot(j, i, 'o', markersize=a)
+    plt.show()
 
 print "Finding tentative correspondences..."
 if win_size is None:
-    win_size = 255/2/np.mean(feat_mod_area)
+    win_size = 255/2./np.mean(feat_mod_area)
     win_size = np.clip(win_size, 11, 31)
+#    win_size *= np.pi / 4 # Correct for rounded corners
     print "Automatically determining window size...%d" % win_size
 
 print "win_size=%.2f" % win_size
@@ -106,7 +114,7 @@ if stack:
                                            pairs[:, 1, 0], pairs[:, 1, 1],
                                            mode=registration_method,
                                            confidence=0.9)
-#                                           inliers_required=features/4)
+#                                           inliers_required=5)
     plt.subplot(2, 1, 2)
     stack = supreme.register.stack.with_transform((img0, img1),
                                                   (np.eye(3), M))
