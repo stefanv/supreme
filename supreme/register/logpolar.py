@@ -256,6 +256,7 @@ def logpolar(ref_img,img_list,window_shape=None,angles=181,
 
         #vmsource = ndi.correlate(ref_img,vm_filter_mask)
         vmsource = ref_img - ndi.sobel(ref_img)
+#        vm = ndi.gaussian_filter(ref_img, 2) - ndi.gaussian_filter(ref_img, 1)
         vm = sr.ext.variance_map(vmsource,shape=window_shape/8)
         vm = vm/np.prod(window_shape/4)
         vm = _clearborder(vm,window_shape/2)
@@ -263,16 +264,16 @@ def logpolar(ref_img,img_list,window_shape=None,angles=181,
 
     vm = _prepare_varmap(ref_img)
 
-    ## import pylab as P
-    ## P.subplot(121)
-    ## P.imshow(ref_img,cmap=P.cm.gray)
-    ## P.axis('off')
-    ## P.subplot(122)
-    ## P.imshow(vm)
-    ## P.rcParams['figure.figsize'] = (6.67,3.335)
-    ## P.axis('off')
-    ## P.savefig('varmap.eps')
-    ## P.show()
+##     import pylab as P
+##     P.subplot(121)
+##     P.imshow(ref_img,cmap=P.cm.gray)
+##     P.axis('off')
+##     P.subplot(122)
+##     P.imshow(vm)
+##     P.rcParams['figure.figsize'] = (6.67,3.335)
+##     P.axis('off')
+##     P.savefig('varmap.eps')
+##     P.show()
 
     # 'reference' stores image sequences.  Each sequence contains
     # original slice, slice log polar transform and DFT of slice LPT
@@ -307,18 +308,21 @@ def logpolar(ref_img,img_list,window_shape=None,angles=181,
         _log.info("Frame registration completed in %.2f seconds." % (toc-tic))
 
     def _lpt_peak(pos,frame,bmf,window_shape,fft_shape):
-        corr = _lpt_corr([bmf['source'].info['reference']],frame,bmf,[pos],window_shape,fft_shape,angle_samples,log_base, **lpt_args)
+        corr = _lpt_corr([bmf['source'].info['reference']],
+                         frame, bmf, [pos], window_shape,
+                         fft_shape, angle_samples, log_base, **lpt_args)
         return corr[0]
 
     for fnum,frame in enumerate(img_list):
         _log.info("Refining frame %d..." % fnum)
         bmf = best_matched_frame[fnum]
         pos = list(bmf['source'].info['position'])
-#        import scipy.optimize
-#        scipy.optimize.fmin_cg(_lpt_peak,bmf['source'].info['position'],
-#                               args=(frame,bmf,window_shape,fft_shape))
         path = (np.mgrid[-4:5,-4:5].T + bmf['source'].info['position']).reshape((-1,2))
         _lpt_corr([bmf['source'].info['reference']],frame,bmf,path,window_shape,fft_shape,angle_samples, log_base, **lpt_args)
+##        import scipy.optimize
+##         scipy.optimize.fmin(_lpt_peak,bmf['source'].info['position'],
+##                                args=(frame,bmf,window_shape,fft_shape))
+
 
     for fnum,f in enumerate(best_matched_frame):
         info = f['source'].info
@@ -377,26 +381,3 @@ def logpolar(ref_img,img_list,window_shape=None,angles=181,
     _log.info('%s frames returned' % len(accepted_frames))
 
     return accepted_frames,tf_matrices
-
-def _tf_difference(M_target,M_ref,target,reference):
-    """Calculate difference between reference and transformed target."""
-    M_target[[6,7]] = 0
-    M_target[8] = 1
-    M_ref[[6,7]] = 0
-    M_ref[8] = 1
-    im1 = sr.transform.matrix(reference, M_ref.reshape((3,3)))
-    im2 = sr.transform.matrix(target, M_target.reshape((3,3)))
-    diff = ((im1 - im2)**2)[20:-20,20:-20]
-    # TODO: do polygon overlap check
-    return diff.sum()
-
-def _build_tf(p):
-    if np.sum(np.isnan(p) + np.isinf(p)) != 0:
-        return np.eye(3)
-    else:
-        theta,a,b,tx,ty = p
-        C = np.cos(theta)
-        S = np.sin(theta)
-        return np.array([[a*C,  -a*S, tx],
-                         [a*b*S, a*C, ty],
-                         [0,     0,   1.]])
