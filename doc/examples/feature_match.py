@@ -20,11 +20,12 @@ ic = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'), grey=True)
 img0 = ic[0]
 img1 = ic[1]
 
-features = 200
+features = 300
 window = 0
 stack = True # Disable this to view the output without stacking
 feature_method = 'dpt' # 'fast'
 registration_method = 'RANSAC' # or iterative
+win_size = None
 
 # ----------------------------------------------------------------------
 
@@ -67,9 +68,9 @@ elif feature_method == 'fast':
     feat_coord = [(i,j) for (j,i) in feat_coord]
     feat_mod_coord = perm(fast.corner_detect(img1, barrier=20))[:features]
 
-    feat_area = np.ones(len(feat_coord))
+    feat_area = np.ones(len(feat_coord)) * 2
     feat_mod_coord = [(i,j) for (j,i) in feat_mod_coord]
-    feat_mod_area = np.ones(len(feat_mod_coord))
+    feat_mod_area = np.ones(len(feat_mod_coord)) * 2
 else:
     raise ValueError("Invalid feature extractor specified.")
 
@@ -89,9 +90,10 @@ for (i, j), a in zip(feat_mod_coord, feat_mod_area):
 plt.show()
 
 print "Finding tentative correspondences..."
-win_size = 255/2/np.mean(feat_mod_area)
-print win_size
-win_size = np.clip(win_size, 11, 31)
+if win_size is None:
+    win_size = 255/2/np.mean(feat_mod_area)
+    win_size = np.clip(win_size, 11, 31)
+    print "Automatically determining window size...%d" % win_size
 
 print "win_size=%.2f" % win_size
 correspondences = correspond(feat_coord, img0.astype(np.uint8),
