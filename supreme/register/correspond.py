@@ -3,15 +3,18 @@ import numpy as np
 import supreme.config
 log = supreme.config.get_log(__name__)
 
+from supreme.geometry import Grid
+from logpolar import patch_match
+
 def _safe_coord(i, j, img, win_size):
     """Return the coordinates of a window only if
     it fits inside the image."""
     hwin = (win_size - 1) / 2
 
     m = i - hwin
-    n = i + hwin
+    n = i + hwin + 1
     p = j - hwin
-    q = j + hwin
+    q = j + hwin + 1
     if (m < 0) or (n >= img.shape[0]) or \
        (p < 0) or (q >= img.shape[1]):
         raise IndexError("Patch crosses image boundary")
@@ -39,6 +42,17 @@ def correspond(fA, A, fB, B, win_size=9):
         [((coord_source), (coord_target)), ...]
 
     """
+    # Ensure uneven window size
+    win_size = int(win_size)
+    win_size = win_size + ((win_size + 1) % 2)
+
+## Used to round feature corners, used e.g. in the DPT
+##     # Mask for removing corners
+##     r_max = ((win_size - 1) / 2.)**2
+##     g = Grid(win_size, win_size)
+##     center = (win_size - 1)/ 2.
+##     mask = (((g['cols'] - center)**2 + (g['rows'] - center)**2) > r_max)
+
     # Pre-calculate patches
     pA = {}
     angles = np.linspace(-np.pi, np.pi, 50)
@@ -48,7 +62,9 @@ def correspond(fA, A, fB, B, win_size=9):
         except IndexError:
             pass
         else:
-            pA[(i, j)] = A[m:n, p:q]
+            patch = A[m:n, p:q]
+            # patch[mask] = 0 # round feature
+            pA[(i, j)] = patch
 
     pB = {}
     for (i, j) in fB:
@@ -57,7 +73,9 @@ def correspond(fA, A, fB, B, win_size=9):
         except IndexError:
             pass
         else:
-            pB[(i, j)] = B[m:n, p:q]
+            patch = B[m:n, p:q]
+            # patch[mask] = 0 # round feature
+            pB[(i, j)] = patch
 
     count = 1
     result_d = {}
@@ -72,19 +90,25 @@ def correspond(fA, A, fB, B, win_size=9):
         if patch_A is None:
             continue
 
+        # Normalise values
+        patch_A = patch_A - patch_A.mean()
+
+        # Sort values for QQ-comparison
+        patch_A = np.sort(patch_A)
+
         for (m, n) in fB:
             patch_B = pB.get((m, n), None)
             if patch_B is None:
                 continue
-
-            # Normalise values
-            patch_B = patch_B - patch_B.mean()
-            patch_A = patch_A - patch_A.mean()
+            patch_B = np.sort(patch_B - patch_B.mean())
 
             norm = np.linalg.norm
 
+            # A very counter-intuitive feature-matching scheme
+            # that works.
+
             # |A - B| <= max(|A|, |B|) since all elements are positive
-            tmp = np.sort(patch_B) - np.sort(patch_A)
+            tmp = patch_B - patch_A
             tmp = -norm(tmp) / max(norm(patch_B), norm(patch_A))
 
             if tmp > -0.5 and tmp > match_likelihood:
