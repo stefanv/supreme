@@ -195,19 +195,38 @@ def sparse(ref_feat_rows, ref_feat_cols,
     M = p.estimate()
     return M
 
-def refine(reference, target, p_ref, p_target):
+def refine(reference, target, M_ref, M_target):
     """Refine registration parameters iteratively."""
+    p = M_target[(0, 0, 0, 1), (0, 1, 2, 2)]
+    p = scipy.optimize.fmin_cg(_tf_difference, p,
+                               args=(M_ref, reference, target))
+    C, S, x, y  = p
+    return np.array([[ C, S, x],
+                     [-S, C, y],
+                     [ 0, 0, 1]])
 
-    def _tf_difference(p, p_ref, reference,target):
-        """Calculate difference between reference and transformed target."""
-        tf_target = _build_tf(p)
-        tf_ref = _build_tf(p_ref)
-        im1 = sr.transform.matrix(reference,tf_ref)
-        im2 = sr.transform.matrix(target,tf_target)
-        diff = ((im1 - im2)**2)
-        # TODO: do polygon overlap check
-        return diff.sum()
+def _tf_difference(p, M_ref, target, reference):
+    """Calculate difference between reference and transformed target."""
+    C, S, x, y  = p
+    M_target = np.array([[ C, S, x],
+                         [-S, C, y],
+                         [ 0, 0, 1]])
 
-    p = scipy.optimize.fmin_cg(_tf_difference,p_target,
-                               args=(p_ref,reference,target))
-    return p
+    im1 = sr.transform.matrix(reference, M_ref)
+    im2 = sr.transform.matrix(target, M_target)
+    mask = (im1 != 0) & (im2 != 0)
+    diff = (im1[mask] - im2[mask])**2
+    # TODO: do polygon overlap check
+
+    return diff.sum() / np.sum(mask)
+
+def _build_tf(p):
+    if np.sum(np.isnan(p) + np.isinf(p)) != 0:
+        return np.eye(3)
+    else:
+        theta,a,b,tx,ty = p
+        C = np.cos(theta)
+        S = np.sin(theta)
+        return np.array([[a*C,  -a*S, tx],
+                         [a*b*S, a*C, ty],
+                         [0,     0,   1.]])
