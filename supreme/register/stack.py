@@ -24,6 +24,33 @@ def corners(dims):
         corners[i] = np.where(mask, dims-1, zeros)
     return corners
 
+def _tf_corners(rows, cols, M):
+    """Transform the corner-coordinates of a (rows, cols)-shaped array,
+    using the matrix M.
+
+    Parameters
+    ----------
+    rows, cols : int
+        Dimensions of the array.
+    M : (3, 3) ndarray
+        Transformation matrix.
+
+    Returns
+    -------
+    corners : (M, 3) ndarray
+        Transformed coordinates.
+
+    """
+
+    cnrs = corners((cols, rows))
+    # Turn into homogenous coordinates by adding a column of ones
+    cnrs = np.hstack((cnrs, np.ones((len(cnrs), 1)))).astype(sc.ftype)
+    # Transform coordinates and add to list
+    tf_cnrs = np.dot(cnrs, M.transpose())
+    tf_cnrs /= np.atleast_2d(tf_cnrs[:, 2]).T
+
+    return tf_cnrs[:, :2]
+
 def with_transform(images, matrices, weights=None, order=1,
                    oshape=None, save_tiff=False):
     """Stack images after performing coordinate transformations.
@@ -74,40 +101,55 @@ def with_transform(images, matrices, weights=None, order=1,
 
     reshape = (oshape is None)
     if reshape:
-        all_tf_cnrs = np.empty((0,3))
+        all_tf_cnrs = np.empty((0,2))
         for img, tf_matrix in zip(images, matrices):
             rows, cols = img.shape[:2]
-            cnrs = corners((cols, rows))
-            # Turn into homogenous coordinates by adding a column of ones
-            cnrs = np.hstack((cnrs, np.ones((len(cnrs), 1)))).astype(sc.ftype)
-            # Transform coordinates and add to list
-            tf_cnrs = np.dot(cnrs, tf_matrix.transpose())
-            tf_cnrs /= np.atleast_2d(tf_cnrs[:, 2]).T
-            all_tf_cnrs = np.vstack((all_tf_cnrs,
-                                     tf_cnrs))
+            tf_cnrs = _tf_corners(rows, cols, tf_matrix)
+            all_tf_cnrs = np.vstack((all_tf_cnrs, tf_cnrs))
 
         # Calculate bounding box [(x0,y0),(x1,y1)]
-        bbox_top_left = np.floor(all_tf_cnrs.min(axis=0))[:2]
-        bbox_bottom_right = np.ceil(all_tf_cnrs.max(axis=0))[:2]
+        bbox_top_left = np.floor(all_tf_cnrs.min(axis=0))
+        bbox_bottom_right = np.ceil(all_tf_cnrs.max(axis=0))
 
         oshape = np.array(images[0].shape)
         oshape[:2][::-1] = np.absolute(bbox_bottom_right -
                                        bbox_top_left).astype(int)+1
 
     sources = []
+    boundaries = []
     for img, tf_matrix, weight in zip(images, affine_matrices, weights):
         if reshape:
             tf_matrix = tf_matrix.copy()
             tf_matrix[:2,2] -= bbox_top_left
 
+        boundaries.append(_tf_corners(img.shape[0], img.shape[1], tf_matrix))
         sources.append(transform.matrix(img, tf_matrix,
                                         output_shape=oshape, order=order,
-                                        mode='constant'))
+                                        mode='constant', cval=-1))
 
     if save_tiff:
         from scipy.misc import imsave
         for n, s in enumerate(sources):
-            imsave('stack_%d.tiff' % n, s)
+            # Convert to 4-channel RGBA
+            if s.ndim == 3:
+                s = np.array(s, ndmin=4, dtype=s.dtype)
+            else:
+                tmp = np.empty(np.append(s.shape, 4), dtype=s.dtype)
+
+                # Fill R, G, and B
+                tmp.T.swapaxes(1, 2)[:] = s
+                tmp[..., 3] = 0
+
+            # The value -1 is used to indicate out of bounds. Clip
+            # the RGB channels where this is not applicable.
+            tmp[...,:3] = np.clip(tmp[...,:3], 0, 255)
+
+            # Set the alpha mask
+            t = tmp[...,3]
+            t.fill(255)
+            t[s == -1] = 0
+
+            imsave('stack_%d.tiff' % n, tmp)
 
     out = np.zeros(oshape, dtype=sc.ftype)
     total_weights = np.zeros(oshape, dtype=float)
