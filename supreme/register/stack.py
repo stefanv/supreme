@@ -24,22 +24,41 @@ def corners(dims):
         corners[i] = np.where(mask, dims-1, zeros)
     return corners
 
-def with_transform(images, matrices, weights=None, order=1, mode='constant',
-                   oshape=None):
+def with_transform(images, matrices, weights=None, order=1,
+                   oshape=None, save_tiff=False):
     """Stack images after performing coordinate transformations.
 
-    images - list of arrays
-    matrices - list of coordinate transformation matrices
-    weights - weights of input images (default: weighted equally)
+    Parameters
+    ----------
+    images : list of ndarray
+        Images to be stacked.
+    matrices : list of (3,3) ndarray
+        Coordinate transformation matrices.
+    weights : list of float
+        Weight of each input image.  By default, all images are
+        weighted equally.  The merging algorithm takes into account
+        whether images overlap.
+    order : int
+        Order of the interpolant used by the scaling algorithm.  Linear,
+        by default.
+    oshape : tuple of int
+        Output shape.  If not specified, the output shape is auto determined to
+        include all images.
+    save_tiff : bool
+        Whether to save copies of the warped images.  False by default.
 
-    For each image, a 3x3 coordinate transformation matrix, A,
-    must be given. Each coordinate, c = [x,y,1]^T, in the source
+    Notes
+    -----
+    For each image, a 3x3 coordinate transformation matrix, ``A``,
+    must be given. Each coordinate, ``c = [x,y,1]^T``, in the source
     image is then translated to its position in the destination image,
+    ``d = A*c``.
 
-    d = A*c.
-
-    Each image is transformed, weighted by the given weight and
-    stacked.
+    After warping the images, they are combined according to the given
+    weights.  Note that the overlap of frames is taken into account.
+    For example, in areas where only one image occurs, the pixels of
+    that image will carry a weight of one, whereas in other areas it
+    may be less, depending on the overlap of other images.
 
     """
     nr_images = len(images)
@@ -62,8 +81,10 @@ def with_transform(images, matrices, weights=None, order=1, mode='constant',
             # Turn into homogenous coordinates by adding a column of ones
             cnrs = np.hstack((cnrs, np.ones((len(cnrs), 1)))).astype(sc.ftype)
             # Transform coordinates and add to list
+            tf_cnrs = np.dot(cnrs, tf_matrix.transpose())
+            tf_cnrs /= np.atleast_2d(tf_cnrs[:, 2]).T
             all_tf_cnrs = np.vstack((all_tf_cnrs,
-                                     np.dot(cnrs, tf_matrix.transpose())))
+                                     tf_cnrs))
 
         # Calculate bounding box [(x0,y0),(x1,y1)]
         bbox_top_left = np.floor(all_tf_cnrs.min(axis=0))[:2]
@@ -81,7 +102,12 @@ def with_transform(images, matrices, weights=None, order=1, mode='constant',
 
         sources.append(transform.matrix(img, tf_matrix,
                                         output_shape=oshape, order=order,
-                                        mode=mode))
+                                        mode='constant'))
+
+    if save_tiff:
+        from scipy.misc import imsave
+        for n, s in enumerate(sources):
+            imsave('stack_%d.tiff' % n, s)
 
     out = np.zeros(oshape, dtype=sc.ftype)
     total_weights = np.zeros(oshape, dtype=float)

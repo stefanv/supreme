@@ -108,9 +108,9 @@ class Homography(object):
 
     def _build_transform_from_params(self,p):
             theta,tx,ty,s = p
-            return np.array([[s*np.cos(theta),-s*np.sin(theta),tx],
-                            [s*np.sin(theta), s*np.cos(theta),ty],
-                            [0,              0,             1.]])
+            return np.array([[s*np.cos(theta), -s*np.sin(theta), tx],
+                             [s*np.sin(theta),  s*np.cos(theta), ty],
+                             [0,                0,               1.]])
 
     def estimate_iterative(self,data):
         rx,ry,tx,ty = self._data_from_array(data)
