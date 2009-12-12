@@ -138,7 +138,7 @@ def with_transform(images, matrices, weights=None, order=1,
         boundaries.append(_tf_corners(img.shape[0], img.shape[1], tf_matrix))
         sources.append(transform.matrix(img, tf_matrix,
                                         output_shape=oshape, order=order,
-                                        mode='constant', cval=-1))
+                                        mode='constant', cval=0))
 
     if save_tiff:
         from scipy.misc import imsave

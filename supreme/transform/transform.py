@@ -179,7 +179,13 @@ def matrix(image,matrix,output_shape=None,order=1,mode='constant',
 
     # Prefilter not necessary for order 1 interpolation
     prefilter = order > 1
+
+    if cval < 0:
+        output_type = float
+    else:
+        output_type = image.dtype
     mapped = ndii.map_coordinates(image,coords,prefilter=prefilter,
+                                  output=output_type,
                                   mode=mode,order=order,cval=cval)
 
     return mapped.squeeze()
