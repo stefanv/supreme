@@ -7,6 +7,7 @@ from scipy import ndimage as ndi
 
 import supreme.config as sc
 from supreme import transform
+from supreme.geometry import Grid, Polygon
 
 __all__ = ['with_transform']
 
@@ -41,7 +42,6 @@ def _tf_corners(rows, cols, M):
         Transformed coordinates.
 
     """
-
     cnrs = corners((cols, rows))
     # Turn into homogenous coordinates by adding a column of ones
     cnrs = np.hstack((cnrs, np.ones((len(cnrs), 1)))).astype(sc.ftype)
@@ -50,6 +50,19 @@ def _tf_corners(rows, cols, M):
     tf_cnrs /= np.atleast_2d(tf_cnrs[:, 2]).T
 
     return tf_cnrs[:, :2]
+
+def mask_roi(rows, cols, bounds):
+    # Sort corners clockwise.  This can be done with a single
+    # swap operation, but that's a bit more work.
+    centroid = bounds.mean(axis=0)
+    diff = bounds - centroid
+    angle = np.arctan2(diff[:, 1], diff[:, 0])
+    bounds = bounds[np.argsort(angle)]
+    bounds = np.vstack((bounds, bounds[0]))
+
+    p = Polygon(bounds[:, 0], bounds[:, 1])
+    g = Grid(rows, cols)
+    return p.inside(g['cols'].flat, g['rows'].flat).reshape(rows, cols)
 
 def with_transform(images, matrices, weights=None, order=1,
                    oshape=None, save_tiff=False):
@@ -129,35 +142,37 @@ def with_transform(images, matrices, weights=None, order=1,
 
     if save_tiff:
         from scipy.misc import imsave
-        for n, s in enumerate(sources):
+        for n, (s, bounds) in enumerate(zip(sources, boundaries)):
             # Convert to 4-channel RGBA
+            tmp = np.empty(np.append(s.shape[:2], 4), dtype=s.dtype)
             if s.ndim == 3:
-                s = np.array(s, ndmin=4, dtype=s.dtype)
-            else:
-                tmp = np.empty(np.append(s.shape, 4), dtype=s.dtype)
+                tmp[..., :3] = s
 
+                # Keep red layer for use as mask
+                s = s[..., 0]
+            else:
                 # Fill R, G, and B
                 tmp.T.swapaxes(1, 2)[:] = s
-                tmp[..., 3] = 0
 
-            # The value -1 is used to indicate out of bounds. Clip
-            # the RGB channels where this is not applicable.
-            tmp[...,:3] = np.clip(tmp[...,:3], 0, 255)
+            tmp[..., 3] = 0
+
+            mask = mask_roi(s.shape[0], s.shape[1], bounds)
 
             # Set the alpha mask
             t = tmp[...,3]
             t.fill(255)
-            t[s == -1] = 0
+            t[~mask] = 0
 
             imsave('stack_%d.tiff' % n, tmp)
 
     out = np.zeros(oshape, dtype=sc.ftype)
     total_weights = np.zeros(oshape, dtype=float)
-    for s, w in zip(sources, weights):
-        out += w * s
-        total_weights[s != 0] += w
+    for (s, bounds), w in zip(zip(sources, boundaries), weights):
+        mask = mask_roi(s.shape[0], s.shape[1], bounds)
+        out[mask] += (w * s)[mask]
+        total_weights[mask] += w
 
     mask = (total_weights != 0)
     out[mask] = out[mask] / total_weights[mask]
 
-    return out
+    return out/out.max()
