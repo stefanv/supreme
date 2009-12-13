@@ -5,6 +5,8 @@ def configuration(parent_package='', top_path=None):
 
     config.add_extension('ncorr', sources=['ncorr.c'],
                          include_dirs=[get_numpy_include_dirs()])
+    config.add_extension('parzen', sources=['parzen.c'],
+                         include_dirs=[get_numpy_include_dirs()])
 
     config.add_data_dir('tests')
 

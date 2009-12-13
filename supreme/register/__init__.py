@@ -7,6 +7,7 @@ from logpolar import patch_match as lp_patch_match
 from logpolar import *
 from correspond import *
 from ncorr import *
+from parzen import *
 
 def affine_tm(theta=0, tx=0, ty=0, scale=None, scale_x=None, scale_y=None):
     """Return the transformation matrix for an affine transformation.
