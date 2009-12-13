@@ -17,5 +17,11 @@ def test_basic():
     assert_almost_equal(np.sum(H[D]), 0.97, decimal=1)
     assert_almost_equal(np.sum(H[~D]), 0.03, decimal=1)
 
+def test_mutual_info():
+    H = joint_hist(h1, h1)
+    S = mutual_info(H)
+
+    assert(S > 5)
+
 if __name__ == "__main__":
     run_module_suite()

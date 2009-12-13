@@ -1,11 +1,19 @@
+# -*- python -*-
+
 """Fast Parzen-Window-like estimator of the joint histogram between two
 images.
 
 """
 import numpy as np
 cimport numpy as np
+cimport cython
 
-cdef _add_window(np.ndarray out_arr, int m, int n, np.ndarray win_arr):
+cdef extern from "math.h":
+    double logf(double)
+
+@cython.boundscheck(False)
+cdef np.ndarray _add_window(np.ndarray out_arr, int m, int n,
+                            np.ndarray win_arr):
     cdef np.ndarray[np.double_t, ndim=2] out = out_arr
     cdef np.ndarray[np.double_t, ndim=2] w = win_arr
 
@@ -27,6 +35,7 @@ cdef _add_window(np.ndarray out_arr, int m, int n, np.ndarray win_arr):
 
     return out
 
+@cython.boundscheck(False)
 def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
                np.ndarray[np.uint8_t, ndim=2] B, win_size=5, std=1.0,
                fast=False):
@@ -55,18 +64,21 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
         Estimation of the joint probability density function between A and B.
 
     """
-    assert A.shape[0] == B.shape[0]
-    assert A.shape[1] == B.shape[1]
+    cdef np.ndarray[np.double_t, ndim=2] out
+
+    if not (A.shape[0] == B.shape[0]) and (A.shape[1] == B.shape[1]):
+        raise IndexError("Shapes of both input arrays must be equal.")
 
     # Approximation of Gaussian
     cdef np.ndarray[np.double_t, ndim=2] w
 
-    x, y = np.mgrid[:win_size, :win_size]
-    hwin = (win_size - 1) / 2
-    x -= hwin
-    y -= hwin
-    std = float(std)
-    w = np.exp(-(x**2 + y**2)/(2 ** std**2)) / (2 * np.pi * std**2)
+    if not fast:
+        x, y = np.mgrid[:win_size, :win_size]
+        hwin = (win_size - 1) / 2
+        x -= hwin
+        y -= hwin
+        std = float(std)
+        w = np.exp(-(x**2 + y**2)/(2 ** std**2)) / (2 * np.pi * std**2)
 
     out = np.zeros((255, 255), dtype=np.double)
 
@@ -94,7 +106,8 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
 
     return out
 
-def mutual_info(H):
+@cython.boundscheck(False)
+def mutual_info(np.ndarray[np.double_t, ndim=2] H):
     """Given the joint histogram of two images, calculate
     their mutual information.
 
@@ -108,10 +121,36 @@ def mutual_info(H):
         Mutual information.
 
     """
-    d = (H.sum(axis=0) * H.sum(axis=1).reshape(H.shape[0], -1))
-    mask = ((H != 0) & (d != 0))
-    h = H.copy()
-    h[mask] /= d[mask]
-    S = -np.sum(H[mask] * np.log(h[mask])) / np.log(2)
+    cdef int i, j
+    cdef int M, N
+    cdef double S
+    cdef np.ndarray[np.double_t] hR, hC
+
+    M = H.shape[0]
+    N = H.shape[1]
+
+    hR = np.zeros(M, dtype=np.double)
+    for i in range(M):
+        for j in range(N):
+            hR[i] += H[i, j]
+
+    hC = np.zeros(N, dtype=np.double)
+    for i in range(M):
+        for j in range(N):
+            hC[j] += H[i, j]
+
+    S = 0
+    for i in range(M):
+        for j in range(N):
+            if H[i, j] == 0 or hR[i] == 0 or hC[j] == 0:
+                continue
+
+            S += H[i, j] * logf(H[i, j] / (hR[i] * hC[j])) / logf(2)
+
+##     d = (H.sum(axis=0) * H.sum(axis=1).reshape(H.shape[0], -1))
+##     mask = ((H != 0) & (d != 0))
+##     h = H.copy()
+##     h[mask] /= d[mask]
+##     S = -np.sum(H[mask] * np.log(h[mask])) / np.log(2)
 
     return S
