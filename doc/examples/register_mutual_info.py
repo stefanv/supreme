@@ -25,7 +25,7 @@ else:
                        [0,            0,       1]])
     Bc = B
 
-M = register.dense_MI(A, B)
+M = register.dense_MI(A, B, levels=3)
 print "Transformation matrix:"
 print np.array2string(M, separator=', ')
 

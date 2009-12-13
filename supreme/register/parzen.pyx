@@ -38,7 +38,7 @@ cdef np.ndarray _add_window(np.ndarray out_arr, int m, int n,
 @cython.boundscheck(False)
 def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
                np.ndarray[np.uint8_t, ndim=2] B, win_size=5, std=1.0,
-               fast=False):
+               int fast=0, int ignore_black=0):
     """Estimate the joint histogram of A and B.
 
     Parameters
@@ -91,12 +91,16 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
             a = A[i, j]
             b = B[i, j]
 
+            if ignore_black and \
+               ((a == 0 or b == 0) and not (a == 0 and b == 0)):
+                continue
+
             if fast:
                 out[a, b] += 1
             else:
                 out = _add_window(out, a, b, w)
 
-# Normalisation not needed if the correct window is provided
+    # Normalisation not needed if the correct window is provided
 
     cdef double s = 0
     for i in range(255):

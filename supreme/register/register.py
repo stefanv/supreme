@@ -1,6 +1,6 @@
 """Perform image registration."""
 
-__all__ = ['PointCorrespondence','refine','sparse']
+__all__ = ['PointCorrespondence', 'refine', 'sparse', 'dense_MI']
 
 import numpy as np
 import scipy as sp
@@ -12,6 +12,10 @@ import sys
 import supreme as sr
 from supreme.config import ftype
 from supreme.feature import RANSAC
+from supreme import transform
+from parzen import joint_hist, mutual_info
+
+_log = sr.config.get_log(__name__)
 
 class Homography(object):
     """Model of a homography for use with RANSAC.
@@ -227,6 +231,37 @@ def _build_tf(p):
         theta,a,b,tx,ty = p
         C = np.cos(theta)
         S = np.sin(theta)
-        return np.array([[a*C,  -a*S, tx],
-                         [a*b*S, a*C, ty],
+        return np.array([[a*C,  -b*S, tx],
+                         [a*S,   b*C, ty],
                          [0,     0,   1.]])
+
+def dense_MI(A, B, levels=4):
+    """Register image B to A, using mutual information and an image pyramid.
+
+    Parameters
+    ----------
+    A, B : ndarray of uint
+        Images to register.
+    levels : int
+        Number of levels in the image pyramid.  Each level is downsampled
+        by 2.
+
+    Returns
+    -------
+    M : (3,3) ndarray of float
+        Transformation matrix that transforms B to A.
+
+    """
+    def cost(p, A, B):
+        T = transform.homography(B, _build_tf(p), order=2)
+        S = mutual_info(joint_hist(A, T, win_size=5, std=1, ignore_black=False))
+        return -S
+
+    p = [0, 1, 1, 0, 0],
+    for z in range(levels - 1, -1, -1):
+        _log.info("Downsampling by %d" % 2**z)
+        A_ = scipy.ndimage.zoom(A, 1/2.**z)
+        B_ = scipy.ndimage.zoom(B, 1/2.**z)
+        p = scipy.optimize.fmin_powell(cost, p, args=(A_, B_))
+
+    return _build_tf(p)
