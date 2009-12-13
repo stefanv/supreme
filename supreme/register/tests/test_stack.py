@@ -17,7 +17,7 @@ class TestStack:
         x2 = x1.copy()
         theta = -np.pi/2
         M = np.array([[np.cos(theta), -np.sin(theta),  0],
-                      [np.sin(theta),  np.cos(theta), -1],
+                      [np.sin(theta),  np.cos(theta), +2],
                       [0,              0,              1]])
 
         stacked = stack.with_transform([x1, x2], [np.eye(3), M],

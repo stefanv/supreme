@@ -22,7 +22,7 @@ def corners(dims):
     for i in range(2**L):
         bin = list(np.binary_repr(i).zfill(L))
         mask = np.array(bin).astype(np.bool8)
-        corners[i] = np.where(mask, dims-1, zeros)
+        corners[i] = np.where(mask, dims - 1, zeros)
     return corners
 
 def _tf_corners(rows, cols, M):
@@ -54,6 +54,10 @@ def _tf_corners(rows, cols, M):
 def mask_roi(rows, cols, bounds):
     # Sort corners clockwise.  This can be done with a single
     # swap operation, but that's a bit more work.
+    mask = (bounds < 1e-14)
+    bounds[mask] -= 0.5
+    bounds[~mask] += 0.5
+
     centroid = bounds.mean(axis=0)
     diff = bounds - centroid
     angle = np.arctan2(diff[:, 1], diff[:, 0])
@@ -126,7 +130,7 @@ def with_transform(images, matrices, weights=None, order=1,
 
         oshape = np.array(images[0].shape)
         oshape[:2][::-1] = np.absolute(bbox_bottom_right -
-                                       bbox_top_left).astype(int)+1
+                                       bbox_top_left).astype(int) + 1
 
     sources = []
     boundaries = []
@@ -135,7 +139,8 @@ def with_transform(images, matrices, weights=None, order=1,
             tf_matrix = tf_matrix.copy()
             tf_matrix[:2,2] -= bbox_top_left
 
-        boundaries.append(_tf_corners(img.shape[0], img.shape[1], tf_matrix))
+        boundaries.append(_tf_corners(img.shape[0] + 1,
+                                      img.shape[1] + 1, tf_matrix))
         sources.append(transform.matrix(img, tf_matrix,
                                         output_shape=oshape, order=order,
                                         mode='constant', cval=0))
@@ -175,4 +180,4 @@ def with_transform(images, matrices, weights=None, order=1,
     mask = (total_weights != 0)
     out[mask] = out[mask] / total_weights[mask]
 
-    return out/out.max()
+    return out
