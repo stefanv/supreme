@@ -16,18 +16,29 @@ from supreme.register.correspond import correspond
 
 # ----------------------------------------------------------------------
 
+icc = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'))
 ic = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'), grey=True)
+imgc0 = icc[1]
+imgc1 = icc[7]
 img0 = ic[1]
 img1 = ic[7]
+
+#ic = ImageCollection(os.path.join(data_path, 'ooskus/*cropped*.jpg'), grey=True)
+#ic = [imread(data_path + '/ooskus/dscf1723.jpg', flatten=True),
+#      imread(data_path + '/ooskus/dscf1724.jpg', flatten=True)]
+#img0 = ic[0]
+#img1 = ic[1]
 
 window = 0
 show_features = False # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
-feature_method = 'dpt' # 'fast'
-dpt_feature_nr = 400
-fast_barrier = 40
+feature_method = 'fast' # 'fast'
+dpt_feature_nr = 500
+fast_barrier = 30
 registration_method = 'RANSAC' # or iterative
+RANSAC_confidence = 0.95
 win_size = None
+save_tiff = True # Save warped images to tiff
 
 # ----------------------------------------------------------------------
 
@@ -113,12 +124,21 @@ if stack:
     M, converged = supreme.register.sparse(pairs[:, 0, 0], pairs[:, 0, 1],
                                            pairs[:, 1, 0], pairs[:, 1, 1],
                                            mode=registration_method,
-                                           confidence=0.9)
+                                           confidence=RANSAC_confidence)
 #                                           inliers_required=5)
+    print np.array2string(M, separator=', ')
+
     plt.subplot(2, 1, 2)
     stack = supreme.register.stack.with_transform((img0, img1),
-                                                  (np.eye(3), M))
+                                                  (np.eye(3), M),
+                                                  save_tiff=save_tiff)
     plt.imshow(stack, cmap=plt.cm.gray, interpolation='nearest')
+
+stack = supreme.register.stack.with_transform((img0, img1),
+                                              (np.eye(3), M),
+                                              save_tiff=save_tiff)
+plt.imshow(stack, cmap=plt.cm.gray, interpolation='nearest')
+plt.show()
 
 
 plt.subplot(2, 1, 1)
@@ -132,6 +152,5 @@ plt.imshow(side_by_side, cmap=plt.cm.gray, interpolation='nearest')
 for ((i,j), (m, n)) in correspondences:
     plt.plot([j, n + img0.shape[1]], [i, m], '-o')
 plt.axis('image')
-
 
 plt.show()
