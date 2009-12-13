@@ -253,7 +253,7 @@ def dense_MI(A, B, levels=4):
 
     """
     def cost(p, A, B):
-        T = transform.homography(B, _build_tf(p), order=2)
+        T = transform.homography(B, _build_tf(p), order=1)
         S = mutual_info(joint_hist(A, T, win_size=5, std=1, ignore_black=False))
         return -S
 
