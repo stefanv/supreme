@@ -2,7 +2,7 @@ import numpy as np
 from numpy.testing import *
 
 from supreme.io import imread
-from parzen import joint_hist, mutual_info
+from supreme.register.parzen import joint_hist, mutual_info
 
 h1 = (np.random.random((100, 100)) * 255).astype(np.uint8)
 
