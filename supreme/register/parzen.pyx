@@ -28,7 +28,8 @@ cdef _add_window(np.ndarray out_arr, int m, int n, np.ndarray win_arr):
     return out
 
 def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
-               np.ndarray[np.uint8_t, ndim=2] B, win_size=5, std=1.0):
+               np.ndarray[np.uint8_t, ndim=2] B, win_size=5, std=1.0,
+               fast=False):
     """Estimate the joint histogram of A and B.
 
     Parameters
@@ -44,6 +45,9 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
         The higher the standard deviation, the smoother the resulting
         histogram.  `win_size` must be made large enough to accommodate
         an increased standard deviation.
+    fast : bool
+        Calculate the classical histogram, instead of using a Parzen
+        Window.  Fast, but does not estimate the PDF as accurately.
 
     Returns
     -------
@@ -75,7 +79,10 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
             a = A[i, j]
             b = B[i, j]
 
-            out = _add_window(out, a, b, w)
+            if fast:
+                out[a, b] += 1
+            else:
+                out = _add_window(out, a, b, w)
 
 # Normalisation not needed if the correct window is provided
 
