@@ -143,7 +143,7 @@ def with_transform(images, matrices, weights=None, order=1,
                                       img.shape[1] + 1, tf_matrix))
         sources.append(transform.matrix(img, tf_matrix,
                                         output_shape=oshape, order=order,
-                                        mode='constant', cval=0))
+                                        mode='mirror'))
 
     if save_tiff:
         from scipy.misc import imsave
