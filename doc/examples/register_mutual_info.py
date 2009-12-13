@@ -9,9 +9,7 @@ from supreme.register.parzen import joint_hist, mutual_info
 from supreme.transform import homography
 import supreme.register as register
 
-
 A = chelsea(grey=True).astype(np.uint8)
-plt.suptitle('Parzen-Window Joint PDF Estimator')
 
 t = 20/180. * np.pi
 x = 3
