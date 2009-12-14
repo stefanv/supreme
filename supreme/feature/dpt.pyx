@@ -92,6 +92,7 @@ cpdef features(dict pulses, shape, win_size=0):
     cdef int hwin
     cdef np.ndarray[np.double_t, ndim=2] weight = np.zeros(shape, dtype=float)
     cdef np.ndarray[np.int_t, ndim=2] area = np.zeros(shape, dtype=np.int)
+    cdef np.ndarray[np.int_t, ndim=2] strength = np.zeros(shape, dtype=np.int)
 
     for nnz in sorted(pulses):
         for cr in pulses[nnz]:
@@ -100,6 +101,9 @@ cpdef features(dict pulses, shape, win_size=0):
             crh._set_array(<np.int_t*>area.data,
                            shape[0], shape[1], cr,
                            cr._nnz, 1)
+            crh._set_array(<np.int_t*>strength.data,
+                           shape[0], shape[1], cr,
+                           1, 1)
 
     weight -= weight.min()
     beta = weight.mean()
@@ -121,4 +125,4 @@ cpdef features(dict pulses, shape, win_size=0):
 
     _log.info('Features found: %s' % np.sum(weight != 0))
 
-    return weight, area
+    return weight * strength, area
