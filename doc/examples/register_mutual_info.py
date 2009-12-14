@@ -25,7 +25,11 @@ else:
                        [0,            0,       1]])
     Bc = B
 
-M = register.dense_MI(A, B, levels=3)
+M, S = register.dense_MI(A, B, levels=3)
+print "Mutual information: ", S
+if S < 1.5:
+    print "Warning: registration probably failed."
+
 print "Transformation matrix:"
 print np.array2string(M, separator=', ')
 
