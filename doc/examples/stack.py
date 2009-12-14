@@ -28,6 +28,11 @@ else:
                              [0,0,1]])]
 
 out = register.stack.with_transform(images, tf_matrices)
+if out.ndim == 3 and out.shape[2] == 4:
+    mask = out[..., 3]
+    out = out[..., :3]
+    out[mask == 0] = 0
+
 
 plt.figure()
 plt.imshow(out.astype(np.uint8))
