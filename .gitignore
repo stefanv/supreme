@@ -11,4 +11,6 @@ doc/examples/output
 *~
 doc/refguide/source/api/*
 doc/refguide/build
+doc/examples/*.tiff
+doc/examples/*.eps
 
