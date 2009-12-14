@@ -12,6 +12,29 @@ cdef extern from "math.h":
 
 @cython.boundscheck(False)
 def radial_sum(np.ndarray[np.double_t, ndim=2] patch):
+    """Sum the elements of an array outward along 360 directions
+    (1-degree increments).
+
+    Parameters
+    ----------
+    img : (M,N) ndarray of double
+        Input image.
+
+    Returns
+    -------
+    R : (360,) ndarray of double
+        Summed elements of `img` along each of 360 directions.  The central
+        element, which belongs to all directions, is discarded.
+
+    Examples
+    --------
+    >>> x = np.array([[2, 0, 1],
+    ...               [0, 5, 0],
+    ...               [3, 0, 4]], dtype=np.double)
+    >>> R = radial_sum(x)
+    >>> R[[45, 135, 225, 315]] == [1, 2, 3, 4]
+
+    """
     cdef np.ndarray[np.double_t, ndim=1] out = np.zeros((360,), dtype=np.double)
     cdef int i, j, M, N, ii, jj
     cdef double angle
