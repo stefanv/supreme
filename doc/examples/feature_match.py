@@ -115,8 +115,7 @@ if show_features:
 print "Finding tentative correspondences..."
 if win_size is None:
     win_size = 255/2./np.mean(feat_mod_area) * 4/np.pi
-    win_size = np.clip(win_size, 15, 71)
-#    win_size *= np.pi / 4 # Correct for rounded corners
+    win_size = np.clip(win_size, 11, 71)
     print "Automatically determining window size...%d" % win_size
 
 print "win_size=%.2f" % win_size
