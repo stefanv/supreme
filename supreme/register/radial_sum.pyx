@@ -8,6 +8,7 @@ cimport cython
 
 cdef extern from "math.h":
     double atanf(double)
+    int round(double)
 
 @cython.boundscheck(False)
 def radial_sum(np.ndarray[np.double_t, ndim=2] patch):
@@ -31,14 +32,14 @@ def radial_sum(np.ndarray[np.double_t, ndim=2] patch):
             if patch[i, j] == -1:
                 continue
 
-            if ii == 0 and jj > 0:
+            if jj == 0 and ii > 0:
                 out[90] += patch[i, j]
-            elif ii == 0 and jj < 0:
+            elif jj == 0 and ii < 0:
                 out[270] += patch[i, j]
             else:
-                angle = atanf(jj / float(ii)) / np.pi * 180
-                if ii < 0:
+                angle = -atanf(ii / float(jj)) / np.pi * 180
+                if jj < 0:
                     angle += 180
-                out[int(angle % 360)] += patch[i, j]
+                out[round(angle % 360)] += patch[i, j]
 
     return out
