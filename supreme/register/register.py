@@ -235,7 +235,7 @@ def _build_tf(p):
                          [a*S,   b*C, ty],
                          [0,     0,   1.]])
 
-def dense_MI(A, B, p=None, levels=4):
+def dense_MI(A, B, p=None, levels=4, fast=False):
     """Register image B to A, using mutual information and an image pyramid.
 
     Parameters
@@ -258,7 +258,7 @@ def dense_MI(A, B, p=None, levels=4):
     """
     def cost(p, A, B):
         T = transform.homography(B, _build_tf(p), order=1)
-        H = joint_hist(A, T, win_size=5, std=1)
+        H = joint_hist(A, T, win_size=5, std=1, fast=fast)
         S = mutual_info(H)
         return -S
 
