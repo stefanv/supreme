@@ -235,7 +235,7 @@ def _build_tf(p):
                          [a*S,   b*C, ty],
                          [0,     0,   1.]])
 
-def dense_MI(A, B, levels=4):
+def dense_MI(A, B, p=None, levels=4):
     """Register image B to A, using mutual information and an image pyramid.
 
     Parameters
@@ -245,6 +245,10 @@ def dense_MI(A, B, levels=4):
     levels : int
         Number of levels in the image pyramid.  Each level is downsampled
         by 2.
+    p : list of floats, optional
+        The five initial parameters passed to the optimiser.  These are
+        rotation angle, skew in the X direction, skew in the Y direction,
+        translation in x and translation in y.
 
     Returns
     -------
@@ -254,14 +258,19 @@ def dense_MI(A, B, levels=4):
     """
     def cost(p, A, B):
         T = transform.homography(B, _build_tf(p), order=1)
-        S = mutual_info(joint_hist(A, T, win_size=5, std=1, ignore_black=False))
+        H = joint_hist(A, T, win_size=5, std=1)
+        S = mutual_info(H)
         return -S
 
-    p = [0, 1, 1, 0, 0],
+    if p is None:
+        p = [0, 1, 1, 0, 0]
     for z in range(levels - 1, -1, -1):
+        p = [p[0], p[1], p[2], 2*p[3], 2*p[4]]
         _log.info("Downsampling by %d" % 2**z)
         A_ = scipy.ndimage.zoom(A, 1/2.**z)
         B_ = scipy.ndimage.zoom(B, 1/2.**z)
-        p = scipy.optimize.fmin_powell(cost, p, args=(A_, B_))
 
-    return _build_tf(p)
+        p, fopt, direc, iter, funcalls, warnflag = \
+          scipy.optimize.fmin_powell(cost, p, args=(A_, B_), full_output=True)
+
+    return _build_tf(p), -fopt
