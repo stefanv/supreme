@@ -24,9 +24,10 @@ if len(sys.argv) == 3:
     imgc1 = icc[1]
     img1 = ic[1]
 else:
-    icc = ImageCollection(os.path.join(data_path, 'toystory/toystory*.png'))
-    ic = ImageCollection(os.path.join(data_path, 'toystory/toystory*.png'),
+    icc = ImageCollection(os.path.join(data_path, 'pathfinder/i44*.png'))
+    ic = ImageCollection(os.path.join(data_path, 'pathfinder/i44*.png'),
                          grey=True)
+
     imgc0 = icc[0]
     imgc1 = icc[7]
     img0 = ic[0]
