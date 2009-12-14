@@ -32,13 +32,14 @@ img1 = ic[7]
 window = 0
 show_features = False # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
-feature_method = 'fast' # 'fast'
+feature_method = 'dpt' # 'fast'
 dpt_feature_nr = 500
 fast_barrier = 30
 registration_method = 'RANSAC' # or iterative
-RANSAC_confidence = 0.95
+RANSAC_confidence = 0.90
 win_size = None
 save_tiff = True # Save warped images to tiff
+refine_using_MI = True # Refine using mutual information?
 
 # ----------------------------------------------------------------------
 
@@ -128,18 +129,20 @@ if stack:
 #                                           inliers_required=5)
     print np.array2string(M, separator=', ')
 
+    if refine_using_MI:
+        # Estimate parameters from M
+        s = np.sqrt(M[0, 0]**2 + M[1, 0]**2)
+        theta = np.arccos(M[0, 0]/s)
+        p = [theta, s, s, M[0, 2], M[1, 2]]
+        M = supreme.register.dense_MI(img0.astype(np.uint8),
+                                      img1.astype(np.uint8), p=p, levels=1)
+        print np.array2string(M, separator=', ')
+
     plt.subplot(2, 1, 2)
     stack = supreme.register.stack.with_transform((img0, img1),
                                                   (np.eye(3), M),
                                                   save_tiff=save_tiff)
     plt.imshow(stack, cmap=plt.cm.gray, interpolation='nearest')
-
-stack = supreme.register.stack.with_transform((img0, img1),
-                                              (np.eye(3), M),
-                                              save_tiff=save_tiff)
-plt.imshow(stack, cmap=plt.cm.gray, interpolation='nearest')
-plt.show()
-
 
 plt.subplot(2, 1, 1)
 r0, c0 = img0.shape
