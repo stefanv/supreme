@@ -1,5 +1,5 @@
 import sys, os.path
-import pywt
+from supreme.lib import pywt
 import pylab
 
 usage = """Usage:\n %s wavelet [refinement level]""" % os.path.basename(sys.argv[0])

@@ -3,7 +3,7 @@
 
 # Plot scaling and wavelet functions for db, sym, coif, bior and rbio families
 
-import pywt
+from supreme.lib import pywt
 import pylab
 import itertools
 

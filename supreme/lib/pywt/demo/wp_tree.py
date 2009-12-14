@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pywt import WaveletPacket
+from supreme.lib.pywt import WaveletPacket
 
 wp = WaveletPacket(range(16), 'db2', maxlevel=3)
 print [node.path for node in wp.get_leaf_nodes(decompose=False)]

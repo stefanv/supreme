@@ -43,7 +43,7 @@ import sys, optparse
 import Image # http://effbot.org/downloads/#PIL
 import numpy # http://www.scipy.org
 
-import pywt
+from supreme.lib import pywt
 
 def image2array(image):
     """PIL Image to NumPy array"""

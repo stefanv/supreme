@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pywt
+from supreme.lib import pywt
 
 data = range(16)
 wavelet = 'db4'

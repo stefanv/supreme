@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import matplotlib.cm as cm
-import pywt
+from supreme.lib import pywt
 import pylab
 
 x = pylab.arange(0, 1, 1./512)

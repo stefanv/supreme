@@ -4,7 +4,7 @@
 import pylab
 import numpy
 import Image # PIL
-import pywt
+from supreme.lib import pywt
 
 im = Image.open("data/aero.png").convert('L')
 arr = numpy.fromstring(im.tostring(), numpy.uint8)

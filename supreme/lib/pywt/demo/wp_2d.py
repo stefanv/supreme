@@ -4,8 +4,8 @@
 import pylab
 import numpy
 import Image # PIL
-import pywt
-from pywt import WaveletPacket2D
+from supreme.lib import pywt
+from supreme.lib.pywt import WaveletPacket2D
 
 im = Image.open("data/aero.png").convert('L')
 arr = numpy.fromstring(im.tostring(), numpy.uint8)

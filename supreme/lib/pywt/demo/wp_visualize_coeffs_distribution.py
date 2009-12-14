@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pywt import WaveletPacket
+from supreme.lib.pywt import WaveletPacket
 import pylab
 import numpy
 

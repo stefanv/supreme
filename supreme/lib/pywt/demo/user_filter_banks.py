@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pywt
+from supreme.lib import pywt
 
 class FilterBank(object):
     """Sample filter bank with Quadrature Mirror Filters for Haar wavelet"""
