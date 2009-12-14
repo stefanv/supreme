@@ -4,6 +4,8 @@ import supreme.config
 log = supreme.config.get_log(__name__)
 
 from supreme.geometry import Grid
+from supreme.register.radial_sum import radial_sum
+from image import fft_corr
 from logpolar import patch_match
 
 def _safe_coord(i, j, img, win_size):
@@ -46,12 +48,12 @@ def correspond(fA, A, fB, B, win_size=9):
     win_size = int(win_size)
     win_size = win_size + ((win_size + 1) % 2)
 
-## Used to round feature corners, used e.g. in the DPT
-##     # Mask for removing corners
-##     r_max = ((win_size - 1) / 2.)**2
-##     g = Grid(win_size, win_size)
-##     center = (win_size - 1)/ 2.
-##     mask = (((g['cols'] - center)**2 + (g['rows'] - center)**2) > r_max)
+    ## Used to round feature corners, used e.g. in LPT matching
+    # Mask for removing corners
+    r_max = ((win_size - 1) / 2.)**2
+    g = Grid(win_size, win_size)
+    center = (win_size - 1)/ 2.
+    mask = (((g['cols'] - center)**2 + (g['rows'] - center)**2) > r_max)
 
     # Pre-calculate patches
     pA = {}
@@ -62,8 +64,8 @@ def correspond(fA, A, fB, B, win_size=9):
         except IndexError:
             pass
         else:
-            patch = A[m:n, p:q]
-            # patch[mask] = 0 # round feature
+            patch = np.array(A[m:n, p:q], dtype=float)
+            patch[mask] = -1 # round feature
             pA[(i, j)] = patch
 
     pB = {}
@@ -73,8 +75,8 @@ def correspond(fA, A, fB, B, win_size=9):
         except IndexError:
             pass
         else:
-            patch = B[m:n, p:q]
-            # patch[mask] = 0 # round feature
+            patch = np.array(B[m:n, p:q], dtype=float)
+            patch[mask] = -1 # round feature
             pB[(i, j)] = patch
 
     count = 1
@@ -90,7 +92,6 @@ def correspond(fA, A, fB, B, win_size=9):
         if patch_A is None:
             continue
 
-        # Normalise values
         patch_A = patch_A - patch_A.mean()
 
         # Sort values for QQ-comparison
@@ -100,7 +101,8 @@ def correspond(fA, A, fB, B, win_size=9):
             patch_B = pB.get((m, n), None)
             if patch_B is None:
                 continue
-            patch_B = np.sort(patch_B - patch_B.mean())
+            patch_B = patch_B - patch_B.mean()
+            patch_B = np.sort(patch_B)
 
             norm = np.linalg.norm
 

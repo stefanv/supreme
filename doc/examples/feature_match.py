@@ -23,23 +23,26 @@ imgc1 = icc[7]
 img0 = ic[1]
 img1 = ic[7]
 
-#ic = ImageCollection(os.path.join(data_path, 'ooskus/*cropped*.jpg'), grey=True)
-#ic = [imread(data_path + '/ooskus/dscf1723.jpg', flatten=True),
-#      imread(data_path + '/ooskus/dscf1724.jpg', flatten=True)]
-#img0 = ic[0]
-#img1 = ic[1]
+## ic = [imread(data_path + '/ooskus/dscf1723.jpg', flatten=True),
+##       imread(data_path + '/ooskus/dscf1724.jpg', flatten=True)]
+## icc = [imread(data_path + '/ooskus/dscf1723.jpg'),
+##        imread(data_path + '/ooskus/dscf1724.jpg')]
 
-window = 0
+## icc = ImageCollection(os.path.join(data_path, 'reflectometer/*crop*.png'))
+## ic = ImageCollection(os.path.join(data_path, 'reflectometer/*crop**.png'), grey=True)
+
+
 show_features = False # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
 feature_method = 'dpt' # 'fast'
-dpt_feature_nr = 500
-fast_barrier = 30
+dpt_feature_nr = 200
+fast_barrier = 25
 registration_method = 'RANSAC' # or iterative
-RANSAC_confidence = 0.90
+RANSAC_confidence = 0.95
 win_size = None
 save_tiff = True # Save warped images to tiff
-refine_using_MI = True # Refine using mutual information?
+refine_using_MI = False # Refine using mutual information?
+window = 0 # only return 1 feature per window
 
 # ----------------------------------------------------------------------
 
@@ -99,19 +102,19 @@ if show_features:
     plt.hold(True)
     plt.imshow(img0, cmap=plt.cm.gray, interpolation='nearest')
     for (i, j), a in zip(feat_coord, feat_area):
-        plt.plot(j, i, 'o', markersize=a)
+        plt.plot(j, i, 'o', markersize=2)
 
     plt.subplot(122)
     plt.hold(True)
     plt.imshow(img1, cmap=plt.cm.gray, interpolation='nearest')
     for (i, j), a in zip(feat_mod_coord, feat_mod_area):
-        plt.plot(j, i, 'o', markersize=a)
+        plt.plot(j, i, 'o', markersize=2)
     plt.show()
 
 print "Finding tentative correspondences..."
 if win_size is None:
     win_size = 255/2./np.mean(feat_mod_area)
-    win_size = np.clip(win_size, 11, 31)
+    win_size = np.clip(win_size, 11, 51)
 #    win_size *= np.pi / 4 # Correct for rounded corners
     print "Automatically determining window size...%d" % win_size
 
@@ -134,15 +137,15 @@ if stack:
         s = np.sqrt(M[0, 0]**2 + M[1, 0]**2)
         theta = np.arccos(M[0, 0]/s)
         p = [theta, s, s, M[0, 2], M[1, 2]]
-        M = supreme.register.dense_MI(img0.astype(np.uint8),
-                                      img1.astype(np.uint8), p=p, levels=1)
+        M, S = supreme.register.dense_MI(img0.astype(np.uint8),
+                                         img1.astype(np.uint8), p=p, levels=1)
         print np.array2string(M, separator=', ')
 
     plt.subplot(2, 1, 2)
-    stack = supreme.register.stack.with_transform((img0, img1),
+    stack = supreme.register.stack.with_transform((imgc0, imgc1),
                                                   (np.eye(3), M),
                                                   save_tiff=save_tiff)
-    plt.imshow(stack, cmap=plt.cm.gray, interpolation='nearest')
+    plt.imshow(stack/stack.max(), cmap=plt.cm.gray, interpolation='nearest')
 
 plt.subplot(2, 1, 1)
 r0, c0 = img0.shape

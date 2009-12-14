@@ -7,6 +7,8 @@ def configuration(parent_package='', top_path=None):
                          include_dirs=[get_numpy_include_dirs()])
     config.add_extension('parzen', sources=['parzen.c'],
                          include_dirs=[get_numpy_include_dirs()])
+    config.add_extension('radial_sum', sources=['radial_sum.c'],
+                         include_dirs=[get_numpy_include_dirs()])
 
     config.add_data_dir('tests')
 
