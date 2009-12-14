@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import os
+import os, sys
 
 from supreme.config import data_path
 from supreme import transform
@@ -16,29 +16,29 @@ from supreme.register.correspond import correspond
 
 # ----------------------------------------------------------------------
 
-icc = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'))
-ic = ImageCollection(os.path.join(data_path, 'toystory/toy*.png'), grey=True)
-imgc0 = icc[1]
-imgc1 = icc[7]
-img0 = ic[1]
-img1 = ic[7]
+if len(sys.argv) == 3:
+    icc = [imread(sys.argv[i]) for i in range(1, 3)]
+    ic = [imread(sys.argv[i], flatten=True) for i in range(1, 3)]
+    imgc0 = icc[0]
+    img0 = ic[0]
+    imgc1 = icc[1]
+    img1 = ic[1]
+else:
+    icc = ImageCollection(os.path.join(data_path, 'toystory/toystory*.png'))
+    ic = ImageCollection(os.path.join(data_path, 'toystory/toystory*.png'),
+                         grey=True)
+    imgc0 = icc[0]
+    imgc1 = icc[7]
+    img0 = ic[0]
+    img1 = ic[7]
 
-## ic = [imread(data_path + '/ooskus/dscf1723.jpg', flatten=True),
-##       imread(data_path + '/ooskus/dscf1724.jpg', flatten=True)]
-## icc = [imread(data_path + '/ooskus/dscf1723.jpg'),
-##        imread(data_path + '/ooskus/dscf1724.jpg')]
-
-## icc = ImageCollection(os.path.join(data_path, 'reflectometer/*crop*.png'))
-## ic = ImageCollection(os.path.join(data_path, 'reflectometer/*crop**.png'), grey=True)
-
-
-show_features = False # Whether to display the features found on screen
+show_features = True # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
 feature_method = 'dpt' # 'fast'
-dpt_feature_nr = 200
+dpt_feature_nr = 500
 fast_barrier = 25
 registration_method = 'RANSAC' # or iterative
-RANSAC_confidence = 0.95
+RANSAC_confidence = 0.98
 win_size = None
 save_tiff = True # Save warped images to tiff
 refine_using_MI = False # Refine using mutual information?
@@ -89,9 +89,9 @@ elif feature_method == 'fast':
     feat_mod_coord = perm(fast.corner_detect(img1,
                                              barrier=fast_barrier))
 
-    feat_area = np.ones(len(feat_coord)) * 2
+    feat_area = np.ones(len(feat_coord)) * 4
     feat_mod_coord = [(i,j) for (j,i) in feat_mod_coord]
-    feat_mod_area = np.ones(len(feat_mod_coord)) * 2
+    feat_mod_area = np.ones(len(feat_mod_coord)) * 4
 else:
     raise ValueError("Invalid feature extractor specified.")
 
@@ -102,19 +102,19 @@ if show_features:
     plt.hold(True)
     plt.imshow(img0, cmap=plt.cm.gray, interpolation='nearest')
     for (i, j), a in zip(feat_coord, feat_area):
-        plt.plot(j, i, 'o', markersize=2)
+        plt.plot(j, i, 'o', markersize=4)
 
     plt.subplot(122)
     plt.hold(True)
     plt.imshow(img1, cmap=plt.cm.gray, interpolation='nearest')
     for (i, j), a in zip(feat_mod_coord, feat_mod_area):
-        plt.plot(j, i, 'o', markersize=2)
+        plt.plot(j, i, 'o', markersize=4)
     plt.show()
 
 print "Finding tentative correspondences..."
 if win_size is None:
-    win_size = 255/2./np.mean(feat_mod_area)
-    win_size = np.clip(win_size, 11, 51)
+    win_size = 255/2./np.mean(feat_mod_area) * 4/np.pi
+    win_size = np.clip(win_size, 15, 71)
 #    win_size *= np.pi / 4 # Correct for rounded corners
     print "Automatically determining window size...%d" % win_size
 
