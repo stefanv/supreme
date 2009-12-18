@@ -37,7 +37,7 @@ def dwt2(data, wavelet, mode='sym'):
         )
 
     which sometimes is also interpreted as layed out in one 2D array
-    of coefficients, where:
+    of coefficients, where::
 
                                 -----------------
                                 |       |       |
