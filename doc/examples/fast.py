@@ -3,7 +3,7 @@ import numpy as np
 
 from supreme.lib import fast
 from supreme.config import data_path
-from supreme.misc.io import ImageCollection
+from supreme.io import ImageCollection
 
 import scipy as sp
 
