@@ -34,9 +34,13 @@ if __name__ == '__main__':
     docwriter = ApiDocWriter(package)
     docwriter.package_skip_patterns += [r'\.fixes$',
                                         r'\.externals$',
+                                        'lib.decorator$',
+                                        'lib.pywt',
+                                        'lib.nurbs',
                                         ]
     docwriter.module_skip_patterns += ['ctype_arrays$',
-                                       'lib.decorator$',
+                                       'api$',
+                                       'lib.EXIF$',
                                        'transform.transform$',
                                        'misc.io$',
                                        'ext.libsupreme$',
