@@ -7,6 +7,7 @@ __all__ = ['logpolar','matrix', 'homography']
 
 import supreme
 import supreme.config as SC
+import supreme.geometry
 from supreme.ext import interp_bilinear
 
 def stackcopy(a,b):
