@@ -26,7 +26,7 @@ def _denoise_band(X, wavelet, levels, alpha):
 
     rec = pywt.waverec2(decomp, wavelet)
     rows, cols = X.shape
-    return rec[:rows, :cols]
+    return rec[:rows, 1:]
 
 def dwt_denoise(X, wavelet='db8', levels=4, alpha=2):
     """Denoise an image using the Discrete Wavelet Transform.
@@ -68,7 +68,7 @@ def dwt_denoise(X, wavelet='db8', levels=4, alpha=2):
         bands = X.shape[2]
 
         for b in range(bands):
-            out[..., b] = _denoise_band(X[..., b], wavelet, levels, alpha)
+            out[:, :, b] = _denoise_band(X[..., b], wavelet, levels, alpha)
     else:
         out[:] = _denoise_band(X, wavelet, levels, alpha)
 

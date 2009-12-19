@@ -10,11 +10,12 @@ import demo_data
 
 X = demo_data.chelsea()
 
-X_ = X + np.random.normal(loc=0, scale=30, size=X.shape)
+noise = np.random.normal(loc=0, scale=30, size=X.shape)
+X_ = X + noise
 X_ = np.clip(X_, 0, 255)
 X_ /= X_.max()
 
-Y = np.clip(dwt_denoise(X_, wavelet='db16', alpha=0.01, levels=4), 0, 255)
+Y = np.clip(dwt_denoise(X_, wavelet='db16', alpha=0.02, levels=4), 0, 255)
 Y /= Y.max()
 
 print "MSE:", np.mean((X - Y)**2)/np.prod(X.shape)
