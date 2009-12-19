@@ -86,7 +86,7 @@ class ImageCollection(object):
         Example:
         --------
         >>> from os.path import dirname, join
-        >>> data_dir = join(dirname(__file__),'tests')
+        >>> data_dir = join(dirname(__file__), 'tests')
 
         >>> c = ImageCollection(data_dir + '/*.png')
         >>> len(c)
@@ -95,7 +95,10 @@ class ImageCollection(object):
         (20, 20, 3)
 
         """
-        self.files = sorted(glob(file_pattern))
+        if isinstance(file_pattern, list):
+            self.files = file_pattern
+        else:
+            self.files = sorted(glob(file_pattern))
 
         if conserve_memory:
             memory_slots = 1

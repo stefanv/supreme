@@ -1,4 +1,5 @@
 import os.path
+from glob import glob
 
 from numpy.testing import *
 import numpy as np
@@ -26,6 +27,7 @@ class TestImageCollection:
     data_glob = os.path.join(data_path, '*.png')
     images = [imread(os.path.join(data_path, 'data%d.png' % i))
               for i in range(3)]
+    data_files = glob(data_glob)
 
     def setUp(self):
         self.c = ImageCollection(self.data_glob)
@@ -65,6 +67,10 @@ class TestImageCollection:
         im_path = os.path.join(self.data_path, 'exif_tagged.jpg')
         ic = ImageCollection(im_path)
         assert_equal(str([im_path]), str(ic))
+
+    def test_files_list(self):
+        c2 = ImageCollection(self.data_files)
+        assert_equal(self.c.files, c2.files)
 
 class TestImageCollection_do_not_conserve_memory(ImageCollection):
     def setUp(self):
