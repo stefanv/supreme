@@ -149,6 +149,7 @@ class PointCorrespondence(object):
 
         self.mode = args.get('mode', 'direct').lower()
         self.args = args
+        self.RANSAC_mode = args.get('RANSAC_mode', 'direct')
 
     def estimate(self):
         if self.mode == 'direct':
@@ -156,10 +157,15 @@ class PointCorrespondence(object):
         elif self.mode == 'iterative':
             return Homography().estimate_iterative(self.data)
         else:
-            return self.RANSAC()
+            return self.RANSAC(self.RANSAC_mode)
 
-    def RANSAC(self):
+    def RANSAC(self, mode='direct'):
+        """Mode can be 'direct' or 'iterative'.
+
+        """
         M = Homography()
+        if mode == 'iterative':
+            M.estimate = M.estimate_iterative
         R = RANSAC.RANSAC(M, p_inlier=0.1) # conservatively low
         return R(self.data,
                  inliers_required=self.args.get('inliers_required',
@@ -182,6 +188,9 @@ def sparse(ref_feat_rows, ref_feat_cols,
     mode : {'direct', 'iterative', 'RANSAC'}, optional
         Method used to estimate the correspondences.  See also
         ``PointCorrespondence``.
+    RANSAC_mode : {'direct', 'iterative'}, optional
+        Whether RANSAC should estimates homographies directly
+        or iteratively.
 
     Other Parameters
     ----------------
