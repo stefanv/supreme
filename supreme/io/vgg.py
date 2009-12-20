@@ -12,6 +12,32 @@ import os
 from glob import glob
 
 def load_vgg(path):
+    """Load a VGG super-resolution data-set.
+
+    Parameters
+    ----------
+    path : str
+        Path to the data-set.
+
+    Returns
+    -------
+    ic : ImageCollection
+        An imagecollection of all the images, with the homographies
+        stored in ``x.info['H']`` for each ``x`` in `ic`.
+
+    Notes
+    -----
+    A VGG data-set stores the transformations from one frame to the
+    next.  This loader modifies all the homographies to be relative to
+    the first frame.
+
+    References
+    ----------
+    .. [1] Super-resolution test sequences by David Capel, VGG,
+           University of Oxford.
+           http://www.robots.ox.ac.uk/~vgg/data/data-various.html
+
+    """
     data_paths = ['pgm', 'fields']
     H_paths = ['H']
 
