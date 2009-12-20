@@ -8,8 +8,12 @@ from scipy import ndimage as ndi
 import supreme.config as sc
 from supreme import transform
 from supreme.geometry import Grid, Polygon
+from supreme.ext import interp_transf_polygon
 
-__all__ = ['with_transform']
+import supreme
+log = supreme.config.get_log(__name__)
+
+__all__ = ['with_transform', 'mask_roi', 'corners']
 
 def corners(dims):
     """Return the corner coordinates for a matrix of the given
@@ -69,7 +73,8 @@ def mask_roi(rows, cols, bounds):
     return p.inside(g['cols'].flat, g['rows'].flat).reshape(rows, cols)
 
 def with_transform(images, matrices, weights=None, order=1,
-                   oshape=None, save_tiff=False):
+                   oshape=None, save_tiff=False,
+                   method='interpolate'):
     """Stack images after performing coordinate transformations.
 
     Parameters
@@ -90,6 +95,9 @@ def with_transform(images, matrices, weights=None, order=1,
         include all images.
     save_tiff : bool
         Whether to save copies of the warped images.  False by default.
+    method : {'interpolate', 'polygon'}
+        Use standard interpolation (default) or polygon interpolation.
+        Note: Polygon interpolation is currently disabled.
 
     Notes
     -----
@@ -134,16 +142,23 @@ def with_transform(images, matrices, weights=None, order=1,
 
     sources = []
     boundaries = []
-    for img, tf_matrix, weight in zip(images, affine_matrices, weights):
+    for n, (img, tf_matrix, weight) in \
+            enumerate(zip(images, affine_matrices, weights)):
         if reshape:
             tf_matrix = tf_matrix.copy()
             tf_matrix[:2,2] -= bbox_top_left
 
         boundaries.append(_tf_corners(img.shape[0] + 1,
                                       img.shape[1] + 1, tf_matrix))
+#        if method == 'polygon':
+#            sources.append(interp_transf_polygon(img, np.linalg.inv(tf_matrix),
+#                                                 oshape))
+#        else:
         sources.append(transform.matrix(img, tf_matrix,
                                         output_shape=oshape, order=order,
-                                        mode='mirror'))
+                                        mode='reflect'))
+
+        log.info('Transformed image %d' % n)
 
     if save_tiff:
         from scipy.misc import imsave
