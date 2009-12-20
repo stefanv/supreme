@@ -4,17 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import supreme as sr
-import supreme.misc
+import supreme.io
 from supreme.config import data_path
 
-fn0 = sr.misc.imread(os.path.join(data_path,'NASA/hubble_crop.jpg'),flatten=True)
-fn1 = sr.misc.imread(os.path.join(data_path,'NASA/hubble_crop_rot5.jpg'),flatten=True)
+fn0 = sr.io.imread(os.path.join(data_path,'NASA/hubble_crop.jpg'),flatten=True)
+fn1 = sr.io.imread(os.path.join(data_path,'NASA/hubble_crop_rot5.jpg'),flatten=True)
 
 def build_array(theta,tx,ty,s):
     A = np.array([[np.cos(theta),-np.sin(theta),tx],
                   [np.sin(theta), np.cos(theta),ty],
                   [0,0,1]])
-    A[:2,:-1] *= s
+    A[:2,:] *= s
     return A
 
 scale = 2.
