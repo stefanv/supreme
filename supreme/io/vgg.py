@@ -38,7 +38,7 @@ def load_vgg(path):
            http://www.robots.ox.ac.uk/~vgg/data/data-various.html
 
     """
-    data_paths = ['pgm', 'fields']
+    data_paths = ['pgm', 'fields', 'png', 'jpg']
     H_paths = ['H']
 
     data_paths = [os.path.join(path, p) for p in data_paths]
@@ -69,5 +69,6 @@ def load_vgg(path):
 
             H_sofar = np.dot(np.linalg.inv(H), H_sofar)
             img.info['H'] = H_sofar
+            img.info['H_rel'] = H
 
     return ic
