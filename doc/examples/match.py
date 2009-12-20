@@ -11,8 +11,8 @@ print "Reading images and features..."
 features = []
 images = []
 
-dataset = 'toystory'
-basename = 'toystory'
+dataset = 'pathfinder'
+basename = 'i44'
 imagetype = 'png'
 featuretype = 'sift'
 T = 0.6
