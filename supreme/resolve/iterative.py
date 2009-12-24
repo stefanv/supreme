@@ -1,4 +1,4 @@
-__all__ = ['default_camera', 'cost_squared_error', 'iresolve',
+__all__ = ['solve', 'default_camera', 'cost_squared_error', 'iresolve',
            'initial_guess_avg', 'cost_prior_xsq']
 
 import numpy as np
@@ -10,7 +10,86 @@ from supreme.transform.transform import _homography_coords
 import supreme.config
 log = supreme.config.get_log(__name__)
 
+from lsqr import lsqr
+from operators import bilinear
+
 import time
+
+def solve(images, tf_matrices, scale, x0=None, damp=5):
+    """Super-resolve a set of low-resolution images by solving
+    a large, sparse set of linear equations.
+
+    This method approximates the camera with a downsampling operator,
+    using bilinear interpolation.  The LSQR method is used to solve
+    the equation :math:`A\mathbf{x} = b` where :math:`A` is the
+    downsampling operator, :math:`\mathbf{x}` is the high-resolution
+    estimate (flattened in raster scan or lexicographic order), and
+    :math:`mathbf{b}` is a stacked vector of all the low-resolution
+    images.
+
+    Parameters
+    ----------
+    images : list of ndarrays
+        Low-resolution input frames.
+    tf_matrices : list of (3, 3) ndarrays
+        Transformation matrices that relate all low-resolution frames
+        to a reference low-resolution frame (usually ``images[0]``).
+    scale : float
+        The resolution of the output image is `scale` times the resolution
+        of the input images.
+    x0 : ndarray, optional
+        Initial guess of HR image.
+    damp : float, optional
+        If an initial guess is provided, `damp` specifies how much that
+        estimate is weighed in the entire process.  A larger value of
+        `damp` results in a solution closer to `x0`, whereas a smaller
+        version of `damp` yields a solution closer to the solution
+        obtained without any initial estimate.
+
+    Returns
+    -------
+    HR : ndarray
+        High-resolution estimate.
+
+    """
+    assert len(images) == len(tf_matrices)
+
+    HH = [H.copy() for H in tf_matrices]
+    for H in HH:
+        H[:2, :] /= scale
+
+    oshape = np.array(images[0].shape) * scale
+    LR_shape = images[0].shape
+
+    spA = bilinear(oshape[0], oshape[1], HH, *LR_shape)
+
+    def A(x, m, n):
+        return spA * x
+
+    def AT(x, m, n):
+        return spA.T * x
+
+    k = len(images)
+    M = np.prod(LR_shape)
+    b = np.empty(k * M)
+    for i in range(k):
+        b[i * M:(i + 1) * M] = images[i].flat
+
+    atol = btol = 1e-12
+    show = True
+
+    if x0 is not None:
+        x0 = x0.flat
+        b = b - spA * x0
+        x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
+           lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
+                damp=5, show=show)
+        x = x0 + x
+    else:
+        x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
+           lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, show=show)
+
+    return x.reshape(oshape)
 
 def initial_guess_avg(images, tf_matrices, scale, oshape):
     """From the given low-resolution images and transforms, make an
@@ -143,14 +222,6 @@ def iresolve(images, tf_matrices, scale=1.3,
         HR.shape = oshape
         for i, (H, LR) in enumerate(zip(tf_matrices, images)):
             LR_est = camera(i, HR, H, scale, images[0].shape, **camera_args)
-##             import matplotlib.pyplot as plt
-##             plt.subplot(1,3,1)
-##             plt.imshow(LR, cmap=plt.cm.gray)
-##             plt.subplot(1,3,2)
-##             plt.imshow(LR_est, cmap=plt.cm.gray)
-##             plt.subplot(1,3,3)
-##             plt.imshow(LR-LR_est)
-##             plt.show()
 
             err += cost_measure(i, LR, LR_est, HR, HR_guess, **cost_args)
 

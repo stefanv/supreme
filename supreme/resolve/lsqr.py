@@ -162,25 +162,27 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
         Gives the reason for termination.
         1 means x is an approximate solution to Ax = b.
         2 means x approximately solves the least-squares problem.
-     r1norm : float
-         ``norm(r)``, where ``r = b - Ax``.
-     r2norm : float
-         ``sqrt( norm(r)^2  +  damp^2 * norm(x)^2 )``.  Equal to `r1norm` if
-         ``damp == 0``.
-     anorm : float
-         Estimate of Frobenius norm of ``Abar = [[A]; [damp*I]]``.
-     acond : float
-         Estimate of ``cond(Abar)``.
-     arnorm : float
-         Estimate of ``norm(A'*r - damp^2*x)``.
-     xnorm : float
-         ``norm(x)``
-     var : ndarray of float
-         If ``calc_var`` is True, estimates all diagonals of
-         ``(A'A)^{-1}`` (if ``damp == 0``) or more generally ``(A'A +
-         damp^2*I)^{-1}``.  This is well defined if A has full column
-         rank or ``damp > 0``.  (Not sure what var means if ``rank(A)
-         < n`` and ``damp = 0.``)
+    itn : int
+        Iteration number upon termination.
+    r1norm : float
+        ``norm(r)``, where ``r = b - Ax``.
+    r2norm : float
+        ``sqrt( norm(r)^2  +  damp^2 * norm(x)^2 )``.  Equal to `r1norm` if
+        ``damp == 0``.
+    anorm : float
+        Estimate of Frobenius norm of ``Abar = [[A]; [damp*I]]``.
+    acond : float
+        Estimate of ``cond(Abar)``.
+    arnorm : float
+        Estimate of ``norm(A'*r - damp^2*x)``.
+    xnorm : float
+        ``norm(x)``
+    var : ndarray of float
+        If ``calc_var`` is True, estimates all diagonals of
+        ``(A'A)^{-1}`` (if ``damp == 0``) or more generally ``(A'A +
+        damp^2*I)^{-1}``.  This is well defined if A has full column
+        rank or ``damp > 0``.  (Not sure what var means if ``rank(A)
+        < n`` and ``damp = 0.``)
 
     Notes
     -----
@@ -273,8 +275,8 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
         print 'LSQR            Least-squares solution of  Ax = b'
         str1 = 'The matrix A has %8g rows  and %8g cols' % (m, n)
         str2 = 'damp = %20.14e   calc_var = %8g' % (damp, calc_var)
-        str3 = 'atol = %8.2e                 con_lim = %8.2e'%( atol, con_lim)
-        str4 = 'btol = %8.2e                 iter_lim = %8g'  %( btol, iter_lim)
+        str3 = 'atol = %8.2e                con_lim = %8.2e'%( atol, con_lim)
+        str4 = 'btol = %8.2e               iter_lim = %8g'  %( btol, iter_lim)
         print str1
         print str2
         print str3
@@ -333,7 +335,7 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
         return x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var
 
     head1  = '   Itn      x[0]       r1norm     r2norm ';
-    head2  = ' Compatible   LS      Norm A   Cond A';
+    head2  = ' Compatible    LS      Norm A   Cond A';
 
     if show:
         print ' '
