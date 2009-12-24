@@ -3,6 +3,8 @@ __all__ = ['solve', 'default_camera', 'cost_squared_error', 'iresolve',
 
 import numpy as np
 import scipy.optimize as opt
+import scipy.ndimage as ndi
+
 from supreme.register import stack
 from supreme.transform import homography
 from supreme.transform.transform import _homography_coords
@@ -15,7 +17,8 @@ from operators import bilinear
 
 import time
 
-def solve(images, tf_matrices, scale, x0=None, damp=5):
+def solve(images, tf_matrices, scale, x0=None,
+          damp=5, tol=1e-10, iter_lim=None):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -75,7 +78,7 @@ def solve(images, tf_matrices, scale, x0=None, damp=5):
     for i in range(k):
         b[i * M:(i + 1) * M] = images[i].flat
 
-    atol = btol = conlim = 0
+    atol = btol = conlim = tol
     show = True
 
     if x0 is not None:
@@ -83,12 +86,12 @@ def solve(images, tf_matrices, scale, x0=None, damp=5):
         b = b - spA * x0
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
-                conlim=conlim, damp=5, show=show)
+                conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
         x = x0 + x
     else:
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, conlim=conlim,
-                show=show)
+                show=show, iter_lim=iter_lim)
 
     return x.reshape(oshape)
 
