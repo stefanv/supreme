@@ -58,7 +58,7 @@ def solve(images, tf_matrices, scale, x0=None, damp=5):
     for H in HH:
         H[:2, :] /= scale
 
-    oshape = np.array(images[0].shape) * scale
+    oshape = np.floor(np.array(images[0].shape) * scale)
     LR_shape = images[0].shape
 
     spA = bilinear(oshape[0], oshape[1], HH, *LR_shape)
@@ -75,7 +75,7 @@ def solve(images, tf_matrices, scale, x0=None, damp=5):
     for i in range(k):
         b[i * M:(i + 1) * M] = images[i].flat
 
-    atol = btol = 1e-12
+    atol = btol = conlim = 0
     show = True
 
     if x0 is not None:
@@ -83,11 +83,12 @@ def solve(images, tf_matrices, scale, x0=None, damp=5):
         b = b - spA * x0
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
-                damp=5, show=show)
+                conlim=conlim, damp=5, show=show)
         x = x0 + x
     else:
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-           lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, show=show)
+           lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, conlim=conlim,
+                show=show)
 
     return x.reshape(oshape)
 

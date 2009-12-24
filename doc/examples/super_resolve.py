@@ -1,7 +1,7 @@
 """Construct super-resolution reconstruction of a registered data-set.
 
 """
-SCALE = 2
+SCALE = 1.5
 
 import numpy as np
 
@@ -20,11 +20,13 @@ else:
 
 ic = load_vgg(vgg_dir)
 
-HH = [ic[i].info['H'] for i in range(10)]
-images = [ic[i] for i in range(10)]
-oshape = np.array(images[0].shape) * SCALE
+##HH = [ic[i].info['H'] for i in range(10)]
+#images = [ic[i] for i in range(10)]
+HH = [i.info['H'] for i in ic]
+images = [i for i in ic]
+oshape = np.floor(np.array(images[0].shape) * SCALE)
 avg = initial_guess_avg(images, HH, SCALE, oshape)
-out = solve(images, HH, scale=SCALE, x0=avg)
+out = solve(images, HH, scale=SCALE, x0=avg, damp=0)
 #out = iresolve(images, HH, scale=SCALE,
 #               cost_measure=cost_prior_xsq,
 #               cost_args={'lam': 0.3})
