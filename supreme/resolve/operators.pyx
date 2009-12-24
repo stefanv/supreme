@@ -70,7 +70,7 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N):
                 t = ii - yy
                 u = jj - xx
 
-                R = k*M*N + i * M + j
+                R = k*M*N + i * N + j
 
                 I.extend([R, R, R, R])
                 J.extend([yy*NN + xx,
