@@ -100,7 +100,7 @@ def _sym_ortho(a,b):
     return c, s, r
 
 
-def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
+def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
          iter_lim=None, show=False, calc_var=False):
     """Find the least-squares solution to a large, sparse, linear system
     of equations.
@@ -139,13 +139,13 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
         residual norm should be accurate to about 9 digits.  (The
         final x will usually have fewer correct digits, depending on
         cond(A) and the size of damp.)
-    con_lim : float
+    conlim : float
         Another stopping tolerance.  lsqr terminates if an estimate of
-        ``cond(A)`` exceeds `con_lim`.  For compatible systems ``Ax =
-        b``, `con_lim` could be as large as 1.0e+12 (say).  For
-        least-squares problems, con_lim should be less than 1.0e+8.
+        ``cond(A)`` exceeds `conlim`.  For compatible systems ``Ax =
+        b``, `conlim` could be as large as 1.0e+12 (say).  For
+        least-squares problems, conlim should be less than 1.0e+8.
         Maximum precision can be obtained by setting ``atol = btol =
-        con_lim = zero``, but the number of iterations may then be
+        conlim = zero``, but the number of iterations may then be
         excessive.
     iter_lim : int
         Explicit limitation on number of iterations (for safety).
@@ -264,7 +264,7 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
     msg=('The exact solution is  x = 0                              ',
          'Ax - b is small enough, given atol, btol                  ',
          'The least-squares solution is good enough, given atol     ',
-         'The estimate of cond(Abar) has exceeded con_lim            ',
+         'The estimate of cond(Abar) has exceeded conlim            ',
          'Ax - b is small enough for this machine                   ',
          'The least-squares solution is good enough for this machine',
          'Cond(Abar) seems to be too large for this machine         ',
@@ -275,7 +275,7 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
         print 'LSQR            Least-squares solution of  Ax = b'
         str1 = 'The matrix A has %8g rows  and %8g cols' % (m, n)
         str2 = 'damp = %20.14e   calc_var = %8g' % (damp, calc_var)
-        str3 = 'atol = %8.2e                con_lim = %8.2e'%( atol, con_lim)
+        str3 = 'atol = %8.2e                 conlim = %8.2e'%( atol, conlim)
         str4 = 'btol = %8.2e               iter_lim = %8g'  %( btol, iter_lim)
         print str1
         print str2
@@ -286,7 +286,7 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
     istop = 0
     nstop = 0
     ctol = 0
-    if con_lim > 0: ctol = 1/con_lim
+    if conlim > 0: ctol = 1/conlim
     anorm = 0
     acond = 0
     dampsq = damp**2
@@ -442,9 +442,9 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, con_lim=1e8,
 
         # The following tests guard against extremely small values of
         # atol, btol  or  ctol.  (The user may have set any or all of
-        # the parameters  atol, btol, con_lim  to 0.)
+        # the parameters  atol, btol, conlim  to 0.)
         # The effect is equivalent to the normal tests using
-        # atol = eps,  btol = eps,  con_lim = 1/eps.
+        # atol = eps,  btol = eps,  conlim = 1/eps.
         if itn >= iter_lim: istop = 7
         if 1 + test3 <= 1: istop = 6
         if 1 + test2 <= 1: istop = 5
