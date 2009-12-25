@@ -37,9 +37,13 @@ HH = [i.info['H'] for i in ic]
 oshape = np.floor(np.array(images[0].shape) * SCALE)
 avg = initial_guess_avg(images, HH, SCALE, oshape)
 
-out = solve(images, HH, scale=SCALE, tol=0, std=1.1,
-            x0=avg, damp=2, iter_lim=300)
+out = solve(images, HH, scale=SCALE, tol=0, std=1.15,
+            x0=avg, damp=7, iter_lim=300)
 
+out = out[50:-10, 10:-50]
+avg = avg[50:-10, 10:-50]
+
+out /= out.max()
 #out = np.clip(out, 0, 255)
 #out = iresolve(images, HH, scale=SCALE,
 #               cost_measure=cost_prior_xsq,

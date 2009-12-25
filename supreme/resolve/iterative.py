@@ -92,7 +92,7 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
 
     if x0 is not None:
         x0 = x0.flat
-        b = b - spA * x0
+        b = b - op * x0
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
                 conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
