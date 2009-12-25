@@ -8,6 +8,8 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
+from supreme.geometry.window import gauss
+
 cdef extern from "math.h":
     double logf(double)
 
@@ -73,12 +75,7 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
     cdef np.ndarray[np.double_t, ndim=2] w
 
     if not fast:
-        x, y = np.mgrid[:win_size, :win_size]
-        hwin = (win_size - 1) / 2
-        x -= hwin
-        y -= hwin
-        std = float(std)
-        w = np.exp(-(x**2 + y**2)/(2 ** std**2)) / (2 * np.pi * std**2)
+        w = gauss(win_size, std)
 
     out = np.zeros((255, 255), dtype=np.double)
 
