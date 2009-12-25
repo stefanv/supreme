@@ -8,17 +8,18 @@ import scipy.ndimage as ndi
 from supreme.register import stack
 from supreme.transform import homography
 from supreme.transform.transform import _homography_coords
+from supreme.geometry.window import gauss
 
 import supreme.config
 log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
-from operators import bilinear
+from operators import bilinear, convolve
 
 import time
 
-def solve(images, tf_matrices, scale, x0=None,
-          damp=5, tol=1e-10, iter_lim=None):
+def solve(images, tf_matrices, scale, std=None, x0=None,
+          damp=1, tol=1e-10, iter_lim=None):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -40,6 +41,9 @@ def solve(images, tf_matrices, scale, x0=None,
     scale : float
         The resolution of the output image is `scale` times the resolution
         of the input images.
+    std : float
+        Standard deviation of the blurring operator that represents the
+        low-resolution camera process.
     x0 : ndarray, optional
         Initial guess of HR image.
     damp : float, optional
@@ -64,13 +68,18 @@ def solve(images, tf_matrices, scale, x0=None,
     oshape = np.floor(np.array(images[0].shape) * scale)
     LR_shape = images[0].shape
 
+    w = gauss(size=5, std=std)
+    w /= w.max()
+    spC = convolve(oshape[0], oshape[1], w)
     spA = bilinear(oshape[0], oshape[1], HH, *LR_shape)
 
+    op = spA * spC
+
     def A(x, m, n):
-        return spA * x
+        return op * x
 
     def AT(x, m, n):
-        return spA.T * x
+        return op.T * x
 
     k = len(images)
     M = np.prod(LR_shape)
@@ -91,7 +100,7 @@ def solve(images, tf_matrices, scale, x0=None,
     else:
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, conlim=conlim,
-                show=show, iter_lim=iter_lim)
+                damp=damp, show=show, iter_lim=iter_lim)
 
     return x.reshape(oshape)
 

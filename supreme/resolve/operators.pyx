@@ -1,3 +1,5 @@
+# -*- python -*-
+
 """Construct linear operators that represents the camera process.
 
 Ax = b where A is the operator, x is the high-resolution image and b
@@ -39,6 +41,12 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N):
         to the individual low-resolution frames.
     M, N : int
         Dimensions of a single low-resolution output frame.
+
+    Returns
+    -------
+    A : (len(HH) * M * N, MM * NN) ndarray
+        Linear-operator representing bilinear interpolation from
+        the HR image to the different LR images.
 
     """
     cdef int out_M, out_N
@@ -83,3 +91,41 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N):
                           (1 - t) * u])
 
     return sparse.coo_matrix((V, (I, J)), shape=(out_M, out_N)).tocsr()
+
+cpdef convolve(int M, int N, np.ndarray mask_arr):
+    """A linear operator that represents a convolution operation.
+
+    Parameters
+    ----------
+    M, N : int
+        Shape of the output image.
+    mask_arr : (K,K) ndarray where K is odd
+        Mask to convolve with.
+
+    Returns
+    -------
+    A : (M*N, M*N) sparse array
+        Linear operator that performs a convolution.
+
+    """
+    cdef np.ndarray[np.double_t, ndim=2] mask = mask_arr.astype(np.double)
+    cdef int m, n, mm, nn, i, j, hwin
+    cdef list I = [], J = [], V = []
+
+    hwin = (mask.shape[0] - 1) / 2
+
+    for m in range(M):
+        for n in range(N):
+            for i in range(-hwin, hwin + 1):
+                for j in range(-hwin, hwin + 1):
+                    mm = m + i
+                    nn = n + j
+
+                    if mm < 0 or mm >= M or nn < 0 or nn >= N:
+                        continue
+
+                    I.append(m * N + n)
+                    J.append(mm * N + nn)
+                    V.append(mask[i + hwin, j + hwin])
+
+    return sparse.coo_matrix((V, (I, J)), shape=(M*N, M*N)).tocsr()

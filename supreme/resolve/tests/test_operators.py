@@ -3,7 +3,8 @@ from numpy.testing import *
 
 import scipy.ndimage as ndi
 
-from supreme.resolve.operators import bilinear
+from supreme.geometry.window import gauss
+from supreme.resolve.operators import bilinear, convolve
 from supreme.io import imread
 
 import os
@@ -11,7 +12,7 @@ import os
 HR = imread(os.path.join(os.path.dirname(__file__), 'peppers_40.png'),
             flatten=True)
 
-def test_basic():
+def test_bilinear():
     H = np.array([[1/2., 0,    0],
                   [0,    1/2., 0],
                   [0,    0,    1]])
@@ -28,6 +29,17 @@ def test_basic():
 
     assert err_norm < 2
 
+def test_convolve():
+    w = np.array([[0, 1, 0],
+                  [1, 2, 1],
+                  [0, 1, 0]]) / 6.
+    A = convolve(40, 40, w)
+
+    p = np.prod(HR.shape)
+    c1 = (A * HR.flat).reshape(HR.shape)
+    c2 = ndi.convolve(HR, w)
+
+    assert np.linalg.norm(c1 - c2) / np.prod(HR.shape) < 0.5
 
 if __name__ == "__main__":
     scale = 2
@@ -43,12 +55,15 @@ if __name__ == "__main__":
                             [0,        0,        1.]])],
                   HR.shape[0] / scale, HR.shape[1] / scale)
 
+
+    C = convolve(HR.shape[0], HR.shape[1], gauss(5, std=1))
+
     import matplotlib.pyplot as plt
-    plt.spy(A.todense())
+    plt.spy((A * C).todense())
 
     plt.figure()
-    fwd = (A * HR.flat)
-    rev = A.T * fwd
+    fwd = (A * C * HR.flat)
+    rev = C.T * A.T * fwd
 
     plt.subplot(1, 2, 1)
     plt.imshow(fwd.reshape(np.array(HR.shape) / scale),
