@@ -2,9 +2,10 @@ import numpy as np
 from numpy.testing import *
 
 import scipy.ndimage as ndi
+import scipy.linalg
 
 from supreme.geometry.window import gauss
-from supreme.resolve.operators import bilinear, convolve
+from supreme.resolve.operators import bilinear, convolve, block_diag
 from supreme.io import imread
 
 import os
@@ -40,6 +41,14 @@ def test_convolve():
     c2 = ndi.convolve(HR, w)
 
     assert np.linalg.norm(c1 - c2) / np.prod(HR.shape) < 0.5
+
+def test_block_diag():
+    X = np.array([[1, 2, 3],
+                  [4, 5, 6]])
+    Y = scipy.linalg.block_diag(X, X, X)
+    bd = block_diag(X.shape[0], X.shape[1],
+                    X.shape[0] * 3, X.shape[1] * 3)
+    assert_array_equal((bd * X.flat).reshape(np.array(X.shape) * 3), Y)
 
 if __name__ == "__main__":
     scale = 2
