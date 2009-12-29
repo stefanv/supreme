@@ -150,3 +150,10 @@ cpdef block_diag(int M, int N, int MM, int NN):
                 V.append(1)
 
     return sparse.coo_matrix((V, (I, J)), shape=(MM*NN, M*N)).tocsr()
+
+def op_stack(op, N):
+    """Apply the given operator to N identically sized images.
+
+    """
+    D = sparse.dia_matrix((np.ones(N), 0), shape=(N, N))
+    return sparse.kron(D, op)
