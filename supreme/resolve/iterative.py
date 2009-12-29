@@ -4,6 +4,7 @@ __all__ = ['solve', 'default_camera', 'cost_squared_error', 'iresolve',
 import numpy as np
 import scipy.optimize as opt
 import scipy.ndimage as ndi
+import scipy.sparse as sparse
 
 from supreme.register import stack
 from supreme.transform import homography
@@ -72,7 +73,6 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     w /= w.max()
     spC = convolve(oshape[0], oshape[1], w)
     spA = bilinear(oshape[0], oshape[1], HH, *LR_shape)
-
     op = spA * spC
 
     def A(x, m, n):
@@ -97,6 +97,15 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
                 conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
         x = x0 + x
+
+## Steepest Descent Optimisation
+##
+##          x = np.array(x0, copy=True).reshape(np.prod(x0.shape))
+##          for i in range(50):
+##              print "Gradient descent step %d" % i
+##              x += 0.3e-3 * (op.T * (b - (op * x)))
+##              x -= 5e-3 * (x - x0.flat)
+
     else:
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, conlim=conlim,
