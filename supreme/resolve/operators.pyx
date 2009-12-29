@@ -129,3 +129,24 @@ cpdef convolve(int M, int N, np.ndarray mask_arr):
                     V.append(mask[i + hwin, j + hwin])
 
     return sparse.coo_matrix((V, (I, J)), shape=(M*N, M*N)).tocsr()
+
+cpdef block_diag(int M, int N, int MM, int NN):
+    """Linear operator that represents diagonal block stacking.
+
+    Repeats an (M, N) matrix diagonally to fit into
+    and (MM, NN)-shaped matrix.
+
+    """
+    cdef int m, n, p, P
+    cdef list I = [], J = [], V = []
+
+    P = min(MM / M, NN / N)
+
+    for p in range(P):
+        for m in range(M):
+            for n in range(N):
+                I.append((p * M + m) * NN + p * N + n)
+                J.append(m*N + n)
+                V.append(1)
+
+    return sparse.coo_matrix((V, (I, J)), shape=(MM*NN, M*N)).tocsr()
