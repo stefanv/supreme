@@ -20,7 +20,7 @@ from operators import bilinear, convolve
 import time
 
 def solve(images, tf_matrices, scale, std=None, x0=None,
-          damp=1, tol=1e-10, iter_lim=None):
+          damp=1, tol=1e-10, iter_lim=None, lam=50):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -72,7 +72,7 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     w = gauss(size=5, std=std)
     w /= w.max()
     spC = convolve(oshape[0], oshape[1], w)
-    spA = bilinear(oshape[0], oshape[1], HH, *LR_shape)
+    spA = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
     op = spA * spC
 
     def A(x, m, n):
@@ -90,13 +90,35 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     atol = btol = conlim = tol
     show = True
 
-    if x0 is not None:
-        x0 = x0.flat
-        b = b - op * x0
-        x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-           lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
-                conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
-        x = x0 + x
+    def sr_func(x):
+        return np.linalg.norm(op * x - b) ** 2 + \
+               lam * np.linalg.norm(x - x0.flat) ** 2
+
+
+    def sr_gradient(x):
+        # Careful! Mixture of sparse and dense operators.
+        #Axb = op * x - b
+        #nrm_sq = np.dot(Axb, Axb) # Dense
+        #Axbop = (op.T * Axb).T # Sparse
+        #return nrm_sq * Axbop
+        Axb = op * x - b
+        return 2 * ((Axb.T * op) + lam * (x - x0.flat))
+
+## Conjugate Gradient Optimisation
+
+    x, fopt, f_calls, gcalls, warnflag = \
+       opt.fmin_cg(sr_func, x0, fprime=sr_gradient, gtol=0,
+                   disp=True, maxiter=iter_lim, full_output=True)
+
+## LSQR Optimisation
+##
+##     if x0 is not None:
+##         x0 = x0.flat
+##         b = b - op * x0
+##         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
+##            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
+##                 conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
+##         x = x0 + x
 
 ## Steepest Descent Optimisation
 ##
@@ -105,11 +127,6 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
 ##              print "Gradient descent step %d" % i
 ##              x += 0.3e-3 * (op.T * (b - (op * x)))
 ##              x -= 5e-3 * (x - x0.flat)
-
-    else:
-        x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-           lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol, conlim=conlim,
-                damp=damp, show=show, iter_lim=iter_lim)
 
     return x.reshape(oshape)
 
@@ -135,7 +152,7 @@ def initial_guess_avg(images, tf_matrices, scale, oshape):
     for H in HH:
         H[:2, :] *= scale
 
-    return stack.with_transform(images, HH, oshape=oshape)
+    return stack.with_transform(images, HH, oshape=oshape, order=3)
 
 def default_camera(img_nr, img, H, scale, oshape, std=1.0, _coords=[]):
     """The default camera model simply blurs and downscales the image.
