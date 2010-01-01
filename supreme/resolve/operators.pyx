@@ -16,7 +16,7 @@ cimport numpy as np
 cdef extern from "math.h":
     double floor(double)
 
-cdef tf(int x, int y, M):
+cdef tf(double x, double y, M):
     cdef np.ndarray[np.double_t, ndim=2] H = M
     cdef double xx, yy, zz
 
@@ -29,7 +29,8 @@ cdef tf(int x, int y, M):
 
     return xx, yy
 
-cpdef bilinear(int MM, int NN, list HH, int M, int N):
+cpdef bilinear(int MM, int NN, list HH, int M, int N,
+               int boundary=0):
     """Represent the camera process as a simple bilinear interpolation.
 
     Parameters
@@ -41,6 +42,8 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N):
         to the individual low-resolution frames.
     M, N : int
         Dimensions of a single low-resolution output frame.
+    boundary : {0, 1}
+        Outside boundary use zero (0) or mirror (1).
 
     Returns
     -------
@@ -66,14 +69,17 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N):
 
         for i in range(M):
             for j in range(N):
-                jj, ii = tf(j, i, H)
+                # Add 0.5 to get to middle of pixel
+                jj, ii = tf(j + 0.5, i + 0.5, H)
 
                 xx = (int)(floor(jj))
                 yy = (int)(floor(ii))
 
-                if xx < 0 or yy < 0 or yy >= (MM - 1) or xx >= (NN - 1):
+                if boundary == 1:
+                    yy = (yy % (MM - 1))
+                    xx = (xx % (NN - 1))
+                elif xx < 0 or yy < 0 or yy >= (MM - 1) or xx >= (NN - 1):
                     continue
-
 
                 t = ii - yy
                 u = jj - xx
