@@ -3,6 +3,7 @@
 """
 SCALE = 3
 std = None # Auto-detect
+#std = 1.19 #1.19121431622 # text
 std = 1.25156 # text
 #std = 1.23123012741 # library
 
@@ -48,32 +49,32 @@ C = convolve(oshape[0], oshape[1], np.array([[-1, -1, -1],
                                              [-1, -1, -1]]))
 
 def std_func(std):
-    out, e = solve(images, HH, scale=SCALE, tol=0, std=std,
-                   x0=avg, damp=6, iter_lim=5, lam=0)
+    out = solve(images, HH, scale=SCALE, tol=0, std=std,
+                x0=avg, damp=0, iter_lim=5, lam=0, fast=True)
     out = C * out.flat
     return np.var(out)
 
 if not std:
     print "Searching for optimal camera variance..."
-    std = opt.fminbound(std_func, 1.05, 2)
+    std = opt.fminbound(std_func, 1.05, 3)
     print "Std estimated to be:", std
 
 #
 # Solve by adding one frame at a time
 #
 out = avg.copy()
-for j in range(1):
-    print "SR iteration %d" % j
-    for i in range(len(images)):
-        print "Resolving frame %d" % i
-        out = solve([images[i]], [HH[i]], scale=SCALE, tol=0, std=std,
-                    x0=out, damp=6, iter_lim=10, lam=50)
+## for j in range(1):
+##     print "SR iteration %d" % j
+##     for i in range(len(images)):
+##         print "Resolving frame %d" % i
+##         out = solve([images[i]], [HH[i]], scale=SCALE, tol=0, std=std,
+##                     x0=out, damp=6, iter_lim=10, lam=500)
 
 #
 # Solve all at once
 #
-# out = solve(images, HH, scale=SCALE, tol=0, std=1.24,
-#             x0=out, damp=6, iter_lim=40)
+out = solve(images, HH, scale=SCALE, tol=0, std=std,
+            x0=out, damp=6, iter_lim=40, lam=1200)
 
 
 import scipy.misc

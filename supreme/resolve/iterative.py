@@ -15,12 +15,12 @@ import supreme.config
 log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
-from operators import bilinear, convolve
+from operators import bilinear, convolve, reverse_convolve
 
 import time
 
 def solve(images, tf_matrices, scale, std=None, x0=None,
-          damp=1, tol=1e-10, iter_lim=None, lam=50):
+          damp=1, tol=1e-10, iter_lim=None, lam=50, fast=False):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -53,6 +53,8 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
         `damp` results in a solution closer to `x0`, whereas a smaller
         version of `damp` yields a solution closer to the solution
         obtained without any initial estimate.
+    fast : bool
+        Use a less accurate camera model which is much quicker to construct.
 
     Returns
     -------
@@ -72,8 +74,14 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     w = gauss(size=5, std=std)
     w /= w.max()
     spC = convolve(oshape[0], oshape[1], w)
-    spA = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
-    op = spA * spC
+    print "Constructing camera operator..."
+    if not fast:
+        spRC = reverse_convolve(oshape[0], oshape[1], HH,
+                                LR_shape[0], LR_shape[1], std/scale)
+        op = spRC * spC
+    else:
+        spA = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
+        op = spA * spC
 
     def A(x, m, n):
         return op * x
@@ -104,6 +112,8 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
         Axb = op * x - b
         return 2 * ((Axb.T * op) + lam * (x - x0.flat))
 
+    print "Super resolving..."
+
 ## Conjugate Gradient Optimisation
 
     x, fopt, f_calls, gcalls, warnflag = \
@@ -112,13 +122,12 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
 
 ## LSQR Optimisation
 ##
-##     if x0 is not None:
-##         x0 = x0.flat
-##         b = b - op * x0
-##         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-##            lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
-##                 conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
-##         x = x0 + x
+#    x0 = x0.flat
+#    b = b - op * x0
+#    x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
+#      lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
+#           conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
+#    x = x0 + x
 
 ## Steepest Descent Optimisation
 ##
