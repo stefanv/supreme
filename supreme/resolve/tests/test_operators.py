@@ -51,7 +51,7 @@ def test_block_diag():
     assert_array_equal((bd * X.flat).reshape(np.array(X.shape) * 3), Y)
 
 if __name__ == "__main__":
-    scale = 2
+    scale = 3
 
     theta = 5 / 180. * np.pi
     C = np.cos(theta)
@@ -74,10 +74,13 @@ if __name__ == "__main__":
     fwd = (A * C * HR.flat)
     rev = C.T * A.T * fwd
 
-    plt.subplot(1, 2, 1)
+    plt.subplot(1, 3, 1)
+    plt.imshow(HR, cmap=plt.cm.gray, interpolation='nearest')
+
+    plt.subplot(1, 3, 2)
     plt.imshow(fwd.reshape(np.array(HR.shape) / scale),
                interpolation='nearest', cmap=plt.cm.gray)
-    plt.subplot(1, 2, 2)
+    plt.subplot(1, 3, 3)
     plt.imshow(rev.reshape(HR.shape),
                interpolation='nearest', cmap=plt.cm.gray)
     plt.show()
