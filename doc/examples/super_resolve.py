@@ -3,9 +3,15 @@
 """
 SCALE = 3
 std = None # Auto-detect
-#std = 1.19 #1.19121431622 # text
-std = 1.25156 # text
+std = 0.1
+#std = 2.0
+#std = 1.19
+#std = 1.25156 # text x3
+#std = 1.3 #22029 # library x2
+#std = 1.283958 # library x3
+#std = 1.234 # library x2
 #std = 1.23123012741 # library
+#std = 1.53373062194 # library x4
 
 import numpy as np
 import scipy.optimize as opt
@@ -68,13 +74,13 @@ out = avg.copy()
 ##     for i in range(len(images)):
 ##         print "Resolving frame %d" % i
 ##         out = solve([images[i]], [HH[i]], scale=SCALE, tol=0, std=std,
-##                     x0=out, damp=6, iter_lim=10, lam=500)
+##                     x0=out, damp=6, iter_lim=100, lam=1e-8, fast=True)
 
 #
 # Solve all at once
 #
 out = solve(images, HH, scale=SCALE, tol=0, std=std,
-            x0=out, damp=6, iter_lim=40, lam=1200)
+            x0=out, damp=30, iter_lim=100, lam=1e-1)
 
 
 import scipy.misc
@@ -83,6 +89,9 @@ scipy.misc.imsave('/tmp/out.png', out)
 
 out = out[20:-10, 10:-15]
 avg = avg[20:-10, 10:-15]
+
+#out = out[5:-5, 5:-15]
+#avg = avg[5:-5, 5:-15]
 
 plt.subplot(3, 1, 1)
 plt.imshow(ic[0], interpolation='nearest', cmap=plt.cm.gray)

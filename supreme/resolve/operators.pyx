@@ -71,7 +71,7 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N,
         for i in range(M):
             for j in range(N):
                 # Add 0.5 to get to middle of pixel
-                jj, ii = tf(j + 0.5, i + 0.5, H)
+                jj, ii = tf(j, i, H)
 
                 xx = (int)(floor(jj))
                 yy = (int)(floor(ii))
@@ -196,29 +196,34 @@ cpdef reverse_convolve(int MM, int NN, list HH, int M, int N,
 
     cdef np.ndarray[np.double_t, ndim=2] H
 
-    cdef int i, j, p, q, xx, yy, R, hwin
+    cdef int i, j, p, q, xx, yy, R
     cdef double ii, jj, t, u, mv
+    cdef int hwin = 2
 
-    cdef np.ndarray[np.double_t, ndim=2] mask = np.zeros((5, 5),
-                                                         dtype=np.double)
+    cdef np.ndarray[np.double_t, ndim=2] mask = \
+         np.zeros((hwin * 2 + 1, hwin * 2 + 1), dtype=np.double)
 
-    for p in range(-2, 2 + 1):
-        for q in range(-2, 2 + 1):
-            mask[p + 2, q + 2] = \
-                   exp(-((p/3.)**2 + (q/3.)**2) / (2 * std**2)) / \
+    cdef double f = 2.
+
+    for p in range(-hwin, hwin + 1):
+        for q in range(-hwin, hwin + 1):
+            mask[p + hwin, q + hwin] = \
+                   exp(-((p/f)**2 + (q/f)**2) / (2 * std**2)) / \
                    (2 * np.pi * std**2)
+
+    mask /= mask.sum()
 
     for k in range(len(HH)):
         H = np.linalg.inv(HH[k])
 
         for i in range(M):
             for j in range(N):
-                for p in range(-2, 2 + 1):
-                    for q in range(-2, 2 + 1):
-                        mv = mask[p + 2, q + 2]
+                for p in range(-hwin, hwin + 1):
+                    for q in range(-hwin, hwin + 1):
+                        mv = mask[p + hwin, q + hwin]
 
                         # Add 0.5 to get to middle of pixel
-                        jj, ii = tf(j + p/3. + 0.5, i + q/3. + 0.5, H)
+                        jj, ii = tf(j + p/f, i + q/f, H)
 
                         xx = (int)(floor(jj))
                         yy = (int)(floor(ii))

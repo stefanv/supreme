@@ -65,8 +65,16 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     assert len(images) == len(tf_matrices)
 
     HH = [H.copy() for H in tf_matrices]
+    HH_scaled = []
+    scale = float(scale)
     for H in HH:
-        H[:2, :] /= scale
+        HS = np.array([[1/scale, 0,       0],
+                       [0,       1/scale, 0],
+                       [0,       0,       1]])
+
+        HH_scaled.append(np.dot(np.linalg.inv(H), HS))
+
+    HH = HH_scaled
 
     oshape = np.floor(np.array(images[0].shape) * scale)
     LR_shape = images[0].shape
@@ -78,10 +86,27 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     if not fast:
         spRC = reverse_convolve(oshape[0], oshape[1], HH,
                                 LR_shape[0], LR_shape[1], std/scale)
-        op = spRC * spC
+        op = spRC# * spC
     else:
         spA = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
-        op = spA * spC
+        op = spA# * spC
+
+##     import matplotlib.pyplot as plt
+##     P = np.prod(LR_shape)
+##     img = (op * x0.flat).reshape(LR_shape)
+##     plt.subplot(1, 4, 1)
+##     plt.imshow(x0, cmap=plt.cm.gray)
+##     plt.title('x0')
+##     plt.subplot(1, 4, 2)
+##     plt.imshow(images[0], cmap=plt.cm.gray)
+##     plt.title('LR frame')
+##     plt.subplot(1, 4, 3)
+##     plt.imshow(img, cmap=plt.cm.gray)
+##     plt.title('LR image Ax0')
+##     plt.subplot(1, 4, 4)
+##     plt.imshow(images[0] - img, cmap=plt.cm.gray)
+##     plt.title('diff images[0] - Ax')
+##     plt.show()
 
     def A(x, m, n):
         return op * x
@@ -122,12 +147,12 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
 
 ## LSQR Optimisation
 ##
-#    x0 = x0.flat
-#    b = b - op * x0
-#    x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-#      lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
-#           conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
-#    x = x0 + x
+##     x0 = x0.flat
+##     b = b - op * x0
+##     x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
+##       lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
+##            conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
+##     x = x0 + x
 
 ## Steepest Descent Optimisation
 ##
