@@ -15,12 +15,12 @@ import supreme.config
 log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
-from operators import bilinear, convolve, reverse_convolve
+from operators import bilinear, convolve, reverse_convolve, op_stack
 
 import time
 
 def solve(images, tf_matrices, scale, std=None, x0=None,
-          damp=1, tol=1e-10, iter_lim=None, lam=50, fast=False):
+          damp=1, tol=1e-10, iter_lim=None, lam=1e-1, fast=True):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -79,18 +79,17 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     oshape = np.floor(np.array(images[0].shape) * scale)
     LR_shape = images[0].shape
 
-    w = gauss(size=5, std=std)
-    w /= w.max()
-    spC = convolve(oshape[0], oshape[1], w)
     print "Constructing camera operator..."
     if not fast:
         spRC = reverse_convolve(oshape[0], oshape[1], HH,
-                                LR_shape[0], LR_shape[1], std/scale)
-        op = spRC# * spC
+                                LR_shape[0], LR_shape[1], std)
+        op = spRC
     else:
         spA = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
-        op = spA# * spC
+        op = spA
 
+##  Visualise mapping of frames
+##
 ##     import matplotlib.pyplot as plt
 ##     P = np.prod(LR_shape)
 ##     img = (op * x0.flat).reshape(LR_shape)
@@ -156,11 +155,11 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
 
 ## Steepest Descent Optimisation
 ##
-##          x = np.array(x0, copy=True).reshape(np.prod(x0.shape))
-##          for i in range(50):
-##              print "Gradient descent step %d" % i
-##              x += 0.3e-3 * (op.T * (b - (op * x)))
-##              x -= 5e-3 * (x - x0.flat)
+##     x = np.array(x0, copy=True).reshape(np.prod(x0.shape))
+##     for i in range(50):
+##         print "Gradient descent step %d" % i
+##         x += 0.1 * (op.T * (b - (op * x)))
+##         x -= 5e-3 * (x - x0.flat)
 
     return x.reshape(oshape)
 

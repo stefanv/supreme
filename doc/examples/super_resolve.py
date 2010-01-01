@@ -1,17 +1,7 @@
 """Construct super-resolution reconstruction of a registered data-set.
 
 """
-SCALE = 3
-std = None # Auto-detect
-std = 0.1
-#std = 2.0
-#std = 1.19
-#std = 1.25156 # text x3
-#std = 1.3 #22029 # library x2
-#std = 1.283958 # library x3
-#std = 1.234 # library x2
-#std = 1.23123012741 # library
-#std = 1.53373062194 # library x4
+SCALE = 2.
 
 import numpy as np
 import scipy.optimize as opt
@@ -48,47 +38,31 @@ HH = [i.info['H'] for i in images]
 oshape = np.floor(np.array(images[0].shape) * SCALE)
 avg = initial_guess_avg(images, HH, SCALE, oshape)
 
-
-# Automatically determine best standard deviation parameter
-C = convolve(oshape[0], oshape[1], np.array([[-1, -1, -1],
-                                             [-1,  8, -1],
-                                             [-1, -1, -1]]))
-
-def std_func(std):
-    out = solve(images, HH, scale=SCALE, tol=0, std=std,
-                x0=avg, damp=0, iter_lim=5, lam=0, fast=True)
-    out = C * out.flat
-    return np.var(out)
-
-if not std:
-    print "Searching for optimal camera variance..."
-    std = opt.fminbound(std_func, 1.05, 3)
-    print "Std estimated to be:", std
+out = avg.copy()
 
 #
 # Solve by adding one frame at a time
 #
-out = avg.copy()
-## for j in range(1):
-##     print "SR iteration %d" % j
-##     for i in range(len(images)):
-##         print "Resolving frame %d" % i
-##         out = solve([images[i]], [HH[i]], scale=SCALE, tol=0, std=std,
-##                     x0=out, damp=6, iter_lim=100, lam=1e-8, fast=True)
+for j in range(1):
+    print "SR iteration %d" % j
+    for i in range(len(images)):
+        print "Resolving frame %d" % i
+        out = solve([images[i]], [HH[i]], scale=SCALE, tol=0, std=1.05,
+                    x0=out, damp=1e-1, iter_lim=100, lam=1e-8)
 
 #
 # Solve all at once
 #
-out = solve(images, HH, scale=SCALE, tol=0, std=std,
-            x0=out, damp=30, iter_lim=100, lam=1e-1)
+#out = solve(images, HH, scale=SCALE, tol=0, std=std,
+#            x0=out, damp=5e-1, iter_lim=200, lam=1e-2, fast=True)
 
 
 import scipy.misc
 scipy.misc.imsave('/tmp/avg.png', avg)
 scipy.misc.imsave('/tmp/out.png', out)
 
-out = out[20:-10, 10:-15]
-avg = avg[20:-10, 10:-15]
+#out = out[20:-10, 10:-15]
+#avg = avg[20:-10, 10:-15]
 
 #out = out[5:-5, 5:-15]
 #avg = avg[5:-5, 5:-15]

@@ -70,7 +70,6 @@ cpdef bilinear(int MM, int NN, list HH, int M, int N,
 
         for i in range(M):
             for j in range(N):
-                # Add 0.5 to get to middle of pixel
                 jj, ii = tf(j, i, H)
 
                 xx = (int)(floor(jj))
@@ -203,7 +202,7 @@ cpdef reverse_convolve(int MM, int NN, list HH, int M, int N,
     cdef np.ndarray[np.double_t, ndim=2] mask = \
          np.zeros((hwin * 2 + 1, hwin * 2 + 1), dtype=np.double)
 
-    cdef double f = 2.
+    cdef double f = 1/3.
 
     for p in range(-hwin, hwin + 1):
         for q in range(-hwin, hwin + 1):
@@ -222,7 +221,6 @@ cpdef reverse_convolve(int MM, int NN, list HH, int M, int N,
                     for q in range(-hwin, hwin + 1):
                         mv = mask[p + hwin, q + hwin]
 
-                        # Add 0.5 to get to middle of pixel
                         jj, ii = tf(j + p/f, i + q/f, H)
 
                         xx = (int)(floor(jj))
