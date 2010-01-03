@@ -1,18 +1,24 @@
 import numpy as np
 import os
 from glob import glob
+from optparse import OptionParser
 
 from supreme.register.parzen import joint_hist, mutual_info
 import supreme.register as register
 from supreme.io import imread, imsave
 
+usage = "%prog [options] vgg_dir"
+parser = OptionParser(usage=usage)
+parser.add_option('-t', action='store_true', dest='translation',
+                  default=False, help='Use translation-only model')
+(options, args) = parser.parse_args()
+
 import sys
-if len(sys.argv) != 2:
-    print "Usage: register.vgg vgg_dir"
-    import sys
+if len(sys.argv) < 2:
+    parser.print_help()
     sys.exit(0)
 
-vgg = sys.argv[1]
+vgg = sys.argv[-1]
 
 if not os.path.isdir(vgg):
     raise RuntimeError("Cannot open VGG directory")
@@ -34,15 +40,18 @@ M_0A = np.eye(3)
 for i, img in enumerate(images[1:]):
     print "Registering %d -> %d" % (i, i + 1)
     B = images[i + 1]
-    M_0B, S = register.dense_MI(B, A, levels=3, std=8, win_size=9)
+    M_0B, S = register.dense_MI(B, A, levels=3, std=3, win_size=9,
+                                translation_only=options.translation)
     print "Mutual information: ", S
-    if S < 1.5:
+    if S > 1.5:
         print "Warning: registration (%d -> %d) probably failed." % (i, i + 1)
 
     H = '%03d.%03d.H' % (i, i + 1)
     imsave(os.path.join(H_dir, H + '.png'),
-           register.stack.with_transform([B, A],
-                                         [np.eye(3), M_0B]))
+           register.stack.with_transform([A, B],
+                                         [np.eye(3), np.linalg.inv(M_0B)],
+                                         oshape=A.shape),
+           )
 
     M_A0 = np.linalg.inv(M_0A)
     M_0A = M_0B
