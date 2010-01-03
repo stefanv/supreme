@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.optimize
-import scipy.ndimage
 
 from demo_data import chelsea
 from supreme.register.parzen import joint_hist, mutual_info
@@ -25,7 +23,7 @@ else:
                        [0,            0,       1]])
     Bc = B
 
-M, S = register.dense_MI(A, B, levels=3)
+M, S = register.dense_MI(A, B, levels=3, std=5, win_size=9)
 print "Mutual information: ", S
 if S < 1.5:
     print "Warning: registration probably failed."
