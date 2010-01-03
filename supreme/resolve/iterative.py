@@ -16,12 +16,13 @@ log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
 from operators import bilinear, convolve, op_stack
+from supreme.ext import poly_interp_op
 
 import time
 
 def solve(images, tf_matrices, scale, x0=None,
           tol=1e-10, iter_lim=None, damp=1e-1,
-          method='CG'):
+          method='CG', operator='bilinear'):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -54,6 +55,9 @@ def solve(images, tf_matrices, scale, x0=None,
     method : {'CG', 'LSQR', 'descent'}
         Whether to use conjugate gradients, least-squares or gradient descent
         to determine the solution.
+    operator : {'bilinear', 'polygon'}
+        The camera model is approximated as an interpolation process.  The
+        polygon interpolation operator works well for zoom ratios < 2.
 
     Returns
     -------
@@ -67,11 +71,11 @@ def solve(images, tf_matrices, scale, x0=None,
     HH_scaled = []
     scale = float(scale)
     for H in HH:
-        HS = np.array([[1/scale, 0,       0],
-                       [0,       1/scale, 0],
+        HS = np.array([[scale, 0,         0],
+                       [0,       scale,   0],
                        [0,       0,       1]])
 
-        HH_scaled.append(np.dot(np.linalg.inv(H), HS))
+        HH_scaled.append(np.linalg.inv(np.dot(HS, H)))
 
     HH = HH_scaled
 
@@ -79,7 +83,12 @@ def solve(images, tf_matrices, scale, x0=None,
     LR_shape = images[0].shape
 
     print "Constructing camera operator..."
-    op = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
+    if operator == 'bilinear':
+        op = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
+    elif operator == 'polygon':
+        op = poly_interp_op(oshape[0], oshape[1], HH[0], *LR_shape)
+    else:
+        raise ValueError('Invalid operator requested (%s).' % operator)
 
 ##  Visualise mapping of frames
 ##
