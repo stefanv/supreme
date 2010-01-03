@@ -67,8 +67,8 @@ def load_vgg(path):
             if not H.shape == (3, 3):
                 raise RuntimeError("Invalid H-file found: %s" % H_file)
 
-            H_sofar = np.dot(np.linalg.inv(H), H_sofar)
-            img.info['H'] = H_sofar
+            H_sofar = np.dot(H, H_sofar)
+            img.info['H'] = np.linalg.inv(H_sofar)
             img.info['H_rel'] = H
 
     return ic
