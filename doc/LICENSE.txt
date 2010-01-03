@@ -1,7 +1,7 @@
 Copyright (C) 2007 Stefan van der Walt <stefan@mentat.za.net>
 
 Please contact the author if you wish to license this work for use in
-commercial applications.
+BSD-licensed software or commercial applications.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
