@@ -158,9 +158,33 @@ cpdef block_diag(int M, int N, int MM, int NN):
 
     return sparse.coo_matrix((V, (I, J)), shape=(MM*NN, M*N)).tocsr()
 
-def op_stack(op, N):
+def op_repeat(op, N):
     """Apply the given operator to N identically sized images.
 
     """
     D = sparse.dia_matrix((np.ones(N), 0), shape=(N, N))
     return sparse.kron(D, op)
+
+def op_stack(*ops):
+    """Stack the given operators.
+
+    This is used when
+
+    Ax = b
+
+    where
+
+    A = [[op1         ]
+         [    op2     ]
+         [        op3 ]]
+
+    and x = [[img1.flat img2.flat img3.flat]].T.
+
+    """
+
+    L = len(ops)
+    Z = np.empty((L, L), dtype=object)
+    for i in range(L):
+        Z[i, i] = ops[i]
+
+    return sparse.bmat(Z, format='csr')

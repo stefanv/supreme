@@ -5,7 +5,7 @@ import scipy.ndimage as ndi
 import scipy.linalg
 
 from supreme.geometry.window import gauss
-from supreme.resolve.operators import bilinear, convolve, block_diag
+from supreme.resolve.operators import bilinear, convolve, block_diag, op_stack
 from supreme.io import imread
 
 import os
@@ -49,6 +49,15 @@ def test_block_diag():
     bd = block_diag(X.shape[0], X.shape[1],
                     X.shape[0] * 3, X.shape[1] * 3)
     assert_array_equal((bd * X.flat).reshape(np.array(X.shape) * 3), Y)
+
+def test_op_stack():
+    X = np.zeros((4, 4))
+    D1 = np.diag((1, 1))
+    D3 = np.diag((3, 3))
+    X[:2, :2] = D1
+    X[2:4, 2:4] = D3
+
+    assert_array_equal(op_stack(D1, D3).todense(), X)
 
 if __name__ == "__main__":
     scale = 3
