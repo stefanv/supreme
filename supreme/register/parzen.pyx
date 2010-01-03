@@ -12,6 +12,7 @@ from supreme.geometry.window import gauss
 
 cdef extern from "math.h":
     double logf(double)
+    double round(double)
 
 @cython.boundscheck(False)
 cdef np.ndarray _add_window(np.ndarray out_arr, int m, int n,
@@ -39,7 +40,7 @@ cdef np.ndarray _add_window(np.ndarray out_arr, int m, int n,
 
 @cython.boundscheck(False)
 def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
-               np.ndarray[np.uint8_t, ndim=2] B, win_size=5, std=1.0,
+               np.ndarray[np.uint8_t, ndim=2] B, L=255, win_size=5, std=1.0,
                int fast=0):
     """Estimate the joint histogram of A and B.
 
@@ -47,6 +48,8 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
     ----------
     A, B : (M, N) ndarray of uint8
         Input images.
+    L : int
+        Number of grey-levels in histogram.
     win_size : int
         Width of Gaussian window used in the approximation.  A larger
         window can represent the Gaussian kernel somewhat more
@@ -77,7 +80,7 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
     if not fast:
         w = gauss(win_size, std)
 
-    out = np.zeros((255, 255), dtype=np.double)
+    out = np.zeros((L, L), dtype=np.double)
 
     cdef int m, n, i, j, a, b
     m = A.shape[0]
@@ -89,7 +92,8 @@ def joint_hist(np.ndarray[np.uint8_t, ndim=2] A,
             b = B[i, j]
 
             if fast:
-                out[a, b] += 1
+                out[(int)(round(a / 255. * (L - 1))),
+                    (int)(round(b / 255. * (L - 1)))] += 1
             else:
                 out = _add_window(out, a, b, w)
 
@@ -122,6 +126,7 @@ def mutual_info(np.ndarray[np.double_t, ndim=2] H):
     cdef int M, N
     cdef double S
     cdef np.ndarray[np.double_t] hR, hC
+    cdef double den
 
     M = H.shape[0]
     N = H.shape[1]
@@ -142,7 +147,12 @@ def mutual_info(np.ndarray[np.double_t, ndim=2] H):
             if H[i, j] == 0 or hR[i] == 0 or hC[j] == 0:
                 continue
 
-            S += H[i, j] * logf(H[i, j] / (hR[i] * hC[j])) / logf(2)
+            den = (hR[i] * hC[j])
+            if den == 0:
+                S += 100
+                continue
+
+            S += H[i, j] * logf(H[i, j] / den) / logf(2)
 
 ##     d = (H.sum(axis=0) * H.sum(axis=1).reshape(H.shape[0], -1))
 ##     mask = ((H != 0) & (d != 0))
