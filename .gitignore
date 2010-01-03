@@ -13,4 +13,5 @@ doc/refguide/source/api/*
 doc/refguide/build
 doc/examples/*.tiff
 doc/examples/*.eps
-
+doc/examples/*.npy
+doc/examples/*.png
