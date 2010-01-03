@@ -86,7 +86,8 @@ def solve(images, tf_matrices, scale, x0=None,
     if operator == 'bilinear':
         op = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
     elif operator == 'polygon':
-        op = poly_interp_op(oshape[0], oshape[1], HH[0], *LR_shape)
+        op = poly_interp_op(oshape[0], oshape[1], HH[0], *LR_shape,
+                            search_win=round(scale) * 2 + 1)
     else:
         raise ValueError('Invalid operator requested (%s).' % operator)
 
