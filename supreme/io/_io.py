@@ -2,13 +2,13 @@
 
 from __future__ import with_statement
 
-__all__ = ['Image','ImageCollection','imread']
+__all__ = ['Image','ImageCollection','imread','imsave']
 
 from glob import glob
 import os.path
 
 import numpy as np
-from scipy.misc.pilutil import imread
+from scipy.misc.pilutil import imread, imsave
 
 import supreme
 from supreme.lib import EXIF
