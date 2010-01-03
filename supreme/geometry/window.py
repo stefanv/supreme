@@ -22,4 +22,4 @@ def gauss(size=5, std=1.0):
     y -= hwin
     w = np.exp(-(x**2 + y**2)/(2 * std**2)) / (2 * np.pi * std**2)
 
-    return w / w.sum()
+    return w
