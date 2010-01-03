@@ -70,11 +70,15 @@ def poly_interp_op(int MM, int NN, np.ndarray[np.double_t, ndim=2] H,
     cdef np.ndarray[np.double_t, ndim=2] inv_tf_M = np.linalg.inv(H)
 
     cdef double mt, nt, ridx, cidx
+    cdef bool skip
 
     # For each element in the low-resolution source
     for m in range(M):
         for n in range(N):
             # Create pixel polygon
+            #
+            # The 0.5 offset is to generate a pixel around point (m, n)
+            #
             xleft = n - 0.5
             xright = xleft + 1
             ybottom = m - 0.5
@@ -88,7 +92,10 @@ def poly_interp_op(int MM, int NN, np.ndarray[np.double_t, ndim=2] H,
             # For 25 pixels in target vicinity
             K = 0
             hwin = (search_win - 1)/2
+            skip = False
             for wr in range(-hwin, hwin):
+                if skip:
+                    break
                 for wc in range(-hwin, hwin):
                     rx[0] = nt + wc - 0.5
                     rx[1] = rx[0] + 1
@@ -105,9 +112,12 @@ def poly_interp_op(int MM, int NN, np.ndarray[np.double_t, ndim=2] H,
                     ridx = round(mt + wr - 0.5)
                     cidx = round(nt + wc - 0.5)
 
+                    # Ameliorate edge effects by skipping out of the loop
+                    # whenever we hit the sides
                     if ridx < 0 or ridx > (MM - 1) or \
                        cidx < 0 or cidx > (NN - 1):
-                        continue
+                        skip = True
+                        break
 
                     # Project back to LR frame
                     tf_polygon(5, rx, ry, H)
