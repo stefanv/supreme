@@ -57,8 +57,8 @@ for i, img in enumerate(images[1:]):
     M_0A = M_0B
     # Transformation relative to previous frame
     #
-    # H_0B = H_0A * H_AB
-    # => H_AB = H_0A.I * H_0B
+    # H_0B = H_AB * H_0A
+    # => H_AB = H_0B * H_0A.I
     #
     M_AB = np.dot(M_0B, M_A0)
     np.savetxt(os.path.join(H_dir, H), M_AB, delimiter=' ')
