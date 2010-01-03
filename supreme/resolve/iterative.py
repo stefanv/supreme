@@ -15,12 +15,13 @@ import supreme.config
 log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
-from operators import bilinear, convolve, reverse_convolve, op_stack
+from operators import bilinear, convolve, op_stack
 
 import time
 
-def solve(images, tf_matrices, scale, std=None, x0=None,
-          damp=1, tol=1e-10, iter_lim=None, lam=1e-1, fast=True):
+def solve(images, tf_matrices, scale, x0=None,
+          tol=1e-10, iter_lim=None, damp=1e-1,
+          method='CG'):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -42,9 +43,6 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     scale : float
         The resolution of the output image is `scale` times the resolution
         of the input images.
-    std : float
-        Standard deviation of the blurring operator that represents the
-        low-resolution camera process.
     x0 : ndarray, optional
         Initial guess of HR image.
     damp : float, optional
@@ -53,8 +51,9 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
         `damp` results in a solution closer to `x0`, whereas a smaller
         version of `damp` yields a solution closer to the solution
         obtained without any initial estimate.
-    fast : bool
-        Use a less accurate camera model which is much quicker to construct.
+    method : {'CG', 'LSQR', 'descent'}
+        Whether to use conjugate gradients, least-squares or gradient descent
+        to determine the solution.
 
     Returns
     -------
@@ -80,13 +79,7 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
     LR_shape = images[0].shape
 
     print "Constructing camera operator..."
-    if not fast:
-        spRC = reverse_convolve(oshape[0], oshape[1], HH,
-                                LR_shape[0], LR_shape[1], std)
-        op = spRC
-    else:
-        spA = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
-        op = spA
+    op = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
 
 ##  Visualise mapping of frames
 ##
@@ -124,8 +117,7 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
 
     def sr_func(x):
         return np.linalg.norm(op * x - b) ** 2 + \
-               lam * np.linalg.norm(x - x0.flat) ** 2
-
+               damp * np.linalg.norm(x - x0.flat) ** 2
 
     def sr_gradient(x):
         # Careful! Mixture of sparse and dense operators.
@@ -134,32 +126,39 @@ def solve(images, tf_matrices, scale, std=None, x0=None,
         #Axbop = (op.T * Axb).T # Sparse
         #return nrm_sq * Axbop
         Axb = op * x - b
-        return 2 * ((Axb.T * op) + lam * (x - x0.flat))
+        return 2 * ((Axb.T * op) + damp * (x - x0.flat))
 
     print "Super resolving..."
 
 ## Conjugate Gradient Optimisation
+    if method == 'CG':
 
-    x, fopt, f_calls, gcalls, warnflag = \
-       opt.fmin_cg(sr_func, x0, fprime=sr_gradient, gtol=0,
-                   disp=True, maxiter=iter_lim, full_output=True)
+        x, fopt, f_calls, gcalls, warnflag = \
+           opt.fmin_cg(sr_func, x0, fprime=sr_gradient, gtol=0,
+                       disp=True, maxiter=iter_lim, full_output=True)
+
+    elif method == 'LSQR':
 
 ## LSQR Optimisation
 ##
-##     x0 = x0.flat
-##     b = b - op * x0
-##     x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-##       lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
-##            conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
-##     x = x0 + x
+        x0 = x0.flat
+        b = b - op * x0
+        x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
+          lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
+               conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
+        x = x0 + x
+
+    elif method == 'descent':
 
 ## Steepest Descent Optimisation
 ##
-##     x = np.array(x0, copy=True).reshape(np.prod(x0.shape))
-##     for i in range(50):
-##         print "Gradient descent step %d" % i
-##         x += 0.1 * (op.T * (b - (op * x)))
-##         x -= 5e-3 * (x - x0.flat)
+        x = np.array(x0, copy=True).reshape(np.prod(x0.shape))
+        for i in range(50):
+            print "Gradient descent step %d" % i
+            x += damp * (op.T * (b - (op * x)))
+
+    else:
+        raise ValueError('Invalid method (%s) specified.' % method)
 
     return x.reshape(oshape)
 
@@ -183,7 +182,7 @@ def initial_guess_avg(images, tf_matrices, scale, oshape):
     """
     HH = [x.copy() for x in tf_matrices]
     for H in HH:
-        H[:2, :] *= scale
+        H[:2, :] *= float(scale)
 
     return stack.with_transform(images, HH, oshape=oshape, order=3)
 
@@ -211,7 +210,7 @@ def default_camera(img_nr, img, H, scale, oshape, std=1.0, _coords=[]):
         coords = _coords[img_nr]
     except IndexError:
         H = H.copy()
-        H[:2, :] *= scale
+        H[:2, :] *= float(scale)
         H = np.linalg.inv(H)
 
         coords = _homography_coords(img, H, oshape)
@@ -276,7 +275,7 @@ def iresolve(images, tf_matrices, scale=1.3,
     if cost_measure is None:
         cost_measure = cost_squared_error
 
-    oshape = [int(i) for i in np.array(images[0].shape) * scale]
+    oshape = [int(i) for i in np.array(images[0].shape) * float(scale)]
 
     HR = initial_guess(images, tf_matrices, scale=scale,
                        oshape=oshape, **initial_guess_args)
