@@ -6,7 +6,7 @@ Verify DWT perfect reconstruction.
 
 import math
 import numpy
-import pywt
+import supreme.lib.pywt as pywt
 from numpy import asarray, float64, float32
 
 def mse(ar1, ar2):
