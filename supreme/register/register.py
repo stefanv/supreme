@@ -233,18 +233,23 @@ def _tf_difference(p, M_ref, target, reference):
 
     return diff.sum() / np.sum(mask)
 
-def _build_tf(p):
+def _build_tf(p, translation_only=False):
     if np.sum(np.isnan(p) + np.isinf(p)) != 0:
-        return np.eye(3)
+        H = np.eye(3)
     else:
         theta,a,b,tx,ty = p
         C = np.cos(theta)
         S = np.sin(theta)
-        return np.array([[a*C,  -b*S, tx],
-                         [a*S,   b*C, ty],
-                         [0,     0,   1.]])
+        H = np.array([[a*C,  -b*S, tx],
+                      [a*S,   b*C, ty],
+                      [0,     0,   1.]])
+        if translation_only:
+            H[:2, :2] = np.eye(2)
 
-def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5):
+    return H
+
+def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5,
+             translation_only=False):
     """Register image B to A, using mutual information and an image pyramid.
 
     Parameters
@@ -264,6 +269,9 @@ def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5):
         Standard deviation used by the smoothing window.
     win_size : int (odd)
         Window size of the smoother.
+    translation_only : bool
+        Whether to use a translation-only motion model.  By default,
+        a full homography is estimated.
 
     Returns
     -------
@@ -272,20 +280,23 @@ def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5):
 
     """
     def cost(p, A, B):
-        T = transform.homography(B, _build_tf(p), order=1)
+        M = _build_tf(p, translation_only=translation_only)
+        T = transform.homography(B, M, order=2)
         H = joint_hist(A, T, win_size=win_size, std=std, fast=fast)
         S = mutual_info(H)
         return -S
 
     if p is None:
         p = [0, 1, 1, 0, 0]
-    for z in range(levels - 1, -1, -1):
+    for z in range(levels - 1, -2, -1):
         p = [p[0], p[1], p[2], 2*p[3], 2*p[4]]
-        _log.info("Downsampling by %d" % 2**z)
-        A_ = scipy.ndimage.zoom(A, 1/2.**z)
-        B_ = scipy.ndimage.zoom(B, 1/2.**z)
+        _log.info("Zoom factor: %f" % (1/2.**z))
+        A_ = scipy.ndimage.zoom(A, 1/2.**z, order=2)
+        B_ = scipy.ndimage.zoom(B, 1/2.**z, order=2)
 
         p, fopt, direc, iter, funcalls, warnflag = \
           scipy.optimize.fmin_powell(cost, p, args=(A_, B_), full_output=True)
 
-    return _build_tf(p), -fopt
+    p = [p[0], p[1], p[2], p[3]/2, p[4]/2]
+
+    return _build_tf(p, translation_only=translation_only), -fopt
