@@ -33,6 +33,7 @@
 extern "C" {
 #endif
 
+#include "polygon.h"
 #include <math.h>
 
 #define INF HUGE_VAL
@@ -76,16 +77,6 @@ void npnpoly(int nr_verts, double *xp, double *yp,
         result[n] = pnpoly(nr_verts,xp,yp,x[n],y[n]);
     }
 }
-
-/* Point of intersection */
-struct POI {
-    double x, y;
-    int type; /* 0 -- ordinary
-                 1 -- intersects outside start and end-points
-                 2 -- parallel
-                 3 -- co-incident
-                 */
-};
 
 void line_intersect(double x0, double y0, double x1, double y1, /* line 1 */
                     double x2, double y2, double x3, double y3, /* line 2 */
