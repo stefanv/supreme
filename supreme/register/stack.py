@@ -166,7 +166,8 @@ def with_transform(images, matrices, weights=None, order=1,
             # Convert to 4-channel RGBA
             tmp = np.empty(np.append(s.shape[:2], 4), dtype=s.dtype)
             if s.ndim == 3:
-                tmp[..., :3] = s
+                print tmp.shape, s.shape
+                tmp[..., :3] = s[..., :3]
 
                 # Keep red layer for use as mask
                 s = s[..., 0]
