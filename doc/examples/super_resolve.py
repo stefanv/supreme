@@ -24,9 +24,9 @@ from optparse import OptionParser
 
 usage = "%prog [options] vgg_dir"
 parser = OptionParser(usage=usage)
-parser.add_option('-s', '--scale',
+parser.add_option('-s', '--scale', type=float,
                   help='Resolution improvement required [default: %default]')
-parser.add_option('-d', '--damp',
+parser.add_option('-d', '--damp', type=float,
                   help='Damping coefficient -- '
                        'suppresses oscillations [default: %default]')
 parser.add_option('-m', '--method', dest='method',
@@ -51,8 +51,15 @@ parser.set_defaults(scale=2,
 
 (options, args) = parser.parse_args()
 
-if len(sys.argv) > 1:
-    vgg_dir = sys.argv[-1]
+d = options.__dict__
+print "Options"
+print "------------------------"
+for k in d:
+    print '%s: %s' % (k, d[k])
+print "------------------------"
+
+if len(parser.largs) == 1:
+    vgg_dir = parser.largs[0]
 else:
     parser.print_help()
     sys.exit(0)
