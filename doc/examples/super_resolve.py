@@ -1,12 +1,13 @@
 """Construct super-resolution reconstruction of a registered data-set.
 
 """
-SCALE = 2.5
-UPDATE = False # if False, do a single pass calculation instead of
-               # adding one frame at a time
-DAMP = 1.6
+SCALE = 4.
+UPDATE = 1 # if False, do a single pass calculation instead of
+           # adding one frame at a time
+DAMP = 1e-2
 PHOTOMETRIC_ADJUSTMENT = True
 METHOD = 'LSQR' # 'CG' or 'LSQR' or 'descent'
+OPERATOR = 'polygon' # 'polygon' # bilinear or polygon
 
 import numpy as np
 
@@ -31,7 +32,7 @@ ic = load_vgg(vgg_dir)
 ref = ic[0].copy()
 images = []
 scales = []
-for i in range(len(ic) - 20):
+for i in range(len(ic)):
     scale = 1
 
     if PHOTOMETRIC_ADJUSTMENT:
@@ -63,11 +64,9 @@ if UPDATE:
         print "SR iteration %d" % j
         for i in range(len(images)):
             print "Resolving frame %d" % i
-            import scipy.ndimage as ndi
-            out = ndi.gaussian_filter(out, 0.2)
             out = solve([images[i]], [HH[i]], scale=SCALE, tol=0,
                         x0=out, damp=DAMP, iter_lim=200,
-                        method=METHOD)
+                        method=METHOD, operator=OPERATOR)
 
 else:
     #
