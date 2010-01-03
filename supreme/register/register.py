@@ -244,7 +244,7 @@ def _build_tf(p):
                          [a*S,   b*C, ty],
                          [0,     0,   1.]])
 
-def dense_MI(A, B, p=None, levels=4, fast=False):
+def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5):
     """Register image B to A, using mutual information and an image pyramid.
 
     Parameters
@@ -258,6 +258,12 @@ def dense_MI(A, B, p=None, levels=4, fast=False):
         The five initial parameters passed to the optimiser.  These are
         rotation angle, skew in the X direction, skew in the Y direction,
         translation in x and translation in y.
+    fast : bool
+        If true, the histogram is not smoothed.
+    std : float
+        Standard deviation used by the smoothing window.
+    win_size : int (odd)
+        Window size of the smoother.
 
     Returns
     -------
@@ -267,7 +273,7 @@ def dense_MI(A, B, p=None, levels=4, fast=False):
     """
     def cost(p, A, B):
         T = transform.homography(B, _build_tf(p), order=1)
-        H = joint_hist(A, T, win_size=5, std=1, fast=fast)
+        H = joint_hist(A, T, win_size=win_size, std=std, fast=fast)
         S = mutual_info(H)
         return -S
 
