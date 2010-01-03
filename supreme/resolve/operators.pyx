@@ -16,6 +16,7 @@ cimport numpy as np
 cdef extern from "math.h":
     double floor(double)
     double exp(double)
+    double round(double)
 
 cdef tf(double x, double y, M):
     cdef np.ndarray[np.double_t, ndim=2] H = M
@@ -163,85 +164,3 @@ def op_stack(op, N):
     """
     D = sparse.dia_matrix((np.ones(N), 0), shape=(N, N))
     return sparse.kron(D, op)
-
-cpdef reverse_convolve(int MM, int NN, list HH, int M, int N,
-                       np.double_t std=1):
-    """Represent the camera process as a reverse mapping of a Gaussian
-    point-spread function.
-
-    Parameters
-    ----------
-    MM, NN : int
-        Shape of the high-resolution image.
-    HH : list of (3,3) ndarray
-        Transformation matrices that warp the high-resolution frame
-        to the individual low-resolution frames.
-    M, N : int
-        Dimensions of a single low-resolution output frame.
-
-    Returns
-    -------
-    A : (len(HH) * M * N, MM * NN) ndarray
-        Linear-operator representing bilinear interpolation from
-        the HR image to the different LR images.
-
-    """
-    cdef int out_M, out_N
-
-    out_M = len(HH) * M * N
-    out_N = MM * NN
-
-    cdef list I = [], J = [], V = []
-
-    cdef np.ndarray[np.double_t, ndim=2] H
-
-    cdef int i, j, p, q, xx, yy, R
-    cdef double ii, jj, t, u, mv
-    cdef int hwin = 2
-
-    cdef np.ndarray[np.double_t, ndim=2] mask = \
-         np.zeros((hwin * 2 + 1, hwin * 2 + 1), dtype=np.double)
-
-    cdef double f = 1/3.
-
-    for p in range(-hwin, hwin + 1):
-        for q in range(-hwin, hwin + 1):
-            mask[p + hwin, q + hwin] = \
-                   exp(-((p/f)**2 + (q/f)**2) / (2 * std**2)) / \
-                   (2 * np.pi * std**2)
-
-    mask /= mask.sum()
-
-    for k in range(len(HH)):
-        H = np.linalg.inv(HH[k])
-
-        for i in range(M):
-            for j in range(N):
-                for p in range(-hwin, hwin + 1):
-                    for q in range(-hwin, hwin + 1):
-                        mv = mask[p + hwin, q + hwin]
-
-                        jj, ii = tf(j + p/f, i + q/f, H)
-
-                        xx = (int)(floor(jj))
-                        yy = (int)(floor(ii))
-
-                        if xx < 0 or yy < 0 or yy >= (MM - 1) or xx >= (NN - 1):
-                            continue
-
-                        t = ii - yy
-                        u = jj - xx
-
-                        R = k*M*N + i * N + j
-
-                        I.extend([R, R, R, R])
-                        J.extend([yy*NN + xx,
-                                  (yy + 1)*NN + xx,
-                                  (yy + 1)*NN + xx + 1,
-                                  yy*NN + xx + 1])
-                        V.extend([mv * (1 - t) * (1 - u),
-                                  mv * t * (1 - u),
-                                  mv * t * u,
-                                  mv * (1 - t) * u])
-
-    return sparse.coo_matrix((V, (I, J)), shape=(out_M, out_N)).tocsr()
