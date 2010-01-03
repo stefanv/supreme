@@ -6,7 +6,8 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('ext', parent_package, top_path)
 
-    c_files = [f for f in os.listdir(config.local_path or '.') if f.endswith('.c')]
+    c_files = [f for f in os.listdir(config.local_path or '.')
+               if f.endswith('.c')]
 
     config.ext_modules.append(CExtension(
         'libsupreme_',
@@ -14,6 +15,9 @@ def configuration(parent_package='', top_path=None):
         path=config.local_path,
         include_dirs=[get_numpy_include_dirs()]),
         )
+
+    config.add_extension('poly_operator', sources=['poly_operator.c', 'polygon.c'],
+                         include_dirs=[get_numpy_include_dirs()])
 
     return config
 

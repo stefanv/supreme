@@ -253,11 +253,11 @@ int poly_clip(int N, double* x, double* y,
     return M;
 }
 
-void _tf_polygon(int N, double* xp, double* yp, double* tf_M) {
+void tf_polygon(int N, double* xp, double* yp, double* tf_M) {
     int i;
     double x_new, y_new, z;
     for (i = 0; i < N; i++) {
-        z = tf_M[6] * xp[i] + tf_M[7] * yp[i] + 1;
+        z = tf_M[6] * xp[i] + tf_M[7] * yp[i] + tf_M[8];
         x_new = (tf_M[0] * xp[i] + tf_M[1] * yp[i] + tf_M[2]) / z;
         y_new = (tf_M[3] * xp[i] + tf_M[4] * yp[i] + tf_M[5]) / z;
         xp[i] = x_new;
@@ -265,7 +265,7 @@ void _tf_polygon(int N, double* xp, double* yp, double* tf_M) {
     }
 }
 
-double _area(int N, double* px, double* py) {
+double area(int N, double* px, double* py) {
     double A = 0;
     int n;
     for (n = 0; n < N-1; n++)
@@ -296,7 +296,7 @@ void interp_transf_polygon(int target_rows, int target_cols, unsigned char* targ
             ry[3] = or+1; ry[4] = or;
 
             /* Calculate coordinates in target frame */
-            _tf_polygon(5,rx,ry,inv_tf_M);
+            tf_polygon(5,rx,ry,inv_tf_M);
 
             /*            _print_poly(5,rx,ry);*/
 
@@ -313,7 +313,7 @@ void interp_transf_polygon(int target_rows, int target_cols, unsigned char* targ
                         verts = poly_clip(5,rx,ry,
                                           xleft,xright,ytop,ybottom,
                                           workx,worky);
-                        wweight[wr*3 + wc] = _area(verts,workx,worky);
+                        wweight[wr*3 + wc] = area(verts,workx,worky);
                         intensity[wr*3 + wc] =
                             target[((int)ybottom)*target_cols + (int)xleft];
                     } else {
