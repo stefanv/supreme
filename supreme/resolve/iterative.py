@@ -31,7 +31,7 @@ def solve(images, tf_matrices, scale, x0=None,
     the equation :math:`A\mathbf{x} = b` where :math:`A` is the
     downsampling operator, :math:`\mathbf{x}` is the high-resolution
     estimate (flattened in raster scan or lexicographic order), and
-    :math:`mathbf{b}` is a stacked vector of all the low-resolution
+    :math:`\mathbf{b}` is a stacked vector of all the low-resolution
     images.
 
     Parameters
