@@ -49,7 +49,7 @@ Adapted for SciPy by Stefan van der Walt.
 
 """
 
-__main__ = ['lsqr']
+__all__ = ['lsqr']
 
 import numpy as np
 from math import sqrt
