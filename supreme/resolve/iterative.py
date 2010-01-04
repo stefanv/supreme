@@ -22,7 +22,7 @@ import time
 
 def solve(images, tf_matrices, scale, x0=None,
           tol=1e-10, iter_lim=None, damp=1e-1,
-          method='CG', operator='bilinear'):
+          method='CG', operator='bilinear', norm=1):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -58,6 +58,8 @@ def solve(images, tf_matrices, scale, x0=None,
     operator : {'bilinear', 'polygon'}
         The camera model is approximated as an interpolation process.  The
         polygon interpolation operator works well for zoom ratios < 2.
+    norm : {1, 2}
+        Whether to use the L1 or L2 norm to measure errors between images.
 
     Returns
     -------
@@ -129,18 +131,26 @@ def solve(images, tf_matrices, scale, x0=None,
     atol = btol = conlim = tol
     show = True
 
-    def sr_func(x):
-        return np.linalg.norm(op * x - b) ** 2 + \
-               damp * np.linalg.norm(x - x0.flat) ** 2
+    def sr_func(x, norm=norm):
+        return np.linalg.norm(op * x - b, norm) ** 2 + \
+               damp * np.linalg.norm(x - x0.flat, norm) ** 2
 
-    def sr_gradient(x):
+    def sr_gradient(x, norm=norm):
         # Careful! Mixture of sparse and dense operators.
         #Axb = op * x - b
         #nrm_sq = np.dot(Axb, Axb) # Dense
         #Axbop = (op.T * Axb).T # Sparse
         #return nrm_sq * Axbop
         Axb = op * x - b
-        return 2 * ((Axb.T * op) + damp * (x - x0.flat))
+        if norm == 1:
+            xmx0 = x - x0.flat
+            term1 = np.linalg.norm(Axb, 1) * np.sign(Axb.T) * op
+            term2 = damp * np.linalg.norm(xmx0, 1) * np.sign(xmx0.flat)
+        elif norm == 2:
+            term1 = (Axb.T * op)
+            term2 = damp * (x - x0.flat)
+
+        return 2 * (term1 + term2)
 
     print "Super resolving..."
 

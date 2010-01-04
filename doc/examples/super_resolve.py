@@ -13,9 +13,11 @@ import numpy as np
 
 from supreme.resolve import solve, initial_guess_avg
 from supreme.config import data_path
-from supreme.io import load_vgg
+from supreme.io import load_vgg, imread, imsave
 from supreme.transform import homography
 from supreme.noise import dwt_denoise
+
+import scipy.ndimage as ndi
 
 import matplotlib.pyplot as plt
 
@@ -41,15 +43,29 @@ parser.add_option('-u', '--update', action='store_true',
 parser.add_option('-p', '--photo-adjust',
                   action='store_false',
                   help='Perform photometric adjustment [default: %default]')
+parser.add_option('-L', '--norm', type=int,
+                  help='The norm used to measure errors. [default: %default]')
+parser.add_option('-c', '--convergence', dest='previous_result',
+                  help='Use a previously calculated result to track '
+                       'convergence in "update"-mode. The image file '
+                       'should be specified as the parameter.')
 
 parser.set_defaults(scale=2,
                     damp=1e-1,
                     method='CG',
                     operator='polygon',
                     update=False,
+                    order=1,
                     photo_adjust=True)
 
 (options, args) = parser.parse_args()
+
+if options.previous_result and not options.update:
+    raise RuntimeError('Cannot do convergence tracking in direct '
+                       'estimation mode.')
+
+if options.norm not in (1, 2):
+    raise ValueError("Only L1 and L2 error norms are supported.")
 
 d = options.__dict__
 print "Input Parameters"
@@ -90,13 +106,13 @@ oshape = np.floor(np.array(images[0].shape) * options.scale)
 avg = initial_guess_avg(images, HH, options.scale, oshape)
 
 #
-# Solve by adding one frame at a time
+# Update solution one frame at a time
 #
-
 if options.update:
-    #
-    # Update solution one frame at a time
-    #
+    if options.previous_result:
+        res = imread(options.previous_result)
+        err = []
+
     out = avg.copy()
     for j in range(1):
         print "SR iteration %d" % j
@@ -104,7 +120,16 @@ if options.update:
             print "Resolving frame %d" % i
             out = solve([images[i]], [HH[i]], scale=options.scale, tol=0,
                         x0=out, damp=options.damp, iter_lim=200,
-                        method=options.method, operator=options.operator)
+                        method=options.method, operator=options.operator,
+                        norm=options.norm)
+
+            if options.previous_result:
+                if not res.shape == out.shape:
+                    raise RuntimeError('Previous result specified for '
+                                       'convergence analysis did not have '
+                                       'same shape as output.  Is this the '
+                                       'same data-set and zoom ratio?')
+                err.append(np.linalg.norm(res - out))
 
 else:
     #
@@ -113,12 +138,22 @@ else:
     out = avg.copy()
     out = solve(images, HH, scale=options.scale, tol=0,
                 x0=out, damp=options.damp, iter_lim=200,
-                method=options.method, operator=options.operator)
+                method=options.method, operator=options.operator,
+                norm=options.norm)
 
-import scipy.misc
-scipy.misc.imsave('/tmp/avg.png', avg)
-scipy.misc.imsave('/tmp/out.png', out)
+import matplotlib.pyplot as plt
 
+if options.previous_result:
+    plt.figure()
+    plt.plot(err)
+    plt.xlabel('Iteration')
+    plt.ylabel('Error Norm')
+    plt.title('SR Convergence')
+
+imsave('/tmp/avg.png', avg)
+imsave('/tmp/out.png', out)
+
+plt.figure()
 plt.subplot(3, 1, 1)
 plt.imshow(ic[0], interpolation='nearest', cmap=plt.cm.gray)
 
