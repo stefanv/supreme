@@ -52,7 +52,7 @@ parser.set_defaults(scale=2,
 (options, args) = parser.parse_args()
 
 d = options.__dict__
-print "Options"
+print "Input Parameters"
 print "------------------------"
 for k in d:
     print '%s: %s' % (k, d[k])
@@ -113,7 +113,7 @@ else:
     out = avg.copy()
     out = solve(images, HH, scale=options.scale, tol=0,
                 x0=out, damp=options.damp, iter_lim=200,
-                method=options.method)
+                method=options.method, operator=options.operator)
 
 import scipy.misc
 scipy.misc.imsave('/tmp/avg.png', avg)
@@ -129,3 +129,9 @@ plt.subplot(3, 1, 3)
 plt.imshow(out, interpolation='lanczos', cmap=plt.cm.gray)
 
 plt.show()
+
+print "Input Parameters were:"
+print "------------------------"
+for k in d:
+    print '%s: %s' % (k, d[k])
+print "------------------------"
