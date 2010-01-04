@@ -127,12 +127,11 @@ def poly_interp_op(int MM, int NN, np.ndarray[np.double_t, ndim=2] H,
                                       workx, worky)
                     a = area(verts, workx, worky)
 
-                    if a > 0:
-                        I.append(m*N + n)
-                        J.append((int)(ridx * NN + cidx))
-                        V.append(a)
+                    I.append(m*N + n)
+                    J.append((int)(ridx * NN + cidx))
+                    V.append(a)
 
-                        K += 1
+                    K += 1
 
             S = 0
             for k in range(K):
