@@ -82,12 +82,16 @@ def solve(images, tf_matrices, scale, x0=None,
     oshape = np.floor(np.array(images[0].shape) * scale)
     LR_shape = images[0].shape
 
-    print "Constructing camera operator..."
+    print "Constructing camera operator (%s)..." % operator
     if operator == 'bilinear':
         op = bilinear(oshape[0], oshape[1], HH, *LR_shape, boundary=0)
     elif operator == 'polygon':
-        op = poly_interp_op(oshape[0], oshape[1], HH[0], *LR_shape,
-                            search_win=round(scale) * 2 + 1)
+        sub_ops = []
+        for H in HH:
+            sub_ops.append(poly_interp_op(oshape[0], oshape[1],
+                                          H, *LR_shape,
+                                          search_win=round(scale) * 2 + 1))
+        op = sparse.vstack(sub_ops, format='csr')
     else:
         raise ValueError('Invalid operator requested (%s).' % operator)
 
