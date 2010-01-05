@@ -132,8 +132,8 @@ def solve(images, tf_matrices, scale, x0=None,
     show = True
 
     def sr_func(x, norm=norm):
-        return np.linalg.norm(op * x - b, norm) ** 2 + \
-               damp * np.linalg.norm(x - x0.flat, norm) ** 2
+        return np.linalg.norm(op * x - b, norm) ** 2 / len(b) + \
+               damp * np.linalg.norm(x - x0.flat, norm) ** 2 / len(x)
 
     def sr_gradient(x, norm=norm):
         # Careful! Mixture of sparse and dense operators.
@@ -142,6 +142,7 @@ def solve(images, tf_matrices, scale, x0=None,
         #Axbop = (op.T * Axb).T # Sparse
         #return nrm_sq * Axbop
         Axb = op * x - b
+        L = len(x)
         if norm == 1:
             xmx0 = x - x0.flat
             term1 = np.linalg.norm(Axb, 1) * np.sign(Axb.T) * op
@@ -150,7 +151,7 @@ def solve(images, tf_matrices, scale, x0=None,
             term1 = (Axb.T * op)
             term2 = damp * (x - x0.flat)
 
-        return 2 * (term1 + term2)
+        return 2 * (term1/len(b) + term2/len(x))
 
     print "Super resolving..."
 
