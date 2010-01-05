@@ -147,7 +147,7 @@ cdef _outside_boundary(ConnectedRegion cr, int* workspace):
     scanline moves down the image from the top.  For each position
     in the scanline, if
 
-    - the pixel above or below is part of the region
+    - the pixel above or below or diagonally is part of the region
     - and the pixel at the current position is not
 
     then assign this position as part of the outside boundary.
