@@ -11,6 +11,12 @@ usage = "%prog [options] vgg_dir"
 parser = OptionParser(usage=usage)
 parser.add_option('-t', action='store_true', dest='translation',
                   default=False, help='Use translation-only model')
+parser.add_option('-l', '--levels', type=int,
+                  default=2,
+                  help='Number of levels to downsample during registration. '
+                       '[default: %default]')
+parser.add_option('-s', action='store_true', dest='fixed_scale',
+                  default=False, help='Fix scale to 1 in motion model.')
 (options, args) = parser.parse_args()
 
 import sys
@@ -40,8 +46,10 @@ M_0A = np.eye(3)
 for i, img in enumerate(images[1:]):
     print "Registering %d -> %d" % (i, i + 1)
     B = images[i + 1]
-    M_0B, S = register.dense_MI(B, A, levels=3, std=3, win_size=9,
-                                translation_only=options.translation)
+    M_0B, S = register.dense_MI(B, A, levels=options.levels + 1,
+                                std=3, win_size=9,
+                                translation_only=options.translation,
+                                fixed_scale=options.fixed_scale)
     print "Mutual information: ", S
     if S > 1.5:
         print "Warning: registration (%d -> %d) probably failed." % (i, i + 1)
