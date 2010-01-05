@@ -32,7 +32,8 @@ print "Matching features..."
 ref = features[0]
 tf_matrices = [np.eye(3)]
 valid_matrices = [True]
-for frame in features[1:]:
+M_A0 = np.eye(3)
+for i, frame in enumerate(features[1:]):
     match,dist,valid = sr.feature.match(frame['data'],ref['data'],threshold=T)
 
     valid_ref = match[valid]
@@ -47,7 +48,12 @@ for frame in features[1:]:
 
     valid_matrices.append(converged)
     tf_matrices.append(M)
-    print M
+
+    M_AB = np.dot(np.linalg.inv(M), M_A0)
+    M_A0 = M
+
+    if converged:
+        np.savetxt('%03d.%03d.H' % (i, i+1), M_AB)
 
     print "Found %d matches." % valid.sum()
 
