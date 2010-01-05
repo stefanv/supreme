@@ -16,6 +16,7 @@ from supreme.config import data_path
 from supreme.io import load_vgg, imread, imsave
 from supreme.transform import homography
 from supreme.noise import dwt_denoise
+from supreme.photometry import photometric_adjust
 
 import scipy.ndimage as ndi
 
@@ -42,7 +43,8 @@ parser.add_option('-u', '--update', action='store_true',
                   help='Use images as incremental evidence [default: %default]')
 parser.add_option('-p', '--photo-adjust',
                   action='store_false',
-                  help='Perform photometric adjustment [default: %default]')
+                  help='Do not perform photometric adjustment '
+                       '[default: %default]')
 parser.add_option('-L', '--norm', type=int,
                   help='The norm used to measure errors. [default: %default]')
 parser.add_option('-c', '--convergence', dest='previous_result',
@@ -55,7 +57,7 @@ parser.set_defaults(scale=2,
                     method='CG',
                     operator='polygon',
                     update=False,
-                    order=1,
+                    norm=2,
                     photo_adjust=True)
 
 (options, args) = parser.parse_args()
@@ -90,13 +92,10 @@ for i in range(len(ic)):
     scale = 1
 
     if options.photo_adjust:
-        img = ic[i]
         img_warp = homography(ic[i], ic[i].info['H'])
-        mask = (img_warp > 20) & (img_warp < 220) & \
-               (ref > 20) & (ref < 220)
-        scale = np.mean(ref[mask].astype(float) / img_warp[mask])
+        scale = photometric_adjust(img_warp, ref)
+        scales.append(scale)
 
-    scales.append(scale)
     images.append(ic[i] * scale)
 
 print "Images scaled by: %s" % str(['%.2f' % f for f in scales])
@@ -149,6 +148,11 @@ if options.previous_result:
     plt.xlabel('Iteration')
     plt.ylabel('Error Norm')
     plt.title('SR Convergence')
+
+if options.photo_adjust:
+    out *= photometric_adjust(out, avg)
+
+out = np.clip(out, 0, 255)
 
 imsave('/tmp/avg.png', avg)
 imsave('/tmp/out.png', out)
