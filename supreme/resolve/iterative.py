@@ -80,7 +80,6 @@ def solve(images, tf_matrices, scale, x0=None,
         HH_scaled.append(np.linalg.inv(np.dot(HS, H)))
 
     HH = HH_scaled
-
     oshape = np.floor(np.array(images[0].shape) * scale)
     LR_shape = images[0].shape
 
@@ -131,9 +130,10 @@ def solve(images, tf_matrices, scale, x0=None,
     atol = btol = conlim = tol
     show = True
 
+    # Error and gradient functions, used in conjugate gradient optimisation
     def sr_func(x, norm=norm):
-        return np.linalg.norm(op * x - b, norm) ** 2 / len(b) + \
-               damp * np.linalg.norm(x - x0.flat, norm) ** 2 / len(x)
+        return (np.linalg.norm(op * x - b, norm) ** 2 + \
+                damp * np.linalg.norm(x - x0.flat, norm) ** 2)
 
     def sr_gradient(x, norm=norm):
         # Careful! Mixture of sparse and dense operators.
@@ -150,8 +150,10 @@ def solve(images, tf_matrices, scale, x0=None,
         elif norm == 2:
             term1 = (Axb.T * op)
             term2 = damp * (x - x0.flat)
+        else:
+            raise ValueError('Invalid norm for error measure (%s).' % norm)
 
-        return 2 * (term1/len(b) + term2/len(x))
+        return 2 * (term1 + term2)
 
     print "Super resolving..."
 
