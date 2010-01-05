@@ -155,7 +155,9 @@ if options.photo_adjust:
 out = np.clip(out, 0, 255)
 
 imsave('/tmp/avg.png', avg)
+print 'Average image saved as /tmp/avg.png'
 imsave('/tmp/out.png', out)
+print 'Resulting image saved as /tmp/out.png'
 
 plt.figure()
 plt.subplot(3, 1, 1)
@@ -174,3 +176,13 @@ print "------------------------"
 for k in d:
     print '%s: %s' % (k, d[k])
 print "------------------------"
+
+filename = '_'.join([os.path.basename(os.path.abspath(vgg_dir)),
+                     'x%.2f' % options.scale,
+                     '%.2flam' % options.damp,
+                     options.method,
+                     options.operator,
+                     (options.update and 'update') or 'direct',
+                     'L%d' % options.norm,
+                     (options.photo_adjust and 'PA') or ''])
+print "Suggested filename: %s.png" % filename
