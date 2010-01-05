@@ -233,13 +233,20 @@ def _tf_difference(p, M_ref, target, reference):
 
     return diff.sum() / np.sum(mask)
 
-def _build_tf(p, translation_only=False):
+def _build_tf(p, translation_only=False, fixed_scale=False):
     if np.sum(np.isnan(p) + np.isinf(p)) != 0:
         H = np.eye(3)
     else:
         theta,a,b,tx,ty = p
+        if translation_only:
+            theta = 0
+            a = b = 1
+        if fixed_scale:
+            a = b = 1
+
         C = np.cos(theta)
         S = np.sin(theta)
+
         H = np.array([[a*C,  -b*S, tx],
                       [a*S,   b*C, ty],
                       [0,     0,   1.]])
@@ -248,8 +255,8 @@ def _build_tf(p, translation_only=False):
 
     return H
 
-def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5,
-             translation_only=False):
+def dense_MI(A, B, p=None, levels=3, fast=False, std=1, win_size=5,
+             translation_only=False, fixed_scale=False):
     """Register image B to A, using mutual information and an image pyramid.
 
     Parameters
@@ -272,6 +279,8 @@ def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5,
     translation_only : bool
         Whether to use a translation-only motion model.  By default,
         a full homography is estimated.
+    fixed_scale : bool
+        Limit the scale of the motion model to 1.
 
     Returns
     -------
@@ -280,8 +289,14 @@ def dense_MI(A, B, p=None, levels=4, fast=False, std=1, win_size=5,
 
     """
     def cost(p, A, B):
-        M = _build_tf(p, translation_only=translation_only)
-        T = transform.homography(B, M, order=2)
+        M = _build_tf(p, translation_only=translation_only,
+                         fixed_scale=fixed_scale)
+        try:
+            T = transform.homography(B, M, order=2)
+        except np.linalg.LinAlgError:
+            raise RuntimeError('Could not invert transformation matrix. '
+                               'This may be because too many levels of '
+                               'downscaling was requested (%d).' % levels)
         H = joint_hist(A, T, win_size=win_size, std=std, fast=fast)
         S = mutual_info(H)
         return -S
