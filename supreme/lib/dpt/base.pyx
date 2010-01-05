@@ -1,5 +1,5 @@
-#cython: cdivision=True
 # -*- python -*-
+#cython: cdivision=True
 
 __all__ = ['connected_regions', 'decompose', 'reconstruct']
 
@@ -348,10 +348,6 @@ def reconstruct(dict regions, tuple shape, int min_area=-1, int max_area=-1):
     -------
     out : ndimage
         Reconstructed image.
-    areas : 1d ndarray
-        Pulses with these areas occur in the image.
-    area_count : 1d ndarray
-        For each area in the above list, there are this many impulses.
 
     """
     cdef ConnectedRegion cr
@@ -364,26 +360,12 @@ def reconstruct(dict regions, tuple shape, int min_area=-1, int max_area=-1):
     if min_area == -1:
         min_area = 0
 
-    cdef list areas = []
-    cdef list area_count = []
     cdef int a
 
     for a in regions:
         if a >= min_area and a <= max_area:
-            areas.append(a)
-            area_count.append(0)
-
-            area_count[-1] += len(regions[a])
-
             for cr in regions[a]:
                 crh._set_array(<np.int_t*>out.data, out.shape[0], out.shape[1],
                                cr, cr._value, 1)
 
-    areas_arr, area_count_arr = np.array(areas), np.array(area_count)
-
-    # Sort by area
-    ind = np.argsort(areas_arr)
-    areas_arr = areas_arr[ind]
-    area_count_arr = area_count_arr[ind]
-
-    return out, areas, area_count_arr
+    return out
