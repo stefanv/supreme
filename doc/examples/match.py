@@ -1,5 +1,6 @@
 import os.path
 import glob
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,10 +12,18 @@ print "Reading images and features..."
 features = []
 images = []
 
-dataset = 'pathfinder'
-basename = 'i44'
-imagetype = 'png'
-featuretype = 'sift'
+if len(sys.argv) == 2:
+    data_path = sys.argv[1]
+    dataset = '.'
+    basename = ''
+    imagetype = 'pgm'
+    featuretype = 'sift'
+else:
+    dataset = 'pathfinder'
+    basename = 'i44'
+    imagetype = 'png'
+    featuretype = 'sift'
+
 T = 0.6
 image_files = sorted(glob.glob(
     os.path.join(data_path, '%s/%s*.%s' % (dataset,basename,imagetype))))
@@ -33,6 +42,7 @@ ref = features[0]
 tf_matrices = [np.eye(3)]
 valid_matrices = [True]
 M_A0 = np.eye(3)
+j = 0
 for i, frame in enumerate(features[1:]):
     match,dist,valid = sr.feature.match(frame['data'],ref['data'],threshold=T)
 
@@ -42,6 +52,9 @@ for i, frame in enumerate(features[1:]):
 
     try:
         M,converged = sr.register.sparse(yr,xr,yf,xf,mode='RANSAC',confidence=0.8)
+        M_AB = np.dot(np.linalg.inv(M), M_A0)
+        M_A0 = M
+
     except:
         print "RANSAC did not converge.  Skipping frame."
         continue
@@ -49,11 +62,9 @@ for i, frame in enumerate(features[1:]):
     valid_matrices.append(converged)
     tf_matrices.append(M)
 
-    M_AB = np.dot(np.linalg.inv(M), M_A0)
-    M_A0 = M
-
     if converged:
-        np.savetxt('%03d.%03d.H' % (i, i+1), M_AB)
+        np.savetxt('%03d.%03d.H' % (j, j+1), M_AB)
+        j += 1
 
     print "Found %d matches." % valid.sum()
 
@@ -97,3 +108,7 @@ plt.imshow(out1,interpolation='nearest',cmap=plt.cm.gray)
 plt.subplot(122)
 plt.imshow(out2,interpolation='nearest',cmap=plt.cm.gray)
 plt.show()
+
+print "Valid image files:"
+print ' '.join([image_files[i] for i, v in enumerate(valid_matrices)
+                if v])
