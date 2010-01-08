@@ -51,6 +51,8 @@ parser.add_option('-c', '--convergence', dest='previous_result',
                   help='Use a previously calculated result to track '
                        'convergence in "update"-mode. The image file '
                        'should be specified as the parameter.')
+parser.add_option('-i', '--ignore', action="append", type="int",
+                  help='Ignore this frame nr. May be specified more than once.')
 
 parser.set_defaults(scale=2,
                     damp=1e-1,
@@ -68,6 +70,9 @@ if options.previous_result and not options.update:
 
 if options.norm not in (1, 2):
     raise ValueError("Only L1 and L2 error norms are supported.")
+
+if not options.ignore:
+    options.ignore = []
 
 d = options.__dict__
 print "Input Parameters"
@@ -100,6 +105,8 @@ for i in range(len(ic)):
 
 print "Images scaled by: %s" % str(['%.2f' % f for f in scales])
 
+images = [img for i,img in enumerate(images) if not i in options.ignore]
+
 HH = [i.info['H'] for i in images]
 oshape = np.floor(np.array(images[0].shape) * options.scale)
 avg = initial_guess_avg(images, HH, options.scale, oshape)
@@ -109,7 +116,7 @@ avg = initial_guess_avg(images, HH, options.scale, oshape)
 #
 if options.update:
     if options.previous_result:
-        res = imread(options.previous_result)
+        res = imread(options.previous_result, flatten=True)
         err = []
 
     out = avg.copy()
