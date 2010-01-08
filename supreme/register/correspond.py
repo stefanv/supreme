@@ -65,7 +65,7 @@ def correspond(fA, A, fB, B, win_size=9):
             pass
         else:
             patch = np.array(A[m:n, p:q], dtype=float)
-            patch[mask] = -1 # round feature
+#            patch[mask] = -1 # round feature
             pA[(i, j)] = patch
 
     pB = {}
@@ -76,7 +76,7 @@ def correspond(fA, A, fB, B, win_size=9):
             pass
         else:
             patch = np.array(B[m:n, p:q], dtype=float)
-            patch[mask] = -1 # round feature
+#            patch[mask] = -1 # round feature
             pB[(i, j)] = patch
 
     count = 1
@@ -92,8 +92,6 @@ def correspond(fA, A, fB, B, win_size=9):
         if patch_A is None:
             continue
 
-        patch_A = patch_A - patch_A.mean()
-
         # Sort values for QQ-comparison
         patch_A = np.sort(patch_A)
 
@@ -101,7 +99,6 @@ def correspond(fA, A, fB, B, win_size=9):
             patch_B = pB.get((m, n), None)
             if patch_B is None:
                 continue
-            patch_B = patch_B - patch_B.mean()
             patch_B = np.sort(patch_B)
 
             norm = np.linalg.norm
@@ -110,8 +107,9 @@ def correspond(fA, A, fB, B, win_size=9):
             # that works.
 
             # |A - B| <= max(|A|, |B|) since all elements are positive
+            order = 2
             tmp = patch_B - patch_A
-            tmp = -norm(tmp) / max(norm(patch_B), norm(patch_A))
+            tmp = -norm(tmp, order) / max(norm(patch_B, order), norm(patch_A, order))
 
             if tmp > -0.5 and tmp > match_likelihood:
                 match_likelihood = tmp
