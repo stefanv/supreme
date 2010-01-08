@@ -54,7 +54,8 @@ def load_vgg(path):
     data_path = data_paths[0]
     H_path = H_paths[0]
 
-    ic = ImageCollection(os.path.join(data_path, '*'), conserve_memory=False)
+    ic = ImageCollection(os.path.join(data_path, '*'), conserve_memory=False,
+                         grey=True)
 
     H_sofar = np.eye(3)
     for i, img in enumerate(ic):
@@ -62,7 +63,11 @@ def load_vgg(path):
             img.info['H'] = np.eye(3)
         else:
             H_pat = os.path.join(H_path, '*%03d.%03d*.H' % (i - 1, i))
-            H_file = glob(H_pat)[0]
+            H_file_glob = glob(H_pat)
+            if not len(H_file_glob) > 0:
+                raise RuntimeError("Could not locate appropriate H-files "
+                                   "searching for %s" % H_pat)
+            H_file = H_file_glob[0]
             H = np.loadtxt(H_file)
             if not H.shape == (3, 3):
                 raise RuntimeError("Invalid H-file found: %s" % H_file)
