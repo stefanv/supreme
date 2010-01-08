@@ -57,7 +57,7 @@ cdef np.double_t dabs(np.double_t x):
     else:
         return -x
 
-cpdef features(dict pulses, shape, win_size=0):
+cpdef features(dict pulses, shape, win_size=0, max_area=100):
     """Find feature points.
 
     Parameters
@@ -96,19 +96,17 @@ cpdef features(dict pulses, shape, win_size=0):
 
     for nnz in sorted(pulses):
         for cr in pulses[nnz]:
-            add_f_array(weight, iabs(cr._value) / pow(<double>cr._nnz, 0.5),
-                        cr)
-            crh._set_array(<np.int_t*>area.data,
-                           shape[0], shape[1], cr,
-                           cr._nnz, 1)
-            crh._set_array(<np.int_t*>strength.data,
-                           shape[0], shape[1], cr,
-                           1, 1)
+            if nnz < max_area:
+                add_f_array(weight, iabs(cr._value) / pow(<double>cr._nnz, 0.5),
+                            cr)
+                crh._set_array(<np.int_t*>area.data,
+                               shape[0], shape[1], cr,
+                               cr._nnz, 1)
+                crh._set_array(<np.int_t*>strength.data,
+                               shape[0], shape[1], cr,
+                               1, 1)
 
     weight -= weight.min()
-    beta = weight.mean()
-    lamb = 1/beta
-    stdev = weight.std()
 
     hwin = (win_size - 1) / 2
     for i in range(shape[0]):
@@ -125,4 +123,6 @@ cpdef features(dict pulses, shape, win_size=0):
 
     _log.info('Features found: %s' % np.sum(weight != 0))
 
+    mask = (strength != 0)
+    area[mask] /= strength[mask]
     return weight * strength, area
