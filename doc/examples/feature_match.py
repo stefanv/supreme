@@ -17,8 +17,8 @@ from supreme.register.correspond import correspond
 # ----------------------------------------------------------------------
 
 if len(sys.argv) == 3:
-    icc = [imread(sys.argv[i]) for i in range(1, 3)]
-    ic = [imread(sys.argv[i], flatten=True) for i in range(1, 3)]
+    icc = [imread(sys.argv[i]) for i in (1, 2)]
+    ic = [imread(sys.argv[i], flatten=True) for i in (1, 2)]
     imgc0 = icc[0]
     img0 = ic[0]
     imgc1 = icc[1]
@@ -35,11 +35,12 @@ else:
 
 show_features = True # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
-feature_method = 'dpt' # 'fast'
-dpt_feature_nr = 500
+feature_method = 'dpt' # 'dpt' or 'fast'
+dpt_feature_nr = 200
 fast_barrier = 25
 registration_method = 'RANSAC' # or iterative
 RANSAC_confidence = 0.98
+RANSAC_mode = 'direct' # 'iterative' or 'direct'
 win_size = None
 save_tiff = True # Save warped images to tiff
 refine_using_MI = False # Refine using mutual information?
@@ -60,9 +61,13 @@ def get_brightest_pulses(weight, area, N=100):
     feat = zip(*np.nonzero(weight))
     area = area.flat[brightest]
 
-    norm_inv_area = area/float(np.prod(weight.shape))
+    return feat, area
 
-    return feat, norm_inv_area
+def set_boundary_zero(x, size=5):
+    x[:size, :] = 0
+    x[:, :size] = 0
+    x[-size:, :] = 0
+    x[:, -size:] = 0
 
 if feature_method == 'dpt':
     import supreme.lib.dpt as dpt
@@ -73,8 +78,15 @@ if feature_method == 'dpt':
     pulses = dpt.decompose(img0.astype(np.int))
     pulses_mod = dpt.decompose(img1.astype(np.int))
 
-    weight, area = dpt_feat(pulses, img0.shape, win_size=window)
+    print "Calculating feature positions..."
+    weight, area = dpt_feat(pulses, img0.shape, win_size=window, max_area=100)
     weight_mod, area_mod = dpt_feat(pulses_mod, img1.shape, win_size=window)
+
+    # Ignore features that occur right on boundary
+    set_boundary_zero(weight, 5)
+    set_boundary_zero(area, 5)
+    set_boundary_zero(weight_mod, 5)
+    set_boundary_zero(area_mod, 5)
 
     feat_coord, feat_area = get_brightest_pulses(weight, area, N=dpt_feature_nr)
     feat_mod_coord, feat_mod_area = get_brightest_pulses(weight_mod, area_mod,
@@ -114,8 +126,9 @@ if show_features:
 
 print "Finding tentative correspondences..."
 if win_size is None:
-    win_size = 255/2./np.mean(feat_mod_area) * 4/np.pi
-    win_size = np.clip(win_size, 11, 71)
+    win_size = np.mean(feat_mod_area)
+    print win_size
+    win_size = np.clip(win_size, 5, 100)
     print "Automatically determining window size...%d" % win_size
 
 print "win_size=%.2f" % win_size
@@ -128,7 +141,9 @@ if stack:
     M, converged = supreme.register.sparse(pairs[:, 0, 0], pairs[:, 0, 1],
                                            pairs[:, 1, 0], pairs[:, 1, 1],
                                            mode=registration_method,
-                                           confidence=RANSAC_confidence)
+                                           confidence=RANSAC_confidence,
+                                           RANSAC_mode=RANSAC_mode,
+                                           )
 #                                           inliers_required=5)
     print np.array2string(M, separator=', ')
 
