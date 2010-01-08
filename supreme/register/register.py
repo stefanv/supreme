@@ -47,7 +47,7 @@ class Homography(object):
         tcoord = np.hstack((data[:, 2:], ones))
 
         tc = np.dot(tcoord, H.T)
-        error = np.sqrt(np.sum((rcoord - tc)**2, axis=1))
+        error = np.sum((rcoord - tc)**2, axis=1)
 
         # TODO: Should customise this pixel threshold
         return error, error < (1 - confidence) * 50
@@ -77,7 +77,7 @@ class Homography(object):
 
             Given errors in the measurement, H minimises
 
-                ``|x' - Hx'|``
+                ``||x' - Hx'||^2``
 
         success : bool
             Whether or not the calculation could be made.
@@ -108,7 +108,8 @@ class Homography(object):
 
         M,res,rank,s = scipy.linalg.lstsq(U,B)
 
-        return np.append(M,1).reshape((3,3)),True
+        M = np.append(M,1).reshape((3,3))
+        return M, True
 
     def _build_transform_from_params(self,p):
             theta,tx,ty,s = p
