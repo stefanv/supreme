@@ -1,8 +1,8 @@
 import numpy as np
 from numpy.testing import run_module_suite
 
-import lulu.int_array as iarr
-from lulu.int_array import IntArray
+import supreme.lib.dpt.int_array as iarr
+from supreme.lib.dpt.int_array import IntArray
 
 def test_init():
     x = IntArray()

@@ -1,8 +1,8 @@
 from numpy.testing import *
 import numpy as np
 
-import lulu
-import lulu.connected_region_handler as crh
+import supreme.lib.dpt as lulu
+import supreme.lib.dpt.connected_region_handler as crh
 
 class TestLULU:
     img = np.zeros((5, 5)).astype(int)
@@ -51,7 +51,7 @@ class TestReconstruction:
         img = np.random.randint(255, size=(200, 200))
 
         pulses = lulu.decompose(img)
-        img_, areas, area_count = lulu.reconstruct(pulses, img.shape)
+        img_ = lulu.reconstruct(pulses, img.shape)
 
         # Write assert this way so that we can see how many
         # pixels mismatch as a percent of the total nr of pixels

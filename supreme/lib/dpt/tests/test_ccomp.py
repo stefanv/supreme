@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_array_equal, run_module_suite
 
-from lulu.ccomp import label
+from supreme.lib.dpt.ccomp import label
 
 class TestConnectedComponents:
     def setup(self):

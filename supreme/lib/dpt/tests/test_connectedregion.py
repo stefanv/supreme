@@ -1,9 +1,9 @@
 from numpy.testing import *
 import numpy as np
 
-from lulu.connected_region import ConnectedRegion
-import lulu.connected_region_handler as crh
-import lulu.int_array as iarr
+from supreme.lib.dpt.connected_region import ConnectedRegion
+import supreme.lib.dpt.connected_region_handler as crh
+import supreme.lib.dpt.int_array as iarr
 
 class TestConnectedRegion:
     c = ConnectedRegion(shape=(5,5),
