@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 
+import sys
 import os.path
 import glob
 
@@ -17,7 +18,13 @@ def getframes(path):
     return [supreme.io.imread(fn,flatten=True) for fn in
             sorted(glob.glob(os.path.join(data_path,path)))]
 
-images = getframes('toystory/*.png')[:5]
+if len(sys.argv) > 1:
+    images = [supreme.io.imread(i, flatten=True) for i in sys.argv[1:]]
+elif len(sys.argv) == 0:
+    images = getframes('toystory/*.png')[:5]
+else:
+    print "Usage: register_LPT_auto.py img1 img2 img3 ..."
+
 #images = getframes('test/flower*.jpg')
 #images = getframes('test/olie*.jpg')
 #images = getframes('reflectometer/*.png')
