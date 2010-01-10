@@ -51,11 +51,13 @@ for i, frame in enumerate(features[1:]):
     xr,yr = ref['column'][valid_ref],ref['row'][valid_ref]
 
     try:
-        M,converged = sr.register.sparse(yr,xr,yf,xf,mode='RANSAC',confidence=0.8)
+        M,converged = sr.register.sparse(yf,xf,yr,xr,mode='RANSAC',
+                                         confidence=0.8)
         M_AB = np.dot(np.linalg.inv(M), M_A0)
         M_A0 = M
 
-    except:
+    except Exception, e:
+        print "Error during RANSAC iteration: %s" % e
         print "RANSAC did not converge.  Skipping frame."
         continue
 

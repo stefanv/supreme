@@ -36,11 +36,10 @@ else:
 show_features = True # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
 feature_method = 'dpt' # 'dpt' or 'fast'
-dpt_feature_nr = 200
+dpt_feature_nr = 500
 fast_barrier = 25
 registration_method = 'RANSAC' # or iterative
 RANSAC_confidence = 0.98
-RANSAC_mode = 'direct' # 'iterative' or 'direct'
 win_size = None
 save_tiff = True # Save warped images to tiff
 refine_using_MI = False # Refine using mutual information?
@@ -138,11 +137,14 @@ correspondences = correspond(feat_coord, img0.astype(np.uint8),
 
 if stack:
     pairs = np.array(correspondences)
-    M, converged = supreme.register.sparse(pairs[:, 0, 0], pairs[:, 0, 1],
-                                           pairs[:, 1, 0], pairs[:, 1, 1],
+    print '%d correspondences found' % len(pairs)
+    if len(pairs) <= 4:
+        raise RuntimeError('Not enough correspondences to do H-matrix'
+                           'estimation.')
+    M, converged = supreme.register.sparse(pairs[:, 1, 0], pairs[:, 1, 1],
+                                           pairs[:, 0, 0], pairs[:, 0, 1],
                                            mode=registration_method,
                                            confidence=RANSAC_confidence,
-                                           RANSAC_mode=RANSAC_mode,
                                            )
 #                                           inliers_required=5)
     print np.array2string(M, separator=', ')

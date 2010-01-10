@@ -38,7 +38,14 @@ class Homography(object):
 
     parameters = property(fget=get_parameters, fset=set_parameters)
 
-    def __call__(self, data, H=None, confidence=0.8):
+    def __call__(self, data, H=None, confidence=0.8,
+                 error_type='both'):
+        """
+        Parameters
+        ----------
+        error_type : {'forward', 'backward', 'both'}
+
+        """
         if H is None:
             H = self.parameters
 
@@ -46,11 +53,22 @@ class Homography(object):
         rcoord = np.hstack((data[:, :2], ones))
         tcoord = np.hstack((data[:, 2:], ones))
 
-        tc = np.dot(tcoord, H.T)
-        error = np.sum((rcoord - tc)**2, axis=1)
+        tcf = np.dot(H, rcoord.T)
+        tcf = tcf[:2, :] / tcf[2, :]
+
+        trf = np.dot(np.linalg.inv(H), tcoord.T)
+        trf = trf[:2, :] / trf[2, :]
+
+        error = 0
+
+        if error_type == 'forward' or error_type == 'both':
+            error += np.sum((tcoord.T[:2, :] - tcf)**2, axis=0)
+
+        if error_type == 'backward' or error_type == 'both':
+            error += np.sum((rcoord.T[:2, :] - trf)**2, axis=0)
 
         # TODO: Should customise this pixel threshold
-        return error, error < (1 - confidence) * 50
+        return error, error < ((1 - confidence) * 50)
 
     def estimate(self, data):
         H, ignored = self.estimate_direct(data)
@@ -77,7 +95,7 @@ class Homography(object):
 
             Given errors in the measurement, H minimises
 
-                ``||x' - Hx'||^2``
+                ``||x' - Hx||^2``
 
         success : bool
             Whether or not the calculation could be made.
@@ -91,31 +109,25 @@ class Homography(object):
 
         U = np.zeros((2*nr,8),dtype=ftype)
         # x-coordinates
-        U[:nr,0] = tx
-        U[:nr,1] = ty
+        U[:nr,0] = rx
+        U[:nr,1] = ry
         U[:nr,2] = 1.
-        U[:nr,6] = -tx*rx
-        U[:nr,7] = -ty*rx
+        U[:nr,6] = -rx*tx
+        U[:nr,7] = -ry*tx
 
         # y-coordinates
-        U[nr:,3] = tx
-        U[nr:,4] = ty
+        U[nr:,3] = rx
+        U[nr:,4] = ry
         U[nr:,5] = 1.
-        U[nr:,6] = -tx*ry
-        U[nr:,7] = -ty*ry
+        U[nr:,6] = -rx*ty
+        U[nr:,7] = -ry*ty
 
-        B = np.concatenate((rx,ry))[:,np.newaxis]
+        B = np.concatenate((tx,ty))[:,np.newaxis]
 
-        M,res,rank,s = scipy.linalg.lstsq(U,B)
+        M,res,rank,s = np.linalg.lstsq(U,B)
 
         M = np.append(M,1).reshape((3,3))
         return M, True
-
-    def _build_transform_from_params(self,p):
-            theta,tx,ty,s = p
-            return np.array([[s*np.cos(theta), -s*np.sin(theta), tx],
-                             [s*np.sin(theta),  s*np.cos(theta), ty],
-                             [0,                0,               1.]])
 
     def estimate_iterative(self,data):
         rx,ry,tx,ty = self._data_from_array(data)
@@ -123,19 +135,22 @@ class Homography(object):
         rcoord = np.vstack((rx,ry,np.ones_like(rx))).T
         tcoord = np.vstack((tx,ty,np.ones_like(tx))).T
 
-        def err_func(p):
-            err,inlier = self(data,
-                              H=self._build_transform_from_params(p))
+        def err_func(H):
+            H = np.asarray(H).reshape((3, 3))
+            err, inlier = self(data, H)
             return err
 
-        pout,ignore,ignore,mesg,ier = sp.optimize.leastsq(err_func,
-                                                          [0,0,0,1],
-                                                          maxfev=5000,
-                                                          full_output=True)
-        if ier != 1 and ier != 2:
+        H,ignore,ignore,mesg,ier = sp.optimize.leastsq(err_func,
+                                                       np.eye(3).flat,
+                                                       maxfev=5000,
+                                                       full_output=True)
+
+        if ier not in (1, 2, 3, 4):
             print "Warning: error status", ier
             print mesg
-        return self._build_transform_from_params(pout),(ier==1)
+
+        H = np.array(H).reshape((3, 3))
+        return H/H[2,2], (ier in (1,2,3,4))
 
 
 class PointCorrespondence(object):
@@ -150,7 +165,6 @@ class PointCorrespondence(object):
 
         self.mode = args.get('mode', 'direct').lower()
         self.args = args
-        self.RANSAC_mode = args.get('RANSAC_mode', 'direct')
 
     def estimate(self):
         if self.mode == 'direct':
@@ -158,15 +172,13 @@ class PointCorrespondence(object):
         elif self.mode == 'iterative':
             return Homography().estimate_iterative(self.data)
         else:
-            return self.RANSAC(self.RANSAC_mode)
+            return self.RANSAC()
 
-    def RANSAC(self, mode='direct'):
+    def RANSAC(self):
         """Mode can be 'direct' or 'iterative'.
 
         """
         M = Homography()
-        if mode == 'iterative':
-            M.estimate = M.estimate_iterative
         R = RANSAC.RANSAC(M, p_inlier=0.1) # conservatively low
         return R(self.data,
                  inliers_required=self.args.get('inliers_required',
@@ -188,7 +200,7 @@ def sparse(ref_feat_rows, ref_feat_cols,
         Coordinates in the target image.
     mode : {'direct', 'iterative', 'RANSAC'}, optional
         Method used to estimate the correspondences.  See also
-        ``PointCorrespondence``.
+        ``PointCorrespondence``.  Use ``direct`` by default.
     RANSAC_mode : {'direct', 'iterative'}, optional
         Whether RANSAC should estimates homographies directly
         or iteratively.
@@ -202,8 +214,8 @@ def sparse(ref_feat_rows, ref_feat_cols,
 
     """
 
-    p = PointCorrespondence(ref_feat_rows,ref_feat_cols,
-                            target_feat_rows,target_feat_cols,
+    p = PointCorrespondence(ref_feat_rows, ref_feat_cols,
+                            target_feat_rows, target_feat_cols,
                             **kwargs)
 
     M = p.estimate()

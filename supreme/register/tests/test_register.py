@@ -5,7 +5,7 @@ from supreme import register
 
 class test_sparse:
     def testip_rot90(self):
-        n = 10
+        n = 20
         xp = np.random.random(n)
         yp = np.random.random(n)
 
@@ -13,19 +13,19 @@ class test_sparse:
         C = np.cos(theta)
         S = np.sin(theta)
 
-        tf = np.array([[C,-S,3],
-                      [S,C,7],
-                      [0,0,1.]])
+        tf = np.array([[C,-S, 3],
+                       [S, C, 7],
+                       [0, 0, 1.]])
 
         tx = C*xp - S*yp + 3
         ty = S*xp + C*yp + 7
 
         for mode in ('direct', 'iterative', 'RANSAC'):
-            yield (self.check_sparse, ty, tx, yp, xp, tf, mode)
+            yield (self.check_sparse, yp, xp, ty, tx,  tf, mode)
 
     def check_sparse(self, ty, tx, yp, xp, tf, mode):
         tf_est,valid = register.sparse(ty, tx, yp, xp, mode=mode)
-        assert_array_almost_equal(tf, tf_est)
+        assert_array_almost_equal(tf, tf_est, decimal=1)
 
 if __name__ == "__main__":
     run_module_suite()
