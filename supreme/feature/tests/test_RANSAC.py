@@ -106,7 +106,7 @@ class TestRansac:
 ##         P.show()
 ##         P.close()
 
-        assert_array_almost_equal((rsc_m,rsc_c), line.parameters, decimal=1,
+        assert_array_almost_equal((rsc_m,rsc_c), (m, x), decimal=1,
              err_msg='Note: this is a statistical test and may fail sometimes')
 
 if __name__ == "__main__":
