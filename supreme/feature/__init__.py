@@ -1,4 +1,4 @@
 import SIFT
-import RANSAC
+import ransac
 from feature import *
 import dpt

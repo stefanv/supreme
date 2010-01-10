@@ -11,7 +11,7 @@ import sys
 
 import supreme as sr
 from supreme.config import ftype
-from supreme.feature import RANSAC
+from supreme.feature import ransac
 from supreme import transform
 from parzen import joint_hist, mutual_info
 
@@ -179,7 +179,7 @@ class PointCorrespondence(object):
 
         """
         M = Homography()
-        R = RANSAC.RANSAC(M, p_inlier=0.1) # conservatively low
+        R = ransac.RANSAC(M, p_inlier=0.1) # conservatively low
         return R(self.data,
                  inliers_required=self.args.get('inliers_required',
                                                 len(self.data)/2),

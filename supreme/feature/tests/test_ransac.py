@@ -1,14 +1,14 @@
 from numpy.testing import *
 import numpy as np
 
-from supreme.feature import RANSAC
+from supreme.feature import ransac
 
 class Line(object):
     """y = mx + c
 
     See Also
     --------
-    supreme.feature.RANSAC
+    supreme.feature.ransac
 
     """
     @property
@@ -87,7 +87,7 @@ class TestRansac:
         data = line.generate(xrange, inliers, outliers, 50, 0.25)
 
         # Determine parameters using ransac
-        (rsc_m, rsc_c), res = RANSAC.RANSAC(model=line,
+        (rsc_m, rsc_c), res = ransac.RANSAC(model=line,
                                             p_inlier=0.66)\
                               (data=data, inliers_required=30, confidence=0.9)
 
