@@ -89,7 +89,7 @@ class RANSAC(object):
         self.p_inlier = p_inlier
 
     def __call__(self, data=None, inliers_required=None, confidence=None,
-                 T=None):
+                 max_iter=None, T=None, LO_RANSAC=None):
         """Execute RANSAC.
 
         Parameters
@@ -104,9 +104,18 @@ class RANSAC(object):
             an inlier.  A value of zero implies almost any data
             point fits the model, while one implies that it must
             lie exactly on the model prediction.
+        max_iter : int
+            Hard limit on the maximum number of iterations.  By default,
+            the algorithms figures out a sufficient number of iterations.
         T : float
             Penalty applied for each outlier, according to MSAC. By default,
             T is set to `confidence`.
+
+        Other Parameters
+        ----------------
+        LO_RANSAC : ndarray of bool
+            Used in the implementation of LO-RANSAC, this variable provide
+            the inliers for the inner RANSAC loop.
 
         """
         for param in [data, inliers_required]:
@@ -121,9 +130,13 @@ class RANSAC(object):
         model = self.model
         L = len(data)
 
-        max_iter = max(3 * np.ceil(self.p_inlier ** (-model.ndp)).astype(int),
-                       100)
-        log.debug("Maximum number of RANSAC iterations: %i" % max_iter)
+        if max_iter is None:
+            max_iter = max(3 * np.ceil(
+                self.p_inlier ** (-model.ndp)).astype(int),
+                           100)
+
+        if LO_RANSAC is None:
+            log.debug("Maximum number of RANSAC iterations: %i" % max_iter)
 
         success = False
         best_set = None
@@ -132,9 +145,18 @@ class RANSAC(object):
         while i < max_iter:
             i += 1
 
+            if LO_RANSAC is not None:
+                M = np.sum(LO_RANSAC)
+                from_data = data[LO_RANSAC, ...]
+            else:
+                M = L
+                from_data = data
+
             rand_idx = np.floor(
-                np.random.random(model.ndp) * L).astype(int)
-            model.parameters,res = model.estimate(data[rand_idx, ...])
+                np.random.random(model.ndp) * M).astype(int)
+
+            model.parameters, res = model.estimate(from_data[rand_idx,...])
+
             score, inliers = model(data, confidence=confidence)
 
             ip = np.sum(inliers) / float(L)
@@ -149,6 +171,14 @@ class RANSAC(object):
                 best_set = inliers
                 best_err = err
 
+                if np.sum(inliers) > 1.5 * model.ndp and \
+                   (LO_RANSAC is None):
+                    best_set, best_err = self(data, confidence,
+                                              max_iter=10, T=T,
+                                              LO_RANSAC=inliers)
+                elif LO_RANSAC is not None:
+                    return best_set, best_err
+
         if np.sum(best_set) == 0:
             raise RuntimeError('RANSAC did not converge')
 
@@ -159,5 +189,4 @@ class RANSAC(object):
 
         np.savetxt('/tmp/ransac.txt', data[best_set,...])
 
-        data = data[best_set,...]
-        return model.estimate(data)
+        return model.estimate(data[best_set, ...])
