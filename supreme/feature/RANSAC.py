@@ -121,7 +121,8 @@ class RANSAC(object):
         model = self.model
         L = len(data)
 
-        max_iter = 3 * np.ceil(self.p_inlier ** (-model.ndp)).astype(int)
+        max_iter = max(3 * np.ceil(self.p_inlier ** (-model.ndp)).astype(int),
+                       100)
         log.debug("Maximum number of RANSAC iterations: %i" % max_iter)
 
         success = False
@@ -138,7 +139,7 @@ class RANSAC(object):
 
             ip = np.sum(inliers) / float(L)
             new_max = np.log(0.01) / np.log(1 - ip**model.ndp)
-            if new_max < max_iter:
+            if new_max < max_iter and new_max > 100:
                 max_iter = new_max
 
             inliers_found = np.sum(inliers)
