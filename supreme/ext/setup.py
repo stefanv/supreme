@@ -7,7 +7,7 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('ext', parent_package, top_path)
 
     c_files = [f for f in os.listdir(config.local_path or '.')
-               if f.endswith('.c')]
+               if f.endswith('.c') and not f.endswith('poly_operator.c')]
 
     config.ext_modules.append(CExtension(
         'libsupreme_',
