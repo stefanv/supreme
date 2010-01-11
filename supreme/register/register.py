@@ -179,7 +179,7 @@ class PointCorrespondence(object):
 
         """
         M = Homography()
-        R = ransac.RANSAC(M, p_inlier=0.1) # conservatively low
+        R = ransac.RANSAC(M, p_inlier=0.2) # conservatively low
         return R(self.data,
                  inliers_required=self.args.get('inliers_required',
                                                 len(self.data)/2),
