@@ -72,7 +72,7 @@ class IModel:
 class RANSAC(object):
     """RANdom SAmple Consensus"""
 
-    def __init__(self, model=None, p_inlier=None):
+    def __init__(self, model=None, p_inlier=0.5):
         """
         Parameters
         ----------
@@ -82,8 +82,7 @@ class RANSAC(object):
             Probability that any data point is an inlier.
 
         """
-        for param in [model, p_inlier]:
-            assert param is not None
+        assert model is not None
 
         self.model = model
         self.p_inlier = p_inlier
@@ -118,9 +117,6 @@ class RANSAC(object):
             the inliers for the inner RANSAC loop.
 
         """
-        for param in [data, inliers_required]:
-            assert param is not None
-
         if confidence is None:
             confidence = 0.8 # sensible default value
 
