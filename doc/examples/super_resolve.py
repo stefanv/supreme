@@ -92,18 +92,19 @@ ic = load_vgg(vgg_dir)
 # Perform crude photometric registration
 ref = ic[0].copy()
 images = []
-scales = []
+scale_offset = []
 for i in range(len(ic)):
     scale = 1
 
     if options.photo_adjust:
         img_warp = homography(ic[i], ic[i].info['H'])
-        scale = photometric_adjust(img_warp, ref)
-        scales.append(scale)
+        scale, offset = photometric_adjust(img_warp, ref)
+        scale_offset.append((scale, offset))
 
-    images.append(ic[i] * scale)
+    images.append(ic[i] * scale + offset)
 
-print "Images scaled by: %s" % str(['%.2f' % f for f in scales])
+print "Images adjusted by: %s" % str(['%.2f, %.2f' % (a,b)
+                                      for (a,b) in scale_offset])
 
 images = [img for i,img in enumerate(images) if not i in options.ignore]
 
@@ -157,7 +158,9 @@ if options.previous_result:
     plt.title('SR Convergence')
 
 if options.photo_adjust:
-    out *= photometric_adjust(out, avg)
+    a, b = photometric_adjust(out, avg)
+    out *= a
+    out += b
 
 out = np.clip(out, 0, 255)
 
