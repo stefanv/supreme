@@ -43,8 +43,10 @@ def histogram_adjust(source, target):
         to target is generated.
 
     """
-    s_hist, s_edges = np.histogram(source, bins=256)
-    t_hist, t_edges = np.histogram(target, bins=256)
+    mask = (source > 0) & (target > 0)
+
+    s_hist, s_edges = np.histogram(source[mask], bins=256)
+    t_hist, t_edges = np.histogram(target[mask], bins=256)
 
     s_edges = s_edges[:-1]
     t_edges = t_edges[:-1]
@@ -54,9 +56,9 @@ def histogram_adjust(source, target):
 
     mapping = np.argmin(np.abs(t_cum - s_cum[:, None]), axis=1)
 
-#    import matplotlib.pyplot as plt
-#    plt.plot(mapping)
-#    plt.show()
+##     import matplotlib.pyplot as plt
+##     plt.plot(mapping)
+##     plt.show()
 
     def tf(source):
         sshape = source.shape
