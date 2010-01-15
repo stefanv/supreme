@@ -61,6 +61,7 @@ def histogram_adjust(source, target):
 ##     plt.show()
 
     def tf(source):
+        source = source.astype(float)
         sshape = source.shape
         source = source.flat
         source = source/np.max(source) * (len(s_edges) - 1)
