@@ -39,7 +39,7 @@ feature_method = 'dpt' # 'dpt' or 'fast'
 dpt_feature_nr = 500
 fast_barrier = 25
 registration_method = 'RANSAC' # or iterative
-RANSAC_confidence = 0.98
+RANSAC_confidence = 0.99
 win_size = None
 save_tiff = True # Save warped images to tiff
 refine_using_MI = False # Refine using mutual information?
@@ -144,9 +144,8 @@ if stack:
     M, converged = supreme.register.sparse(pairs[:, 1, 0], pairs[:, 1, 1],
                                            pairs[:, 0, 0], pairs[:, 0, 1],
                                            mode=registration_method,
-                                           confidence=RANSAC_confidence,
-                                           )
-#                                           inliers_required=5)
+                                           confidence=RANSAC_confidence)
+#                                           inliers_required=len(pairs)*0.8)
     print np.array2string(M, separator=', ')
 
     if refine_using_MI:
