@@ -38,9 +38,9 @@ def histogram_adjust(source, target):
 
     Returns
     -------
-    source_adj : ndarray
-        Source, adjusted so that its histogram looks like that of
-        target.
+    source_adj : callable, f(x)
+        When applied to the source image, an image with similar response
+        to target is generated.
 
     """
     s_hist, s_edges = np.histogram(source, bins=256)
@@ -54,15 +54,17 @@ def histogram_adjust(source, target):
 
     mapping = np.argmin(np.abs(t_cum - s_cum[:, None]), axis=1)
 
-    sshape = source.shape
-    source = source.flat
-    source = source/np.max(source) * (len(s_edges) - 1)
-    source = np.clip(np.round(source), 0, len(s_edges) - 1).astype(int)
-
 #    import matplotlib.pyplot as plt
 #    plt.plot(mapping)
 #    plt.show()
 
-    return t_edges[mapping[source]].reshape(sshape) + \
-           (t_edges[1] - t_edges[0])/2.
+    def tf(source):
+        sshape = source.shape
+        source = source.flat
+        source = source/np.max(source) * (len(s_edges) - 1)
+        source = np.clip(np.round(source), 0, len(s_edges) - 1).astype(int)
 
+        return t_edges[mapping[source]].reshape(sshape) + \
+               (t_edges[1] - t_edges[0])/2.
+
+    return tf

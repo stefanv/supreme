@@ -15,7 +15,8 @@ def test_histogram():
     x = np.random.random((100, 100)) * 200
     y = (x/x.max())**0.8
 
-    z = histogram_adjust(y, x)
+    f = histogram_adjust(y, x)
+    z = f(y)
 
     assert np.mean((z - x)**2) < 1
 
