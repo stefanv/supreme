@@ -100,6 +100,8 @@ class ImageCollection(object):
         else:
             self.files = sorted(glob(file_pattern))
 
+        self.files = sorted(self.files)
+
         if conserve_memory:
             memory_slots = 1
         else:
