@@ -10,6 +10,8 @@ import register
 import feature
 import io
 import photometry
+import noise
+import resolve
 
 def iterable(x):
     try:
