@@ -6,7 +6,7 @@ import scipy.linalg
 import scipy.sparse as sparse
 
 from supreme.geometry.window import gauss
-from supreme.resolve.operators import bilinear, convolve, block_diag, op_stack
+from supreme.resolve.operators import bilinear, convolve, block_diag
 from supreme.io import imread
 
 import os

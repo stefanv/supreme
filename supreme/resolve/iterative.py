@@ -15,7 +15,7 @@ import supreme.config
 log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
-from operators import bilinear, convolve, op_stack
+from operators import bilinear, convolve, op_repeat
 from supreme.ext import poly_interp_op
 
 import time
