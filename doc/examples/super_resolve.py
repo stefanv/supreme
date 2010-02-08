@@ -95,6 +95,7 @@ images = []
 scale_offset = []
 for i in range(len(ic)):
     scale = 1
+    offset = 0
 
     if options.photo_adjust:
         img_warp = homography(ic[i], ic[i].info['H'])
@@ -189,7 +190,7 @@ print "------------------------"
 
 filename = '_'.join([os.path.basename(os.path.abspath(vgg_dir)),
                      'x%.2f' % options.scale,
-                     '%.2flam' % options.damp,
+                     '%.3flam' % options.damp,
                      options.method,
                      options.operator,
                      (options.update and 'update') or 'direct',
