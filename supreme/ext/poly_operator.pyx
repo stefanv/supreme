@@ -41,11 +41,14 @@ def poly_interp_op(int MM, int NN, np.ndarray[np.double_t, ndim=2] H,
     ----------
     MM, NN : int
         Shape of the high-resolution source frame.
-    M, N : int
-        Shape of the low-resolution target frame.
     H : (3, 3) ndarray
         Transformation matrix that warps the high-resolution image to
         the low-resolution image.
+    M, N : int
+        Shape of the low-resolution target frame.
+    search_win : int
+        Search window size.  Note TODO: this parameter should
+        be automatically determined.
 
     Returns
     -------
