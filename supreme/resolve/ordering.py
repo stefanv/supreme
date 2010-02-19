@@ -21,6 +21,11 @@ def special_form(A):
     P : sparse matrix
         Permutation matrix such that PA is in special form.
 
+    Notes
+    -----
+    The permutation matrix is orthogonal, and as such its
+    inverse is simply ``P.T``.
+
     """
     if not sparse.issparse(A):
         A = sparse.csr_matrix(A)
