@@ -5,6 +5,7 @@ import numpy as np
 import scipy.optimize as opt
 import scipy.ndimage as ndi
 import scipy.sparse as sparse
+import scipy.sparse.linalg
 
 from supreme.register import stack
 from supreme.transform import homography
@@ -16,13 +17,15 @@ log = supreme.config.get_log(__name__)
 
 from lsqr import lsqr
 from operators import bilinear, convolve, op_repeat
+import ordering
 from supreme.ext import poly_interp_op
 
 import time
 
 def solve(images, tf_matrices, scale, x0=None,
           tol=1e-10, iter_lim=None, damp=1e-1,
-          method='CG', operator='bilinear', norm=1):
+          method='CG', operator='bilinear', norm=1,
+          standard_form=True):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -60,6 +63,9 @@ def solve(images, tf_matrices, scale, x0=None,
         polygon interpolation operator works well for zoom ratios < 2.
     norm : {1, 2}
         Whether to use the L1 or L2 norm to measure errors between images.
+    standard_form : bool
+        Whether to convert the matrix operator to standard form before
+        processing.
 
     Returns
     -------
@@ -115,6 +121,11 @@ def solve(images, tf_matrices, scale, x0=None,
 ##     plt.title('diff images[0] - Ax')
 ##     plt.show()
 
+    if standard_form:
+        print "Bringing matrix to standard form..."
+        P = ordering.standard_form(op)
+        op = P * op
+
     def A(x, m, n):
         return op * x
 
@@ -126,6 +137,9 @@ def solve(images, tf_matrices, scale, x0=None,
     b = np.empty(k * M)
     for i in range(k):
         b[i * M:(i + 1) * M] = images[i].flat
+
+    if standard_form:
+        b = P * b
 
     atol = btol = conlim = tol
     show = True
@@ -183,6 +197,9 @@ def solve(images, tf_matrices, scale, x0=None,
         for i in range(50):
             print "Gradient descent step %d" % i
             x += damp * (op.T * (b - (op * x)))
+
+    elif method == 'direct':
+        x = sparse.linalg.spsolve(op, b)
 
     else:
         raise ValueError('Invalid method (%s) specified.' % method)
