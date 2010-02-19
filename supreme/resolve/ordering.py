@@ -3,11 +3,11 @@ __all__ = ['special_form']
 import numpy as np
 import scipy.sparse as sparse
 
-def special_form(A):
-    """Calculate a permutation matrix so that PA is in special form.
+def standard_form(A):
+    """Calculate a permutation matrix so that PA is in standard form.
 
     The column index of the first non-zero element of row i is defined
-    as F(i).  When a matrix is in special form,
+    as F(i).  When a matrix is in standard form,
 
       F(i) <= F(i + 1)
 
@@ -19,7 +19,7 @@ def special_form(A):
     Returns
     -------
     P : sparse matrix
-        Permutation matrix such that PA is in special form.
+        Permutation matrix such that PA is in standard form.
 
     Notes
     -----
@@ -33,12 +33,15 @@ def special_form(A):
     A = A.tocsr()
     A.sort_indices()
 
-    first_col_idx = A.indices[A.indptr[:-1]]
+    # Only examine rows with non-zero elements
+    mask = (A.indptr[:-1] < len(A.indices))
+    first_col_idx = A.indices[A.indptr[mask]]
     perm = np.argsort(first_col_idx)
 
+    N = A.shape[0]
     L = len(perm)
     ij = np.zeros((2, L))
-    ij[0, :] = np.arange(L)
+    ij[0, :] = np.arange(L) + np.sum(~mask)
     ij[1, :] = perm
 
-    return sparse.coo_matrix((np.ones(L), ij)).tocsc()
+    return sparse.coo_matrix((np.ones(L), ij), shape=(N, N)).tocsc()
