@@ -53,6 +53,7 @@ __all__ = ['lsqr']
 
 import numpy as np
 from math import sqrt
+from scipy.sparse.linalg import aslinearoperator
 
 def _sym_ortho(a,b):
     """
@@ -100,7 +101,7 @@ def _sym_ortho(a,b):
     return c, s, r
 
 
-def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
+def lsqr(A, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
          iter_lim=None, show=False, calc_var=False):
     """Find the least-squares solution to a large, sparse, linear system
     of equations.
@@ -124,12 +125,9 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
 
     Parameters
     ----------
-    A : callable A(x, m, n)
-        Calculate ``A*x`` where ``A`` is a large, sparse ``(m, n)`` array.
-    AT : callable AT(x, m, n)
-        Calculate ``A^T * x``.
-    n : int
-        Number of columns in A.
+    A : LinearOperator or equivalent
+        A representation of an mxn matrix.  It is required that
+        the linear operator can produce ``Ax`` and ``A.T x``.
     b : (m,) ndarray
         Right-hand side vector ``b``.
     damp : float
@@ -257,7 +255,10 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
            systems using LSQR and CRAIG", BIT 35, 588-604.
 
     """
-    m = len(b)
+    A = aslinearoperator(A)
+    b = b.squeeze()
+
+    m, n = A.shape
     if iter_lim is None: iter_lim = 2 * n
     var = np.zeros(n)
 
@@ -313,7 +314,7 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
 
     if beta > 0:
         u = (1/beta) * u
-        v = AT(u, m, n)
+        v = A.rmatvec(u)
         alfa = np.linalg.norm(v)
 
     if alfa > 0:
@@ -355,13 +356,13 @@ def lsqr(A, AT, n, b, damp=0.0, atol=1e-8, btol=1e-8, conlim=1e8,
         %                beta*u  =  a*v   -  alfa*u,
         %                alfa*v  =  A'*u  -  beta*v.
         """
-        u = A(v, m, n) - alfa * u
+        u = A.matvec(v) - alfa * u
         beta = np.linalg.norm(u)
 
         if beta > 0:
             u = (1/beta) * u
             anorm = sqrt(anorm**2 + alfa**2 + beta**2 + damp**2)
-            v = AT(u, m, n) - beta * v
+            v = A.rmatvec(u) - beta * v
             alfa  = np.linalg.norm(v)
             if alfa > 0:
                 v = (1 / alfa) * v

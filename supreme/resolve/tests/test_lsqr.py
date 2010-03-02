@@ -17,19 +17,13 @@ for jj in range(5):
 
 b = normal(size=n)
 
-def Gfun(x, m, n):
-    return np.dot(G, x)
-
-def GTfun(x, m, n):
-    return np.dot(G.T, x)
-
 tol = 1e-10
 show = False
 maxit = None
 
 def test_basic():
     svx = np.linalg.solve(G, b)
-    X = lsqr(Gfun, GTfun, n, b, show=show, atol=tol, btol=tol, iter_lim=maxit)
+    X = lsqr(G, b, show=show, atol=tol, btol=tol, iter_lim=maxit)
     xo = X[0]
     assert norm(svx - xo) < 1e-5
 
@@ -37,7 +31,7 @@ if __name__ == "__main__":
     svx = np.linalg.solve(G, b)
 
     tic = time()
-    X = lsqr(Gfun, GTfun, n, b, show=show, atol=tol, btol=tol, iter_lim=maxit)
+    X = lsqr(G, b, show=show, atol=tol, btol=tol, iter_lim=maxit)
     xo = X[0]
     phio = X[3]
     psio = X[7]
