@@ -1,4 +1,4 @@
-__all__ = ['special_form']
+__all__ = ['standard_form']
 
 import numpy as np
 import scipy.sparse as sparse
