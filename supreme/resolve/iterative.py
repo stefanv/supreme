@@ -25,7 +25,7 @@ import time
 def solve(images, tf_matrices, scale, x0=None,
           tol=1e-10, iter_lim=None, damp=1e-1,
           method='CG', operator='bilinear', norm=1,
-          standard_form=True):
+          standard_form=False):
     """Super-resolve a set of low-resolution images by solving
     a large, sparse set of linear equations.
 
@@ -126,12 +126,6 @@ def solve(images, tf_matrices, scale, x0=None,
         P = ordering.standard_form(op)
         op = P * op
 
-    def A(x, m, n):
-        return op * x
-
-    def AT(x, m, n):
-        return op.T * x
-
     k = len(images)
     M = np.prod(LR_shape)
     b = np.empty(k * M)
@@ -185,7 +179,7 @@ def solve(images, tf_matrices, scale, x0=None,
         x0 = x0.flat
         b = b - op * x0
         x, istop, itn, r1norm, r2norm, anorm, acond, arnorm, xnorm, var = \
-          lsqr(A, AT, np.prod(oshape), b, atol=atol, btol=btol,
+          lsqr(op, b, atol=atol, btol=btol,
                conlim=conlim, damp=damp, show=show, iter_lim=iter_lim)
         x = x0 + x
 
@@ -203,6 +197,9 @@ def solve(images, tf_matrices, scale, x0=None,
 
     else:
         raise ValueError('Invalid method (%s) specified.' % method)
+
+    import scipy.io as sio
+    sio.savemat('/tmp/A.npy', {'A':op, 'shape':oshape, 'b':b})
 
     return x.reshape(oshape)
 
