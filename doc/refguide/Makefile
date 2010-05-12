@@ -9,7 +9,8 @@ PAPER         =
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
+ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS)
+SOURCE = source
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
 
@@ -37,33 +38,33 @@ api:
 	@echo "Build API docs finished."
 
 html: api
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(SOURCE) build/html
 	@echo
 	@echo "Build finished. The HTML pages are in build/html."
 
 dirhtml:
-	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) build/dirhtml
+	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(SOURCE) build/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in build/dirhtml."
 
 pickle:
-	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) build/pickle
+	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) $(SOURCE) build/pickle
 	@echo
 	@echo "Build finished; now you can process the pickle files."
 
 json:
-	$(SPHINXBUILD) -b json $(ALLSPHINXOPTS) build/json
+	$(SPHINXBUILD) -b json $(ALLSPHINXOPTS) $(SOURCE) build/json
 	@echo
 	@echo "Build finished; now you can process the JSON files."
 
 htmlhelp:
-	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) build/htmlhelp
+	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) $(SOURCE) build/htmlhelp
 	@echo
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in build/htmlhelp."
 
 qthelp:
-	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) build/qthelp
+	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(SOURCE) build/qthelp
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in build/qthelp, like this:"
@@ -72,7 +73,7 @@ qthelp:
 	@echo "# assistant -collectionFile build/qthelp/scikitsimage.qhc"
 
 devhelp:
-	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) build/devhelp
+	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(SOURCE) build/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
@@ -81,30 +82,32 @@ devhelp:
 	@echo "# devhelp"
 
 latex:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex-source build/latex
+	cp latex-source/sphinx*.cls build/latex
+	cp latex-source/sphinx*.sty build/latex
 	@echo
 	@echo "Build finished; the LaTeX files are in build/latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
 	      "run these through (pdf)latex."
 
 latexpdf: latex
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex-source build/latex
 	@echo "Running LaTeX files through pdflatex..."
 	make -C build/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in build/latex."
 
 changes:
-	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) build/changes
+	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(SOURCE) build/changes
 	@echo
 	@echo "The overview file is in build/changes."
 
 linkcheck:
-	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) build/linkcheck
+	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) $(SOURCE) build/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in build/linkcheck/output.txt."
 
 doctest:
-	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) build/doctest
+	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(SOURCE) build/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in build/doctest/output.txt."

@@ -56,6 +56,16 @@ def _tf_corners(rows, cols, M):
     return tf_cnrs[:, :2]
 
 def mask_roi(rows, cols, bounds):
+    """Return a mask for operating only on pixels inside the given bounds.
+
+    Parameters
+    ----------
+    rows, cols : int
+        Shape of the target image.
+    bounds : (M, 3) array of (x, y, 1) coordinates
+        Boundary coordinates.
+
+    """
     # Sort corners clockwise.  This can be done with a single
     # swap operation, but that's a bit more work.
     mask = (bounds < 1e-14)

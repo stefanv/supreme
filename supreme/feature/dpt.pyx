@@ -58,7 +58,7 @@ cdef np.double_t dabs(np.double_t x):
         return -x
 
 cpdef features(dict pulses, shape, win_size=0, max_area=100):
-    """Find feature points.
+    """Find feature points, using the discrete pulse transform.
 
     Parameters
     ----------

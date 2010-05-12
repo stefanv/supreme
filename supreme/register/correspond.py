@@ -25,7 +25,8 @@ def _safe_coord(i, j, img, win_size):
 
 def correspond(fA, A, fB, B, win_size=9):
     """Given coordinates of features in two images, determine
-    possible correspondences.
+    possible correspondences using a Quantile-Quantile
+    comparison.
 
     Parameters
     ----------

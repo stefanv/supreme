@@ -21,10 +21,6 @@ class Polygon:
         Given xp and yp (both 1D arrays or sequences), create a new
         polygon.  The polygon is closed at instantiation.
 
-        p.inside(x, y) - Calculate whether points lie inside the polygon.
-        p.area() - The area enclosed by the polygon.
-        p.centroid() - The centroid of the polygon
-
         """
         x = N.asarray(xp,dtype=N.float64)
         y = N.asarray(yp,dtype=N.float64)

@@ -7,8 +7,8 @@ import numpy as N
 def match(features,featureset,threshold=0.6):
     """For each given feature, find the nearest feature from a feature-set.
 
-    Input:
-    ------
+    Parameters
+    ----------
     features : (M,N) array
         M row-wise features of length N.
 
@@ -16,7 +16,7 @@ def match(features,featureset,threshold=0.6):
         Q row-wise features of length N.  This is typically the field
         'data' of the record array produced by SIFT.fromfile.
 
-    Output:
+    Returns
     -------
     nearest : Length M integer array.
         Indices into featureset.

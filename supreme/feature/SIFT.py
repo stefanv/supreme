@@ -5,14 +5,14 @@ import numpy as N
 def fromfile(f,mode='SIFT'):
     """Read SIFT or SURF features from a file.
 
-    Input:
-    ------
+    Parameters
+    ----------
     f : string or open file
         Input file.
     mode : string
         'SIFT' or 'SURF'
 
-    Output:
+    Returns
     -------
     data : record array with fields
       - row: int

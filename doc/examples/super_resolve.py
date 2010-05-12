@@ -33,7 +33,7 @@ parser.add_option('-d', '--damp', type=float,
                   help='Damping coefficient -- '
                        'suppresses oscillations [default: %default]')
 parser.add_option('-m', '--method', dest='method',
-                  help='`CG`, `LSQR` or `descent`. '
+                  help='`CG`, `LSQR`, `L-BFGS-B` or `descent`. '
                   'Specifies optimisation algorithm [default: %default]')
 parser.add_option('-o', '--operator', dest='operator',
                   help='`polygon` or `bilinear`. The camera '
@@ -73,6 +73,10 @@ if options.norm not in (1, 2):
 
 if not options.ignore:
     options.ignore = []
+
+if options.norm == 1 and options.method == 'L-BFGS-B':
+    import warnings
+    warnings.warn("Using the 1-norm with L-BFGS-B may lead to non-convergence.")
 
 d = options.__dict__
 print "Input Parameters"

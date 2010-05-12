@@ -74,6 +74,8 @@ class RANSAC(object):
 
     def __init__(self, model=None, p_inlier=0.5):
         """
+        Construct a RANSAC model fitter.
+
         Parameters
         ----------
         model : Model

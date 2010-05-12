@@ -30,12 +30,12 @@ def solve(images, tf_matrices, scale, x0=None,
     a large, sparse set of linear equations.
 
     This method approximates the camera with a downsampling operator,
-    using bilinear interpolation.  The LSQR method is used to solve
-    the equation :math:`A\mathbf{x} = b` where :math:`A` is the
-    downsampling operator, :math:`\mathbf{x}` is the high-resolution
-    estimate (flattened in raster scan or lexicographic order), and
-    :math:`\mathbf{b}` is a stacked vector of all the low-resolution
-    images.
+    using bilinear or polygon interpolation.  The LSQR method is used
+    to solve the equation :math:`A\mathbf{x} = b` where :math:`A` is
+    the downsampling operator, :math:`\mathbf{x}` is the
+    high-resolution estimate (flattened in raster scan/
+    lexicographic order), and :math:`\mathbf{b}` is a stacked vector
+    of all the low-resolution images.
 
     Parameters
     ----------
@@ -55,12 +55,12 @@ def solve(images, tf_matrices, scale, x0=None,
         `damp` results in a solution closer to `x0`, whereas a smaller
         version of `damp` yields a solution closer to the solution
         obtained without any initial estimate.
-    method : {'CG', 'LSQR', 'descent'}
-        Whether to use conjugate gradients, least-squares or gradient descent
-        to determine the solution.
+    method : {'CG', 'LSQR', 'descent', 'L-BFGS-B'}
+        Whether to use conjugate gradients, least-squares, gradient descent
+        or L-BFGS-B to determine the solution.
     operator : {'bilinear', 'polygon'}
         The camera model is approximated as an interpolation process.  The
-        polygon interpolation operator works well for zoom ratios < 2.
+        bilinear interpolation operator only works well for zoom ratios < 2.
     norm : {1, 2}
         Whether to use the L1 or L2 norm to measure errors between images.
     standard_form : bool
@@ -189,17 +189,23 @@ def solve(images, tf_matrices, scale, x0=None,
 ##
         x = np.array(x0, copy=True).reshape(np.prod(x0.shape))
         for i in range(50):
+            print (op.T * ((op * x) - b)).shape
             print "Gradient descent step %d" % i
-            x += damp * (op.T * (b - (op * x)))
+            x += damp * -1 * (op.T * ((op * x) - b))
+            # Could add prior: + lam * (x - x0.flat))
+
+## L-BFGS-B
+    elif method == 'L-BFGS-B':
+        x, f, d = opt.fmin_l_bfgs_b(sr_func, x0.flat, fprime=sr_gradient)
+        print "L-BFGS-B converged after %d function calls." % d['funcalls']
+        print "Final function value:", f
+        print "Reason for termination:", d['task']
 
     elif method == 'direct':
         x = sparse.linalg.spsolve(op, b)
 
     else:
         raise ValueError('Invalid method (%s) specified.' % method)
-
-    import scipy.io as sio
-    sio.savemat('/tmp/A.npy', {'A':op, 'shape':oshape, 'b':b})
 
     return x.reshape(oshape)
 

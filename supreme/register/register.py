@@ -167,6 +167,9 @@ class PointCorrespondence(object):
         self.args = args
 
     def estimate(self):
+        """Estimate the homography.
+
+        """
         if self.mode == 'direct':
             return Homography().estimate_direct(self.data)
         elif self.mode == 'iterative':
@@ -175,7 +178,9 @@ class PointCorrespondence(object):
             return self.RANSAC()
 
     def RANSAC(self):
-        """Mode can be 'direct' or 'iterative'.
+        """Estimate the homography using RANSAC.
+
+        Mode can be 'direct' or 'iterative'.
 
         """
         M = Homography()

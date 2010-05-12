@@ -280,6 +280,23 @@ def interp_bilinear(grey_image,
     return output
 
 def interp_transf_polygon(grey_image,transform,oshape=None):
+    """Compute an image transformation using polygon interpolation.
+
+    Parameters
+    ----------
+    grey_image : ndarray of uint8
+        Input image.
+    transform : 3x3 matrix of float
+        Transformation matrix.
+    oshape : tuple, optional
+        Shape of output image.  Equal to input size if not specified.
+
+    Notes
+    -----
+    This operation may also be performed by constructing a
+    sparse polygon interpolation operator using ``poly_interp_op``.
+
+    """
     grey_image,transform = atype([grey_image,transform],[np.uint8,np.double])
     ishape = grey_image.shape
     if oshape is None:

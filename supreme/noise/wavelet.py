@@ -41,7 +41,7 @@ def dwt_denoise(X, wavelet='db8', levels=4, alpha=2):
     X : ndarray of uint8
         Image to denoise.
     wavelet : str
-        Wavlet family to use.  See `supreme.lib.pywt.wavelist()` for a
+        Wavelet family to use.  See `supreme.lib.pywt.wavelist()` for a
         complete list.
     levels : int
         Number of levels to use in the decomposition.

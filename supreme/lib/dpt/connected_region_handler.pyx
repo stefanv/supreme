@@ -57,6 +57,9 @@ cpdef int nnz(ConnectedRegion cr):
     return n
 
 cpdef get_shape(ConnectedRegion cr):
+    """Return the shape of the connected region.
+
+    """
     return cr._shape
 
 cdef _minimum_shape(ConnectedRegion cr):
@@ -104,6 +107,9 @@ cpdef set_start_row(ConnectedRegion cr, int start_row):
                          "shape.  Reshape the connectedregion first.")
 
 cpdef int get_start_row(ConnectedRegion cr):
+    """Return the first row where values of the connected region occur.
+
+    """
     return cr._start_row
 
 cpdef list get_colptr(ConnectedRegion cr):
@@ -242,6 +248,9 @@ cdef _outside_boundary(ConnectedRegion cr, int* workspace):
     return y, x
 
 def outside_boundary(ConnectedRegion cr):
+    """Calculate the outside boundary using a scanline approach.
+
+    """
     cdef int* workspace = <int*>stdlib.malloc(sizeof(int) * 3 *
                                               (cr._shape[1] + 2))
     cdef IntArray y, x
@@ -252,13 +261,22 @@ def outside_boundary(ConnectedRegion cr):
     return y, x
 
 cpdef set_value(ConnectedRegion cr, int v):
+    """Set the value of the connected region.
+
+    """
     cr._value = v
 
 cpdef int get_value(ConnectedRegion cr):
+    """Return the value of the connected region.
+
+    """
     return cr._value
 
 
 cpdef validate(ConnectedRegion cr):
+    """Check the validity of the connected region descriptor.
+
+    """
     if cr.rowptr.buf[cr.rowptr.size - 1] != cr.colptr.size:
         raise RuntimeError("ConnectedRegion was not finalised.  Ensure "
                            "rowptr[-1] points beyond last entry of "
@@ -328,6 +346,9 @@ cdef int _boundary_minimum(IntArray boundary_x, IntArray boundary_y,
 # Python wrappers for the above two functions
 def boundary_maximum(ConnectedRegion cr,
                      np.ndarray[np.int_t, ndim=2] img):
+    """Return the maximum value on the boundary of the connected region.
+
+    """
     cdef IntArray y, x
     y, x = outside_boundary(cr)
     return _boundary_maximum(x, y, <np.int_t*>img.data,
@@ -335,6 +356,9 @@ def boundary_maximum(ConnectedRegion cr,
 
 def boundary_minimum(ConnectedRegion cr,
                      np.ndarray[np.int_t, ndim=2] img):
+    """Return the minimum value on the boundary of the connected region.
+
+    """
     cdef IntArray y, x
     y, x = outside_boundary(cr)
     return _boundary_minimum(x, y, <np.int_t*>img.data,
@@ -449,7 +473,20 @@ cdef _set_array(np.int_t* arr, int rows, int cols,
 
 def set_array(np.ndarray[np.int_t, ndim=2] arr,
               ConnectedRegion c, int value, str mode='replace'):
+    """Set the value of the array over the entire connected region.
 
+    Parameters
+    ----------
+    arr : ndarray
+        Array to set.
+    c : ConnectedRegion
+        Region over which to operate.
+    value : int
+        Value used.
+    mode : {'replace', 'add'}
+        Whether to replace or add to the existing array value.
+
+    """
     cdef int add_mode = 0
     if mode == 'add':
         add_mode = 1
@@ -458,6 +495,9 @@ def set_array(np.ndarray[np.int_t, ndim=2] arr,
                       c, value, add_mode)
 
 cpdef bounding_box(ConnectedRegion cr):
+    """Return the bounding box of the connected region.
+
+    """
     return (cr._start_row, iarr.min(cr.colptr),
             cr._start_row + cr.rowptr.size - 2, iarr.max(cr.colptr) - 1)
 

@@ -1,7 +1,6 @@
 # -*- python -*-
 
-"""Fast Parzen-Window-like estimator of the joint histogram between two
-images.
+"""Fast Parzen-Window-like estimator of the joint histogram between two images.
 
 """
 import numpy as np

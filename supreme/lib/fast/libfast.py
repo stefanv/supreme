@@ -37,17 +37,19 @@ def nonmax():
 def corner_detect(image, barrier=10, size=12):
     """Detect corners.
 
-    :Parameters:
-        image : array of uint8
-            Input image.
-        barrier : int
-            Resistance to finding nearby corners.
-        size : int
-            Size of operator, must be in [9,12].
+    Parameters
+    ----------
+    image : array of uint8
+        Input image.
+    barrier : int
+        Resistance to finding nearby corners.
+    size : int
+        Size of operator, must be in [9,12].
 
-    :Returns:
-        xy : Mx2 array
-            The M returned coordinates.
+    Returns
+    -------
+    xy : Mx2 array
+        The M returned coordinates.
 
     """
     if size not in range(9,13):
