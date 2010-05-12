@@ -1,0 +1,45 @@
+Discrete Pulse Transform
+========================
+
+:mod:`supreme.lib.dpt`
+----------------------
+.. currentmodule:: supreme.lib.dpt
+
+.. autosummary::
+
+   connected_regions
+   decompose
+   reconstruct
+
+.. autofunction:: connected_regions
+.. autofunction:: decompose
+.. autofunction:: reconstruct
+
+.. currentmodule:: supreme.lib.dpt.connected_region
+.. autoclass:: ConnectedRegion
+
+:mod:`supreme.lib.dpt.connected_region_handler`
+-----------------------------------------------
+
+.. currentmodule:: supreme.lib.dpt.connected_region_handler
+.. autosummary::
+
+   boundary_maximum
+   boundary_minimum
+   bounding_box
+   contains
+   copy
+   get_colptr
+   get_rowptr
+   get_shape
+   get_start_row
+   get_value
+   merge
+   nnz
+   outside_boundary
+   reshape
+   set_array
+   set_start_row
+   set_value
+   todense
+   validate

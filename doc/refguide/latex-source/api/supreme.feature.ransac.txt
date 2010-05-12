@@ -1,0 +1,21 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`feature.ransac`
+=====================
+.. automodule:: supreme.feature.ransac
+
+.. currentmodule:: supreme.feature.ransac
+
+:class:`RANSAC`
+---------------
+
+
+.. autoclass:: RANSAC
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+.. autosummary::
+
+

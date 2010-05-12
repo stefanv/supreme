@@ -1,0 +1,58 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`ext`
+==========
+.. automodule:: supreme.ext
+
+.. currentmodule:: supreme.ext
+.. autosummary::
+
+   supreme.ext.correlate
+   supreme.ext.interp_bilinear
+   supreme.ext.interp_transf_polygon
+   supreme.ext.line_intersect
+   supreme.ext.npnpoly
+   supreme.ext.poly_clip
+   supreme.ext.poly_interp_op
+   supreme.ext.variance_map
+
+correlate
+---------
+
+.. autofunction:: supreme.ext.correlate
+
+interp_bilinear
+---------------
+
+.. autofunction:: supreme.ext.interp_bilinear
+
+interp_transf_polygon
+---------------------
+
+.. autofunction:: supreme.ext.interp_transf_polygon
+
+line_intersect
+--------------
+
+.. autofunction:: supreme.ext.line_intersect
+
+npnpoly
+-------
+
+.. autofunction:: supreme.ext.npnpoly
+
+poly_clip
+---------
+
+.. autofunction:: supreme.ext.poly_clip
+
+poly_interp_op
+--------------
+
+.. autofunction:: supreme.ext.poly_interp_op
+
+variance_map
+------------
+
+.. autofunction:: supreme.ext.variance_map
+

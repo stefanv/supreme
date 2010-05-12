@@ -1,0 +1,46 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`resolve.iterative`
+========================
+.. automodule:: supreme.resolve.iterative
+
+.. currentmodule:: supreme.resolve.iterative
+.. autosummary::
+
+   supreme.resolve.iterative.solve
+   supreme.resolve.iterative.default_camera
+   supreme.resolve.iterative.cost_squared_error
+   supreme.resolve.iterative.iresolve
+   supreme.resolve.iterative.initial_guess_avg
+   supreme.resolve.iterative.cost_prior_xsq
+
+solve
+-----
+
+.. autofunction:: supreme.resolve.iterative.solve
+
+default_camera
+--------------
+
+.. autofunction:: supreme.resolve.iterative.default_camera
+
+cost_squared_error
+------------------
+
+.. autofunction:: supreme.resolve.iterative.cost_squared_error
+
+iresolve
+--------
+
+.. autofunction:: supreme.resolve.iterative.iresolve
+
+initial_guess_avg
+-----------------
+
+.. autofunction:: supreme.resolve.iterative.initial_guess_avg
+
+cost_prior_xsq
+--------------
+
+.. autofunction:: supreme.resolve.iterative.cost_prior_xsq
+

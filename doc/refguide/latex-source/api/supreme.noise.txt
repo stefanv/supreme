@@ -1,0 +1,22 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`noise`
+============
+.. automodule:: supreme.noise
+
+.. currentmodule:: supreme.noise
+.. autosummary::
+
+   supreme.noise.dwt_denoise
+   supreme.noise.variance
+
+dwt_denoise
+-----------
+
+.. autofunction:: supreme.noise.dwt_denoise
+
+variance
+--------
+
+.. autofunction:: supreme.noise.variance
+

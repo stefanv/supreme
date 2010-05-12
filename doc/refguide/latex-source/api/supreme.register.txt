@@ -1,0 +1,140 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`register`
+===============
+.. automodule:: supreme.register
+
+.. currentmodule:: supreme.register
+
+:class:`Grid`
+-------------
+
+
+.. autoclass:: Grid
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`PointCorrespondence`
+----------------------------
+
+
+.. autoclass:: PointCorrespondence
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+.. autosummary::
+
+   supreme.register.affine_tm
+   supreme.register.correspond
+   supreme.register.dense_MI
+   supreme.register.fft_corr
+   supreme.register.gauss
+   supreme.register.joint_hist
+   supreme.register.logpolar
+   supreme.register.lp_patch_match
+   supreme.register.mutual_info
+   supreme.register.ncc
+   supreme.register.patch_match
+   supreme.register.phase_corr
+   supreme.register.radial_sum
+   supreme.register.refine
+   supreme.register.sat
+   supreme.register.sat_sum
+   supreme.register.sparse
+   supreme.register.window_wrap
+
+affine_tm
+---------
+
+.. autofunction:: supreme.register.affine_tm
+
+correspond
+----------
+
+.. autofunction:: supreme.register.correspond
+
+dense_MI
+--------
+
+.. autofunction:: supreme.register.dense_MI
+
+fft_corr
+--------
+
+.. autofunction:: supreme.register.fft_corr
+
+gauss
+-----
+
+.. autofunction:: supreme.register.gauss
+
+joint_hist
+----------
+
+.. autofunction:: supreme.register.joint_hist
+
+logpolar
+--------
+
+.. autofunction:: supreme.register.logpolar
+
+lp_patch_match
+--------------
+
+.. autofunction:: supreme.register.lp_patch_match
+
+mutual_info
+-----------
+
+.. autofunction:: supreme.register.mutual_info
+
+ncc
+---
+
+.. autofunction:: supreme.register.ncc
+
+patch_match
+-----------
+
+.. autofunction:: supreme.register.patch_match
+
+phase_corr
+----------
+
+.. autofunction:: supreme.register.phase_corr
+
+radial_sum
+----------
+
+.. autofunction:: supreme.register.radial_sum
+
+refine
+------
+
+.. autofunction:: supreme.register.refine
+
+sat
+---
+
+.. autofunction:: supreme.register.sat
+
+sat_sum
+-------
+
+.. autofunction:: supreme.register.sat_sum
+
+sparse
+------
+
+.. autofunction:: supreme.register.sparse
+
+window_wrap
+-----------
+
+.. autofunction:: supreme.register.window_wrap
+

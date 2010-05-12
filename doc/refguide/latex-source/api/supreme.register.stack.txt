@@ -1,0 +1,28 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`register.stack`
+=====================
+.. automodule:: supreme.register.stack
+
+.. currentmodule:: supreme.register.stack
+.. autosummary::
+
+   supreme.register.stack.with_transform
+   supreme.register.stack.mask_roi
+   supreme.register.stack.corners
+
+with_transform
+--------------
+
+.. autofunction:: supreme.register.stack.with_transform
+
+mask_roi
+--------
+
+.. autofunction:: supreme.register.stack.mask_roi
+
+corners
+-------
+
+.. autofunction:: supreme.register.stack.corners
+

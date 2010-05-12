@@ -1,0 +1,67 @@
+Registration
+============
+
+:mod:`supreme.register`
+-----------------------
+.. currentmodule:: supreme.register
+
+.. autosummary::
+
+   PointCorrespondence
+   affine_tm
+   dense_MI
+   joint_hist
+   lp_patch_match
+   mutual_info
+   ncc
+   phase_corr
+   radial_sum
+   refine
+   register
+   sat
+   sat_sum
+   sparse
+
+.. autoclass:: PointCorrespondence
+
+   .. autosummary::
+      :toctree:
+
+      PointCorrespondence.estimate
+      PointCorrespondence.RANSAC
+
+.. autofunction:: affine_tm
+.. autofunction:: dense_MI
+.. autofunction:: joint_hist
+.. autofunction:: lp_patch_match
+.. autofunction:: mutual_info
+.. autofunction:: ncc
+.. autofunction:: phase_corr
+.. autofunction:: radial_sum
+.. autofunction:: refine
+.. autofunction:: register
+.. autofunction:: sat
+.. autofunction:: sat_sum
+.. autofunction:: sparse
+
+:mod:`supreme.register.stack`
+-----------------------------
+.. currentmodule:: supreme.register.stack
+
+.. autosummary::
+
+   with_transform
+
+.. autofunction:: with_transform
+
+:mod:`supreme.photometry`
+-----------------------------
+.. currentmodule:: supreme.photometry
+
+.. autosummary::
+
+   histogram_adjust
+   photometric_adjust
+
+.. autofunction:: histogram_adjust
+.. autofunction:: photometric_adjust

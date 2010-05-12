@@ -1,0 +1,50 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`io`
+=========
+.. automodule:: supreme.io
+
+.. currentmodule:: supreme.io
+
+:class:`Image`
+--------------
+
+
+.. autoclass:: Image
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`ImageCollection`
+------------------------
+
+
+.. autoclass:: ImageCollection
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+.. autosummary::
+
+   supreme.io.imread
+   supreme.io.imsave
+   supreme.io.load_vgg
+
+imread
+------
+
+.. autofunction:: supreme.io.imread
+
+imsave
+------
+
+.. autofunction:: supreme.io.imsave
+
+load_vgg
+--------
+
+.. autofunction:: supreme.io.load_vgg
+

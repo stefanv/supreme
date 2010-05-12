@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`feature.SIFT`
+===================
+.. automodule:: supreme.feature.SIFT
+
+.. currentmodule:: supreme.feature.SIFT
+.. autosummary::
+
+   supreme.feature.SIFT.fromfile
+
+fromfile
+--------
+
+.. autofunction:: supreme.feature.SIFT.fromfile
+

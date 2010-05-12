@@ -1,0 +1,24 @@
+Installation from source
+------------------------
+
+Obtain the source from the git-repository at
+`http://dip.sun.ac.za/~stefan/code/supreme.git
+<http://dip.sun.ac.za/~stefan/code/supreme.git>`_.
+
+The package can be installed system-wide using
+
+::
+
+  python setup.py install
+
+or locally, using
+
+::
+
+  python setup.py install --prefix=${HOME}
+
+If preferred, you may use it without installing, by simply adding the
+source path to your PYTHONPATH variable and compiling the extensions
+in-place::
+
+  python setup.py build_ext -i

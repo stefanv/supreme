@@ -1,0 +1,32 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`geometry`
+===============
+.. automodule:: supreme.geometry
+
+.. currentmodule:: supreme.geometry
+
+:class:`Grid`
+-------------
+
+
+.. autoclass:: Grid
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`Polygon`
+----------------
+
+
+.. autoclass:: Polygon
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+.. autosummary::
+
+

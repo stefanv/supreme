@@ -1,0 +1,20 @@
+Overview
+========
+
+Introduction
+------------
+
+SupReMe, short for Super Resolution Methods, is a library
+that implements the algorithms necessary to perform super-resolution
+imaging.
+
+Super-resolution imaging is a process whereby several low-resolution
+photographs of a single object are combined to form a single,
+high-resolution reconstruction.
+
+An overview of the underlying theory is given in the accompanying
+dissertation.
+
+.. include:: license.txt
+
+.. include:: install.txt

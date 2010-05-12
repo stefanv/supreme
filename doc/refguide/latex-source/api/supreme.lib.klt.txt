@@ -1,0 +1,105 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`lib.klt`
+==============
+.. automodule:: supreme.lib.klt
+
+.. currentmodule:: supreme.lib.klt
+
+:class:`Feature`
+----------------
+
+
+.. autoclass:: Feature
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`FeatureHistory`
+-----------------------
+
+
+.. autoclass:: FeatureHistory
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`FeatureList`
+--------------------
+
+
+.. autoclass:: FeatureList
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`FeatureTable`
+---------------------
+
+
+.. autoclass:: FeatureTable
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`FloatImage`
+-------------------
+
+
+.. autoclass:: FloatImage
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`Structure`
+------------------
+
+
+.. autoclass:: Structure
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`TrackingContext`
+------------------------
+
+
+.. autoclass:: TrackingContext
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+.. autosummary::
+
+   supreme.lib.klt.replace_lost_features
+   supreme.lib.klt.select_good_features
+   supreme.lib.klt.track_features
+
+replace_lost_features
+---------------------
+
+.. autofunction:: supreme.lib.klt.replace_lost_features
+
+select_good_features
+--------------------
+
+.. autofunction:: supreme.lib.klt.select_good_features
+
+track_features
+--------------
+
+.. autofunction:: supreme.lib.klt.track_features
+

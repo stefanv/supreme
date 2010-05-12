@@ -1,0 +1,43 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`photometry.hdr`
+=====================
+.. automodule:: supreme.photometry.hdr
+
+.. currentmodule:: supreme.photometry.hdr
+
+:class:`DeviceResponse`
+-----------------------
+
+
+.. autoclass:: DeviceResponse
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`HDRMapperNaive`
+-----------------------
+
+
+.. autoclass:: HDRMapperNaive
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+
+:class:`PhotometrySampler`
+--------------------------
+
+
+.. autoclass:: PhotometrySampler
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+  .. automethod:: __init__
+.. autosummary::
+
+

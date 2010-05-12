@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`geometry.cut`
+===================
+.. automodule:: supreme.geometry.cut
+
+.. currentmodule:: supreme.geometry.cut
+.. autosummary::
+
+   supreme.geometry.cut.along_path
+
+along_path
+----------
+
+.. autofunction:: supreme.geometry.cut.along_path
+

@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`resolve.lsqr`
+===================
+.. automodule:: supreme.resolve.lsqr
+
+.. currentmodule:: supreme.resolve.lsqr
+.. autosummary::
+
+   supreme.resolve.lsqr.lsqr
+
+lsqr
+----
+
+.. autofunction:: supreme.resolve.lsqr.lsqr
+

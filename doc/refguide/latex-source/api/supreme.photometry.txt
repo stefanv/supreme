@@ -1,0 +1,22 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`photometry`
+=================
+.. automodule:: supreme.photometry
+
+.. currentmodule:: supreme.photometry
+.. autosummary::
+
+   supreme.photometry.histogram_adjust
+   supreme.photometry.photometric_adjust
+
+histogram_adjust
+----------------
+
+.. autofunction:: supreme.photometry.histogram_adjust
+
+photometric_adjust
+------------------
+
+.. autofunction:: supreme.photometry.photometric_adjust
+

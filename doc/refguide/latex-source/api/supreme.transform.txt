@@ -1,0 +1,40 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`transform`
+================
+.. automodule:: supreme.transform
+
+.. currentmodule:: supreme.transform
+.. autosummary::
+
+   supreme.transform.chirpz
+   supreme.transform.chirpz2
+   supreme.transform.homography
+   supreme.transform.logpolar
+   supreme.transform.matrix
+
+chirpz
+------
+
+.. autofunction:: supreme.transform.chirpz
+
+chirpz2
+-------
+
+.. autofunction:: supreme.transform.chirpz2
+
+homography
+----------
+
+.. autofunction:: supreme.transform.homography
+
+logpolar
+--------
+
+.. autofunction:: supreme.transform.logpolar
+
+matrix
+------
+
+.. autofunction:: supreme.transform.matrix
+

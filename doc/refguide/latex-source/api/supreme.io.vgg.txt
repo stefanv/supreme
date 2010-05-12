@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`io.vgg`
+=============
+.. automodule:: supreme.io.vgg
+
+.. currentmodule:: supreme.io.vgg
+.. autosummary::
+
+   supreme.io.vgg.load_vgg
+
+load_vgg
+--------
+
+.. autofunction:: supreme.io.vgg.load_vgg
+

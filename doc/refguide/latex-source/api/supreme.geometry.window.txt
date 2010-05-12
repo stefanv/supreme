@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`geometry.window`
+======================
+.. automodule:: supreme.geometry.window
+
+.. currentmodule:: supreme.geometry.window
+.. autosummary::
+
+   supreme.geometry.window.gauss
+
+gauss
+-----
+
+.. autofunction:: supreme.geometry.window.gauss
+

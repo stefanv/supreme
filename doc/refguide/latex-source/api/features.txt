@@ -1,0 +1,59 @@
+Feature detection and matching
+==============================
+
+:mod:`supreme.feature`
+----------------------
+
+.. currentmodule:: supreme.feature
+
+.. autosummary::
+
+   dpt.features
+   match
+   ransac
+
+.. autofunction:: supreme.feature.dpt.features
+.. autofunction:: match
+
+:mod:`supreme.feature.ransac`
+-----------------------------
+
+.. currentmodule:: supreme.feature.ransac
+
+.. autoclass:: supreme.feature.ransac.RANSAC
+
+   .. autosummary::
+      :toctree:
+
+      RANSAC.__init__
+      RANSAC.__call__
+
+.. class:: supreme.feature.ransac.IModel
+
+   .. autosummary::
+      :toctree:
+
+      IModel.__call__
+      IModel.estimate
+
+:mod:`supreme.register`
+----------------------
+.. currentmodule:: supreme.register
+
+.. autosummary::
+
+   correspond
+
+.. autofunction:: correspond
+
+:mod:`supreme.lib.fast`
+-----------------------
+.. currentmodule:: supreme.lib.fast
+
+.. automodule:: supreme.lib.fast
+
+.. autosummary::
+
+   corner_detect
+
+.. autofunction:: corner_detect

@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`noise.wavelet`
+====================
+.. automodule:: supreme.noise.wavelet
+
+.. currentmodule:: supreme.noise.wavelet
+.. autosummary::
+
+   supreme.noise.wavelet.dwt_denoise
+
+dwt_denoise
+-----------
+
+.. autofunction:: supreme.noise.wavelet.dwt_denoise
+

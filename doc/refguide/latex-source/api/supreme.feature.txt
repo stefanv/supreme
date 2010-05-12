@@ -1,0 +1,16 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`feature`
+==============
+.. automodule:: supreme.feature
+
+.. currentmodule:: supreme.feature
+.. autosummary::
+
+   supreme.feature.match
+
+match
+-----
+
+.. autofunction:: supreme.feature.match
+

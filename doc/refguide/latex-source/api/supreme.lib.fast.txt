@@ -1,0 +1,22 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`lib.fast`
+===============
+.. automodule:: supreme.lib.fast
+
+.. currentmodule:: supreme.lib.fast
+.. autosummary::
+
+   supreme.lib.fast.corner_detect
+   supreme.lib.fast.nonmax
+
+corner_detect
+-------------
+
+.. autofunction:: supreme.lib.fast.corner_detect
+
+nonmax
+------
+
+.. autofunction:: supreme.lib.fast.nonmax
+

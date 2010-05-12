@@ -1,0 +1,6 @@
+License
+-------
+
+This software is released under the following free and open source license.
+
+.. literalinclude:: ../../LICENSE.txt

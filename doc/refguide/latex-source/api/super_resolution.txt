@@ -1,0 +1,42 @@
+Super-resolution
+================
+
+:mod:`supreme.resolve`
+----------------------
+.. currentmodule:: supreme.resolve
+
+.. autosummary::
+
+   initial_guess_avg
+   lsqr.lsqr
+   solve
+
+.. autofunction:: initial_guess_avg
+.. autofunction:: supreme.resolve.lsqr.lsqr
+.. autofunction:: solve
+
+:mod:`supreme.resolve.operators`
+--------------------------------
+.. currentmodule:: supreme.resolve.operators
+
+.. autosummary::
+
+   bilinear
+   convolve
+   block_diag
+   op_repeat
+
+.. autofunction:: bilinear
+.. autofunction:: convolve
+.. autofunction:: block_diag
+.. autofunction:: op_repeat
+
+:mod:`supreme.ext.poly_operator`
+--------------------------------
+.. currentmodule:: supreme.ext.poly_operator
+
+.. autosummary::
+
+   poly_interp_op
+
+.. autofunction:: poly_interp_op

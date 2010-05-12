@@ -1,0 +1,67 @@
+Miscellaneous
+=============
+
+:mod:`supreme.geometry`
+-----------------------
+.. currentmodule:: supreme.geometry
+
+.. autosummary::
+
+   Grid
+   Polygon
+   window.gauss
+
+.. autoclass:: Grid
+
+   .. automethod:: __init__
+   .. automethod:: coords
+
+.. autoclass:: Polygon
+
+   .. automethod:: __init__
+
+.. autofunction:: supreme.geometry.window.gauss
+
+:mod:`supreme.ext`
+-----------------------
+.. currentmodule:: supreme.ext
+
+.. autosummary::
+
+   interp_bilinear
+   interp_transf_polygon
+   line_intersect
+   npn_poly
+   poly_clip
+
+.. autofunction:: interp_bilinear
+.. autofunction:: interp_transf_polygon
+.. autofunction:: line_intersect
+.. autofunction:: npn_poly
+.. autofunction:: poly_clip
+
+
+:mod:`supreme.transform`
+------------------------
+.. currentmodule:: supreme.transform
+
+.. autosummary::
+
+   chirpz
+   homography
+   logpolar
+
+.. autofunction:: chirpz
+.. autofunction:: homography
+.. autofunction:: logpolar
+
+:mod:`supreme.register`
+------------------------
+.. currentmodule:: supreme.register
+
+.. autosummary::
+
+   window_wrap
+
+.. autofunction:: window_wrap
+

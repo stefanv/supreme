@@ -1,0 +1,34 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`geometry.coord_path`
+==========================
+.. automodule:: supreme.geometry.coord_path
+
+.. currentmodule:: supreme.geometry.coord_path
+.. autosummary::
+
+   supreme.geometry.coord_path.build
+   supreme.geometry.coord_path.line
+   supreme.geometry.coord_path.circle
+   supreme.geometry.coord_path.spline
+
+build
+-----
+
+.. autofunction:: supreme.geometry.coord_path.build
+
+line
+----
+
+.. autofunction:: supreme.geometry.coord_path.line
+
+circle
+------
+
+.. autofunction:: supreme.geometry.coord_path.circle
+
+spline
+------
+
+.. autofunction:: supreme.geometry.coord_path.spline
+

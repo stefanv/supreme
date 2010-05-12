@@ -1,0 +1,46 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`resolve`
+==============
+.. automodule:: supreme.resolve
+
+.. currentmodule:: supreme.resolve
+.. autosummary::
+
+   supreme.resolve.cost_prior_xsq
+   supreme.resolve.cost_squared_error
+   supreme.resolve.default_camera
+   supreme.resolve.initial_guess_avg
+   supreme.resolve.iresolve
+   supreme.resolve.solve
+
+cost_prior_xsq
+--------------
+
+.. autofunction:: supreme.resolve.cost_prior_xsq
+
+cost_squared_error
+------------------
+
+.. autofunction:: supreme.resolve.cost_squared_error
+
+default_camera
+--------------
+
+.. autofunction:: supreme.resolve.default_camera
+
+initial_guess_avg
+-----------------
+
+.. autofunction:: supreme.resolve.initial_guess_avg
+
+iresolve
+--------
+
+.. autofunction:: supreme.resolve.iresolve
+
+solve
+-----
+
+.. autofunction:: supreme.resolve.solve
+

@@ -1,0 +1,27 @@
+
+.. toctree::
+
+   supreme.ext
+   supreme.feature
+   supreme.feature.SIFT
+   supreme.feature.ransac
+   supreme.geometry
+   supreme.geometry.coord_path
+   supreme.geometry.cut
+   supreme.geometry.window
+   supreme.io
+   supreme.io.vgg
+   supreme.lib.dpt
+   supreme.lib.fast
+   supreme.lib.klt
+   supreme.noise
+   supreme.noise.wavelet
+   supreme.photometry
+   supreme.photometry.hdr
+   supreme.photometry.register
+   supreme.register
+   supreme.register.stack
+   supreme.resolve
+   supreme.resolve.iterative
+   supreme.resolve.lsqr
+   supreme.transform

@@ -1,0 +1,46 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+:mod:`config`
+=============
+.. automodule:: supreme.config
+
+.. currentmodule:: supreme.config
+
+:class:`ftype`
+--------------
+
+
+.. autoclass:: ftype
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`itype`
+--------------
+
+
+.. autoclass:: itype
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+.. autosummary::
+
+   supreme.config.abs_path
+   supreme.config.get_log
+
+abs_path
+--------
+
+.. autofunction:: supreme.config.abs_path
+
+get_log
+-------
+
+.. autofunction:: supreme.config.get_log
+

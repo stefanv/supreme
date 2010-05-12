@@ -1,0 +1,48 @@
+Image Acquisition and I/O
+=========================
+
+Denoising (:mod:`supreme.noise`)
+--------------------------------
+
+.. autosummary::
+
+   supreme.noise.dwt_denoise
+
+.. autofunction:: supreme.noise.dwt_denoise
+
+I/O (:mod:`supreme.io`)
+-----------------------
+
+.. autosummary::
+
+   supreme.io.Image
+   supreme.io.ImageCollection
+   supreme.feature.SIFT.fromfile
+   supreme.io.imread
+   supreme.io.imshow
+   supreme.io.load_vgg
+   supreme.api.show
+   supreme.api.test_data
+
+.. currentmodule:: supreme.io
+.. autoclass:: supreme.io.ImageCollection
+
+   .. autosummary::
+      :toctree:
+
+      ImageCollection.__init__
+      ImageCollection.__getitem__
+      ImageCollection.__iter__
+      ImageCollection.__len__
+
+.. autofunction:: supreme.io.load_vgg
+
+.. autofunction:: supreme.feature.SIFT.fromfile
+
+.. autofunction:: supreme.io.imread
+
+.. autofunction:: supreme.io.imshow
+
+.. autofunction:: supreme.api.show
+
+.. autofunction:: supreme.api.test_data
