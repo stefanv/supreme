@@ -1,3 +1,6 @@
+# Compute transformation matrices based on SIFT features
+# SIFT features have to be precomputed using David Lowe's demo program
+
 import os.path
 import glob
 import sys
