@@ -48,8 +48,9 @@ def corner_detect(image, barrier=10, size=12):
 
     Returns
     -------
-    xy : Mx2 array
-        The M returned coordinates.
+    xy : (M,) array
+        The M returned coordinates, with dtype
+        ``('x', int), ('y', int)``.
 
     """
     if size not in range(9,13):
