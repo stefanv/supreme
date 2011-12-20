@@ -74,9 +74,6 @@ class Canvas(object):
         # This is probably not the right call.  Should call redraw on canvas?
         plt.draw()
 
-        print self.name
-
-
 for fn in args:
     try:
         img = sio.imread(fn, as_grey=True)/255.
