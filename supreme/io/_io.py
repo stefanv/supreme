@@ -129,9 +129,13 @@ class ImageCollection(object):
         """
         idx = n % len(self.data)
         if (_cached != n and self.conserve_memory) or (self.data[idx] is None):
-            image_data = imread(self.files[n],self.grey)
+            try:
+                image_data = imread(self.files[n], self.grey)
+            except IOError:
+                raise IOError('Could not read the file %s.' % self.files[n])
 
             with file(self.files[n]) as f:
+                print f
                 exif = EXIF.process_file(f)
 
             self.data[idx] = Image(image_data,
