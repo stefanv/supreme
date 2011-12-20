@@ -33,16 +33,16 @@ else:
     img0 = ic[0]
     img1 = ic[7]
 
-show_features = True # Whether to display the features found on screen
+show_features = False # Whether to display the features found on screen
 stack = True # Disable this to view the output without stacking
-feature_method = 'dpt' # 'dpt' or 'fast'
-dpt_feature_nr = 500
-fast_barrier = 25
+feature_method = 'fast' # 'dpt' or 'fast'
+dpt_feature_nr = 200
+fast_barrier = 10
 registration_method = 'RANSAC' # or iterative
 RANSAC_confidence = 0.99
 win_size = None
 save_tiff = True # Save warped images to tiff
-refine_using_MI = False # Refine using mutual information?
+refine_using_MI = False # Refine using mutual information
 window = 0 # only return 1 feature per window
 
 # ----------------------------------------------------------------------
@@ -147,6 +147,8 @@ if stack:
                                            confidence=RANSAC_confidence)
 #                                           inliers_required=len(pairs)*0.8)
     print np.array2string(M, separator=', ')
+    print "Also writing transformation matrix to /tmp/H.H."
+    np.savetxt('/tmp/H.H', M)
 
     if refine_using_MI:
         # Estimate parameters from M
@@ -157,22 +159,24 @@ if stack:
                                          img1.astype(np.uint8), p=p, levels=1)
         print np.array2string(M, separator=', ')
 
-    plt.subplot(2, 1, 2)
-    stack = supreme.register.stack.with_transform((imgc0, imgc1),
-                                                  (np.eye(3), M),
-                                                  save_tiff=save_tiff)
-    plt.imshow(stack/stack.max(), cmap=plt.cm.gray, interpolation='nearest')
+    if show_features:
+        plt.subplot(2, 1, 2)
+        stack = supreme.register.stack.with_transform((imgc0, imgc1),
+                                                      (np.eye(3), M),
+                                                      save_tiff=save_tiff)
+        plt.imshow(stack/stack.max(), cmap=plt.cm.gray, interpolation='nearest')
 
-plt.subplot(2, 1, 1)
-r0, c0 = img0.shape
-r1, c1 = img1.shape
-oshape = (max(r0, r1), c0 + c1)
-side_by_side = np.zeros(oshape, dtype=img0.dtype)
-side_by_side[0:r0, 0:c0] = img0
-side_by_side[0:r1, c0:c0 + c1] = img1
-plt.imshow(side_by_side, cmap=plt.cm.gray, interpolation='nearest')
-for ((i,j), (m, n)) in correspondences:
-    plt.plot([j, n + img0.shape[1]], [i, m], '-o')
-plt.axis('image')
+if show_features:
+    plt.subplot(2, 1, 1)
+    r0, c0 = img0.shape
+    r1, c1 = img1.shape
+    oshape = (max(r0, r1), c0 + c1)
+    side_by_side = np.zeros(oshape, dtype=img0.dtype)
+    side_by_side[0:r0, 0:c0] = img0
+    side_by_side[0:r1, c0:c0 + c1] = img1
+    plt.imshow(side_by_side, cmap=plt.cm.gray, interpolation='nearest')
+    for ((i,j), (m, n)) in correspondences:
+        plt.plot([j, n + img0.shape[1]], [i, m], '-o')
+    plt.axis('image')
 
-plt.show()
+    plt.show()
