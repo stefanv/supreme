@@ -332,4 +332,5 @@ def dense_MI(A, B, p=None, levels=3, fast=False, std=1, win_size=5,
 
     p = [p[0], p[1], p[2], p[3]/2, p[4]/2]
 
-    return _build_tf(p, translation_only=translation_only), -fopt
+    return _build_tf(p, translation_only=translation_only,
+                        fixed_scale=fixed_scale), -fopt
