@@ -1,4 +1,4 @@
-# supreme -- SUper-REsolution MEthods
+# supreme — SUper-REsolution MEthods
 
 [http://mentat.za.net/supreme](http://mentat.za.net/supreme)
 
