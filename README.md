@@ -1,8 +1,6 @@
-===================================
-supreme -- SUper-REsolution MEthods
-===================================
+# supreme -- SUper-REsolution MEthods
 
-http://mentat.za.net/supreme
+[http://mentat.za.net/supreme](http://mentat.za.net/supreme)
 
 This is experimental research software that performs multi-image
 super-resolution imaging.  It requires the images to be registered
