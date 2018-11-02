@@ -17,4 +17,5 @@ An [example VGG dataset](https://mentat.za.net/supreme/data/library.tar.gz) is
 provided of the Oxford Library Sequence.
 
 For a full technical overview of this work, please refer
-to [my dissertation](https://mentat.za.net/phd_dissertation.html).
+to [the overview paper](http://arxiv.org/abs/1210.3404)
+or [my dissertation](https://mentat.za.net/phd_dissertation.html).
