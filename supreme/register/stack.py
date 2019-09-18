@@ -196,8 +196,8 @@ def with_transform(images, matrices, weights=None, order=1,
 
             imsave('stack_%d.tiff' % n, tmp)
 
-    out = np.zeros(oshape, dtype=sc.ftype)
-    total_weights = np.zeros(oshape, dtype=float)
+    out = np.zeros(oshape.astype(int), dtype=sc.ftype)
+    total_weights = np.zeros(oshape.astype(int), dtype=float)
     for (s, bounds), w in zip(zip(sources, boundaries), weights):
         mask = mask_roi(s.shape[0], s.shape[1], bounds)
         out[mask] += (w * s)[mask]
