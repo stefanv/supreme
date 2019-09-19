@@ -126,7 +126,7 @@ def _homography_coords(image, matrix, output_shape):
     image = np.atleast_3d(image)
     bands = image.shape[2]
 
-    coords = np.empty(np.r_[3,output_shape], dtype=SC.ftype)
+    coords = np.empty(np.r_[3,output_shape.astype(int)], dtype=SC.ftype)
     tf_coords = supreme.geometry.Grid(*output_shape[:2]).coords
     tf_coords = np.dot(tf_coords, np.linalg.inv(matrix).transpose())
     tf_coords[np.absolute(tf_coords) < SC.eps] = 0.

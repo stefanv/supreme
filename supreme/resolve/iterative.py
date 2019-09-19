@@ -207,7 +207,7 @@ def solve(images, tf_matrices, scale, x0=None,
     else:
         raise ValueError('Invalid method (%s) specified.' % method)
 
-    return x.reshape(oshape)
+    return x.reshape(oshape.astype(int))
 
 def initial_guess_avg(images, tf_matrices, scale, oshape):
     """From the given low-resolution images and transforms, make an
