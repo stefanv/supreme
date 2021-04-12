@@ -40,5 +40,5 @@ if __name__ == '__main__':
         author_email = "<stefan.no-spam(at)mentat.za.net>",
         description = "SUper REsolution MEthods",
         url = "http://mentat.za.net",
-        license = "GPL",
+        license = "MIT",
     )

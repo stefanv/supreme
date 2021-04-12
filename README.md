@@ -17,3 +17,6 @@ provided of the Oxford Library Sequence.
 For a full technical overview of this work, please refer
 to [the overview paper](http://arxiv.org/abs/1210.3404)
 or [my dissertation](https://mentat.za.net/phd_dissertation.html).
+
+Much of the functionality in this library has now been ported to
+[scikit-image](https://scikit-image.org).
